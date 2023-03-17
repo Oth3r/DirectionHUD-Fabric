@@ -5,10 +5,7 @@ import one.oth3r.directionhud.commands.HUD;
 import one.oth3r.directionhud.utils.CUtl;
 import one.oth3r.directionhud.utils.Utl;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.Properties;
 
 public class config {
@@ -37,14 +34,40 @@ public class config {
     public static String DESTDestParticleColor = defaults.DESTDestParticleColor;
     public static boolean DESTSend = defaults.DESTSend;
     public static boolean DESTTrack = defaults.DESTTrack;
-
+    public static void resetDefaults() {
+        HUDEnabled = defaults.HUDEnabled;
+        HUDOrder = defaults.HUDOrder;
+        HUDCoordinates = defaults.HUDCoordinates;
+        HUDDistance = defaults.HUDDistance;
+        HUDCompass = defaults.HUDCompass;
+        HUDDestination = defaults.HUDDestination;
+        HUDDirection = defaults.HUDDirection;
+        HUDTime = defaults.HUDTime;
+        HUDWeather = defaults.HUDWeather;
+        HUD24HR = defaults.HUD24HR;
+        HUDPrimaryColor = defaults.HUDPrimaryColor;
+        HUDPrimaryBold = defaults.HUDPrimaryBold;
+        HUDPrimaryItalics = defaults.HUDPrimaryItalics;
+        HUDSecondaryColor = defaults.HUDSecondaryColor;
+        HUDSecondaryBold = defaults.HUDSecondaryBold;
+        HUDSecondaryItalics = defaults.HUDSecondaryItalics;
+        DESTAutoClear = defaults.DESTAutoClear;
+        DESTAutoClearRad = defaults.DESTAutoClearRad;
+        DESTYLevel = defaults.DESTYLevel;
+        DESTLineParticles = defaults.DESTLineParticles;
+        DESTLineParticleColor = defaults.DESTLineParticleColor;
+        DESTDestParticles = defaults.DESTDestParticles;
+        DESTDestParticleColor = defaults.DESTDestParticleColor;
+        DESTSend = defaults.DESTSend;
+        DESTTrack = defaults.DESTTrack;
+        save();
+    }
     public static File configFile() {
         return new File(DirectionHUD.config+"DirectionHUD.properties");
     }
     public static void load() {
         try {
-            if (!configFile().exists() || !configFile().canRead())
-                save();
+            if (!configFile().exists() || !configFile().canRead()) save();
             var fileStream = new FileInputStream(configFile());
             var properties = new Properties();
             properties.load(fileStream);
@@ -82,71 +105,49 @@ public class config {
         } catch (Exception f) {
             //read fail
             f.printStackTrace();
-            HUDEnabled = defaults.HUDEnabled;
-            HUDOrder = defaults.HUDOrder;
-            HUDCoordinates = defaults.HUDCoordinates;
-            HUDDistance = defaults.HUDDistance;
-            HUDCompass = defaults.HUDCompass;
-            HUDDestination = defaults.HUDDestination;
-            HUDDirection = defaults.HUDDirection;
-            HUDTime = defaults.HUDTime;
-            HUDWeather = defaults.HUDWeather;
-            HUD24HR = defaults.HUD24HR;
-            HUDPrimaryColor = defaults.HUDPrimaryColor;
-            HUDSecondaryColor = defaults.HUDSecondaryColor;
-            DESTAutoClear = defaults.DESTAutoClear;
-            DESTAutoClearRad = defaults.DESTAutoClearRad;
-            DESTYLevel = defaults.DESTYLevel;
-            DESTLineParticles = defaults.DESTLineParticles;
-            DESTLineParticleColor = defaults.DESTLineParticleColor;
-            DESTDestParticles = defaults.DESTDestParticles;
-            DESTDestParticleColor = defaults.DESTDestParticleColor;
-            DESTSend = defaults.DESTSend;
-            DESTTrack = defaults.DESTTrack;
-            try {
-                save();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            resetDefaults();
         }
     }
-    public static void save() throws IOException {
-        var file = new FileOutputStream(configFile(), false);
-        file.write("# DirectionHUD Defaults".getBytes());
-        file.write("\n\n# HUD".getBytes());
-        file.write(("\nenabled="+HUDEnabled).getBytes());
-        file.write(("\norder="+HUDOrder).getBytes());
-        file.write(("\n# "+CUtl.lang("config.hud.order.hover_file").getString()).getBytes());
-        file.write(("\n# "+CUtl.lang("config.hud.order.hover_2").getString()+" "+CUtl.lang("config.hud.order.hover_3").getString()).getBytes());
-        file.write("\n# All modules DO NOT have to be written".getBytes());
-        file.write(("\ntime24hr="+HUD24HR).getBytes());
-        file.write(("\nprimary-color="+HUDPrimaryColor).getBytes());
-        file.write(("\nprimary-bold="+HUDPrimaryBold).getBytes());
-        file.write(("\nprimary-italics="+HUDPrimaryItalics).getBytes());
-        file.write(("\nsecondary-color="+HUDSecondaryColor).getBytes());
-        file.write(("\nsecondary-bold="+HUDSecondaryBold).getBytes());
-        file.write(("\nsecondary-italics="+HUDSecondaryItalics).getBytes());
-        file.write(("\n# "+CUtl.lang("config.colors").getString()+" "+CUtl.lang("config.colors_2")).getBytes());
+    public static void save() {
+        try (var file = new FileOutputStream(configFile(), false)) {
+            file.write("# DirectionHUD Defaults".getBytes());
+            file.write("\n\n# HUD".getBytes());
+            file.write(("\nenabled=" + HUDEnabled).getBytes());
+            file.write(("\norder=" + HUDOrder).getBytes());
+            file.write(("\n# " + CUtl.lang("config.hud.order.hover_file").getString()).getBytes());
+            file.write(("\n# " + CUtl.lang("config.hud.order.hover_2").getString() + " " + CUtl.lang("config.hud.order.hover_3").getString()).getBytes());
+            file.write("\n# All modules DO NOT have to be written".getBytes());
+            file.write(("\ntime24hr=" + HUD24HR).getBytes());
+            file.write(("\nprimary-color=" + HUDPrimaryColor).getBytes());
+            file.write(("\nprimary-bold=" + HUDPrimaryBold).getBytes());
+            file.write(("\nprimary-italics=" + HUDPrimaryItalics).getBytes());
+            file.write(("\nsecondary-color=" + HUDSecondaryColor).getBytes());
+            file.write(("\nsecondary-bold=" + HUDSecondaryBold).getBytes());
+            file.write(("\nsecondary-italics=" + HUDSecondaryItalics).getBytes());
+            file.write(("\n# " + CUtl.lang("config.colors").getString() + " " + CUtl.lang("config.colors_2")).getBytes());
 
-        file.write("\n\n# Module State".getBytes());
-        file.write(("\ncoordinates="+HUDCoordinates).getBytes());
-        file.write(("\ndistance="+HUDDistance).getBytes());
-        file.write(("\ncompass="+HUDCompass).getBytes());
-        file.write(("\ndestination="+HUDDestination).getBytes());
-        file.write(("\ndirection="+HUDDirection).getBytes());
-        file.write(("\ntime="+HUDTime).getBytes());
-        file.write(("\nweather="+HUDWeather).getBytes());
+            file.write("\n\n# Module State".getBytes());
+            file.write(("\ncoordinates=" + HUDCoordinates).getBytes());
+            file.write(("\ndistance=" + HUDDistance).getBytes());
+            file.write(("\ncompass=" + HUDCompass).getBytes());
+            file.write(("\ndestination=" + HUDDestination).getBytes());
+            file.write(("\ndirection=" + HUDDirection).getBytes());
+            file.write(("\ntime=" + HUDTime).getBytes());
+            file.write(("\nweather=" + HUDWeather).getBytes());
 
-        file.write("\n\n# Destination".getBytes());
-        file.write(("\nautoclear="+DESTAutoClear).getBytes());
-        file.write(("\nautoclear-radius="+DESTAutoClearRad).getBytes());
-        file.write(("\ny-level="+DESTYLevel).getBytes());
-        file.write(("\nline-particles="+DESTLineParticles).getBytes());
-        file.write(("\nline-particle-color="+DESTLineParticleColor).getBytes());
-        file.write(("\ndest-particles="+DESTDestParticles).getBytes());
-        file.write(("\ndest-particle-color="+DESTDestParticleColor).getBytes());
-        file.write(("\nsend="+HUDDirection).getBytes());
-        file.write(("\ntrack="+HUDTime).getBytes());
+            file.write("\n\n# Destination".getBytes());
+            file.write(("\nautoclear=" + DESTAutoClear).getBytes());
+            file.write(("\nautoclear-radius=" + DESTAutoClearRad).getBytes());
+            file.write(("\ny-level=" + DESTYLevel).getBytes());
+            file.write(("\nline-particles=" + DESTLineParticles).getBytes());
+            file.write(("\nline-particle-color=" + DESTLineParticleColor).getBytes());
+            file.write(("\ndest-particles=" + DESTDestParticles).getBytes());
+            file.write(("\ndest-particle-color=" + DESTDestParticleColor).getBytes());
+            file.write(("\nsend=" + HUDDirection).getBytes());
+            file.write(("\ntrack=" + HUDTime).getBytes());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     public static class defaults {
         public static boolean HUDEnabled = true;
