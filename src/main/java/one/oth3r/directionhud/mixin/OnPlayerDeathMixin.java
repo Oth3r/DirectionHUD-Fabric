@@ -1,6 +1,7 @@
 package one.oth3r.directionhud.mixin;
 
 import one.oth3r.directionhud.commands.Destination;
+import one.oth3r.directionhud.utils.CUtl;
 import one.oth3r.directionhud.utils.Utl;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -13,8 +14,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class OnPlayerDeathMixin {
     @Inject(at = @At("HEAD"), method = "onDeath(Lnet/minecraft/entity/damage/DamageSource;)V")
     public void onDeathCallback(DamageSource source, CallbackInfo onDeathCallbackInfoReturnable) {
-        //todo message for this
         ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
         Destination.lastdeath.set(player, Utl.dim.getInt(Utl.player.dim(player)), Utl.player.XYZ(player));
+        player.sendMessage(CUtl.tag().append(CUtl.lang("dest.lastdeath.save"))
+                .append(" ")
+                .append(CUtl.CButton.dest.set("/dest set "+Utl.player.XYZ(player))));
     }
 }
