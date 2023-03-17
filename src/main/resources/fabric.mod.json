@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "directionhud",
+  "version": "${version}",
+
+  "name": "DirectionHUD",
+  "description": "DircectionHUD: a plugin style HUD mod for fabric. \nFully customizable HUD with features to save coordinates, log deaths, and player tracking.",
+  "authors": [
+    "Other³"
+  ],
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": "https://github.com/FabricMC/fabric-example-mod"
+  },
+
+  "license": "CC0-1.0",
+  "icon": "assets/directionhud/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "one.oth3r.directionhud.DirectionHUDClient"
+    ],
+    "server": [
+      "one.oth3r.directionhud.DirectionHUDServer"
+    ],
+    "modmenu": [
+      "one.oth3r.directionhud.ModMenu"
+    ]
+  },
+  "mixins": [
+    "directionhud.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.14.11",
+    "fabric-api": "*",
+    "minecraft": "~1.19.3",
+    "java": ">=17"
+  },
+  "suggests": {
+    "modmenu": ">=5.0.2",
+    "cloth-config": ">=9"
+  }
+}
