@@ -8,6 +8,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import one.oth3r.directionhud.DirectionHUD;
 
 import java.util.Arrays;
 import java.util.List;
@@ -49,7 +50,9 @@ public class DirHUDCommand {
     public static CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder, int pos) {
         ServerPlayerEntity player = context.getSource().getPlayer();
         assert player != null;
-        String[] args = context.getInput().split(" ");
+        if (pos == 1 && !DirectionHUD.server.isRemote()) {
+            return builder.suggest("defaults").buildFuture();
+        }
         return builder.buildFuture();
     }
     private static int command(ServerCommandSource source, String arg) {
@@ -75,6 +78,20 @@ public class DirHUDCommand {
         if (args[0].equalsIgnoreCase("dirhud") || args[0].equalsIgnoreCase("directionhud")) {
             DirHUD.UI(player);
             return 1;
+        }
+        if (args[0].equalsIgnoreCase("defaults") && !DirectionHUD.server.isRemote()) {
+            if (args.length == 1) {
+                DirHUD.defaults(player);
+            }
+            if (args.length != 2) {
+                return 1;
+            }
+            if (args[1].equalsIgnoreCase("set")) {
+                DirHUD.setDefaults(player);
+            }
+            if (args[1].equalsIgnoreCase("reset")) {
+                DirHUD.resetDefaults(player);
+            }
         }
         return 1;
     }
