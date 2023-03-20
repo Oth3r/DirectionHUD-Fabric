@@ -13,8 +13,6 @@ import java.util.*;
 
 public class Destination {
     //todo reset all in settings
-    //puts "dest." in front of CUtl.lang
-    // autoclear when switching dimentions
     private static MutableText lang(String key) {
         return CUtl.lang("dest."+key);
     }
@@ -46,7 +44,8 @@ public class Destination {
             if (!PlayerData.get.dest.setting.track(player)) {
                 clear(player);
                 player.sendMessage(Text.literal("").append(CUtl.tag())
-                                .append(lang("cleared").setStyle(CUtl.C('a')))
+                                .append(lang("cleared",
+                                        lang("cleared_2").setStyle(CUtl.C('a'))))
                                 .append("\n ")
                                 .append(lang("cleared_tracking_off").styled(style -> style
                                         .withItalic(true).withColor(CUtl.TC('7')))));
@@ -55,7 +54,8 @@ public class Destination {
             if (!PlayerData.get.dest.setting.track(argsPlayer)) {
                 clear(player);
                 player.sendMessage(Text.literal("").append(CUtl.tag())
-                        .append(lang("cleared").setStyle(CUtl.C('a')))
+                        .append(lang("cleared",
+                                lang("cleared_2").setStyle(CUtl.C('a'))))
                         .append("\n ")
                         .append(lang("cleared_tracking_off_player").styled(style -> style
                                 .withItalic(true).withColor(CUtl.TC('7')))));
@@ -113,18 +113,23 @@ public class Destination {
     public static void clear(ServerPlayerEntity player) {
         PlayerData.set.dest.setDest(player, "f");
     }
-    public static void clear(boolean msg, ServerPlayerEntity player) {
-        if (!msg) {
+    public static void clear(ServerPlayerEntity player, MutableText reason) {
+        MutableText msg = CUtl.tag()
+                .append(lang("cleared",
+                        lang("cleared_2").setStyle(CUtl.C('a'))));
+        if (reason == null) {
+            if (!checkDestination(player)) {
+                player.sendMessage(error("dest.already_clear"));
+                return;
+            }
             clear(player);
-            return;
-        }
-        if (!checkDestination(player)) {
-            player.sendMessage(error("dest.already_clear"));
+            player.sendMessage(CUtl.tag()
+                    .append(lang("cleared",
+                            lang("cleared_2").setStyle(CUtl.C('a')))));
             return;
         }
         clear(player);
-        player.sendMessage(Text.literal("").append(CUtl.tag())
-                .append(lang("cleared").setStyle(CUtl.C('a'))));
+        player.sendMessage(msg.append("\n ").append(reason));
     }
 
     public static Text setMSG(ServerPlayerEntity player) {
@@ -1098,7 +1103,7 @@ public class Destination {
             if (Return) UI(player, msg);
             else player.sendMessage(msg);
         }
-        public static Text button(String type, boolean button) {
+        public static Text toggleB(boolean button) {
             Text msg;
             if (button) {
                 msg = CUtl.button(CUtl.button("on"), CUtl.TC('a'),
@@ -1128,7 +1133,7 @@ public class Destination {
                             .append(lang("setting.autoclear.info_2")
                                     .styled(style1 -> style1.withItalic(true).withColor(CUtl.TC('7'))))))))
                     .append(Text.literal(" "))
-                    .append(Text.literal("").append(button("AutoClear", PlayerData.get.dest.setting.autoclear(player))).styled(style -> style
+                    .append(Text.literal("").append(toggleB(PlayerData.get.dest.setting.autoclear(player))).styled(style -> style
                             .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings autoclear " + !PlayerData.get.dest.setting.autoclear(player)))))
                     .append(Text.literal(" "))
                     .append(CUtl.button(PlayerData.get.dest.setting.autoclearrad(player)+"", CUtl.TC(c),2,
@@ -1142,7 +1147,7 @@ public class Destination {
                                     lang("setting.ylevel.info_2").setStyle(CUtl.sS()),
                                     lang("setting.ylevel.info_2").setStyle(CUtl.sS()))))))
                     .append(Text.literal(" "))
-                    .append(Text.literal("").append(button("Y-Level", PlayerData.get.dest.setting.ylevel(player)))
+                    .append(Text.literal("").append(toggleB(PlayerData.get.dest.setting.ylevel(player)))
                             .styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings ylevel " + !PlayerData.get.dest.setting.ylevel(player)))))
                     .append(Text.literal("\n "))
                     //PARTICLES
@@ -1152,7 +1157,7 @@ public class Destination {
                     .append(lang("setting.particle.dest").styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                             lang("setting.particle.dest.info")))))
                     .append(Text.literal(" "))
-                    .append(Text.literal("").append(button("Destination particles", PlayerData.get.dest.setting.particle.dest(player))).styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings particlesdest " + !PlayerData.get.dest.setting.particle.dest(player)))))
+                    .append(Text.literal("").append(toggleB(PlayerData.get.dest.setting.particle.dest(player))).styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings particlesdest " + !PlayerData.get.dest.setting.particle.dest(player)))))
                     .append(Text.literal(" "))
                     //COLOR
                     .append(CUtl.button(CUtl.button("particle"), Utl.color.getTC(PlayerData.get.dest.setting.particle.destcolor(player)), 2,
@@ -1162,7 +1167,7 @@ public class Destination {
                     .append(lang("setting.particle.line").styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                             lang("setting.particle.line.info")))))
                     .append(Text.literal(" "))
-                    .append(Text.literal("").append(button("Line particles", PlayerData.get.dest.setting.particle.line(player))).styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings particlesline " + !PlayerData.get.dest.setting.particle.line(player)))))
+                    .append(Text.literal("").append(toggleB(PlayerData.get.dest.setting.particle.line(player))).styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings particlesline " + !PlayerData.get.dest.setting.particle.line(player)))))
                     .append(Text.literal(" "))
                     //COLOR
                     .append(CUtl.button(CUtl.button("particle"),Utl.color.getTC(PlayerData.get.dest.setting.particle.linecolor(player)),2,
@@ -1175,13 +1180,13 @@ public class Destination {
                     .append(lang("setting.send").styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                             lang("setting.send.info")))))
                     .append(Text.literal(" "))
-                    .append(Text.literal("").append(button("Send command", PlayerData.get.dest.setting.send(player))).styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings send " + !PlayerData.get.dest.setting.send(player)))))
+                    .append(Text.literal("").append(toggleB(PlayerData.get.dest.setting.send(player))).styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings send " + !PlayerData.get.dest.setting.send(player)))))
                     .append(Text.literal("\n  "))
                     //TRACK
                     .append(lang("setting.track").styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                             lang("setting.track.info")))))
                     .append(Text.literal(" "))
-                    .append(Text.literal("").append(button("Track command", PlayerData.get.dest.setting.track(player))).styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings track " + !PlayerData.get.dest.setting.track(player)))))
+                    .append(Text.literal("").append(toggleB(PlayerData.get.dest.setting.track(player))).styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings track " + !PlayerData.get.dest.setting.track(player)))))
                     .append(Text.literal("\n           "));
 
             msg = Text.literal("").append(msg)
