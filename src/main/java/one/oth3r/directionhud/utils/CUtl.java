@@ -31,7 +31,6 @@ public class CUtl {
     public static TextColor sTC() {
         return HEX(c.sec);
     }
-
     public static Style C(Character code) {
         return Style.EMPTY.withColor(Formatting.byCode(code));
     }
@@ -39,18 +38,11 @@ public class CUtl {
         return TextColor.fromFormatting(Formatting.byCode(code));
     }
 
-    public static Text error(String s) {
-        return Text.literal("").append(tag())
-                .append(Text.literal("ERROR: ").styled(style -> style.withColor(TextColor.parse("#FF4646"))))
-                .append(Text.translatable(s));
-    }
     public static Text error(Text s) {
-        return Text.literal("").append(tag())
-                .append(Text.literal("ERROR: ").styled(style -> style.withColor(TextColor.parse("#FF4646"))))
-                .append(s);
+        return tag().append(lang("error").setStyle(HEXS("FF4646"))).append(" ").append(s);
     }
     public static Text usage(String s) {
-        return Text.literal("").append(tag()).append(Text.literal("").append(CUtl.lang("usage")).append(" ").styled(style -> style.withColor(HEX("FF4646")))).append(Text.literal(s));
+        return tag().append(lang("usage").setStyle(HEXS("FF4646"))).append(" ").append(s);
     }
 
     public static TextColor HEX(String s) {
@@ -88,6 +80,7 @@ public class CUtl {
         public static String edit = "5070ff";
         public static String dest = "29a2ff";
         public static String hud = "29ff69";
+        public static String defaults = "ff6629";
         public static String back = "ff9500";
         public static String sec = "ffee35";
         public static String pri = "4dff50";
@@ -189,6 +182,12 @@ public class CUtl {
                         .append("\n")
                         .append(lang("button.dirhud.dest.hover")));
             }
+            public static Text defaults() {
+                return CUtl.button(button("dirhud.defaults"), CUtl.HEX(c.defaults), 1, "/dirhud defaults", Text.literal("")
+                        .append(Text.literal(commandUsage.defaults()).setStyle(HEXS(c.defaults)))
+                        .append("\n")
+                        .append(lang("button.dirhud.defaults.hover")));
+            }
         }
     }
     public static Text button(String bText, TextColor color, int t, String cmd, Text hoverText) {
@@ -276,5 +275,6 @@ public class CUtl {
         public static String destSettings() {return "/dest settings";}
         public static String destSend() {return "/dest send <IGN> <name> | /dest send <IGN> (name) <x> (y) <z> (dimension)";}
         public static String destTrack() {return "/dest track <IGN>";}
+        public static String defaults() {return "/dirhud defaults";}
     }
 }
