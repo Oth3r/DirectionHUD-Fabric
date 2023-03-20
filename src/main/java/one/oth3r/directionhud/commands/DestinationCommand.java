@@ -5,12 +5,13 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.server.command.*;
+import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
 import one.oth3r.directionhud.DirectionHUD;
 import one.oth3r.directionhud.files.PlayerData;
 import one.oth3r.directionhud.utils.CUtl;
 import one.oth3r.directionhud.utils.Utl;
-import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.util.Arrays;
 import java.util.List;
@@ -313,7 +314,7 @@ public class DestinationCommand {
 
         //CLEAR
         if (args[0].equalsIgnoreCase("clear")) {
-            Destination.clear(true, player);
+            Destination.clear(player, null);
             return 1;
         }
 
