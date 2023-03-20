@@ -26,7 +26,9 @@ public class LoopManager {
             }
             if (Destination.getDist(player) <= PlayerData.get.dest.setting.autoclearrad(player)
                     && PlayerData.get.dest.setting.autoclear(player)
-                    && Destination.checkDestination(player)) Destination.clear(true, player);
+                    && Destination.checkDestination(player)) Destination.clear(player,
+                    CUtl.lang("dest.cleared_reached").styled(style -> style
+                            .withItalic(true).withColor(CUtl.TC('7'))));
         }
         rainbowF += 10;
         if (rainbowF == 360) rainbowF = 0;

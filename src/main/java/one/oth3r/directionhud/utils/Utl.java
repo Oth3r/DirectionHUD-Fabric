@@ -5,7 +5,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
-import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import one.oth3r.directionhud.DirectionHUD;
@@ -63,6 +62,7 @@ public class Utl {
                 return xzBounds(Integer.parseInt(sp.get(0))) + " n " + xzBounds(Integer.parseInt(sp.get(2)));
             return xzBounds(Integer.parseInt(sp.get(0))) + " " + yBounds(Integer.parseInt(sp.get(1))) + " " + xzBounds(Integer.parseInt(sp.get(2)));
         }
+        //todo figure this out
         public static String setFix(String loc) {
             ArrayList<String> sp = new ArrayList<>(Arrays.asList(loc.split(" ")));
             if (sp.size() == 1) sp = new ArrayList<>(Arrays.asList(loc.split("_")));
@@ -218,9 +218,6 @@ public class Utl {
             if (dim.equals("the_nether")) return "N";
             if (dim.equals("the_end")) return "E";
             return "O";
-        }
-        public static String getPDIM(ServerPlayerEntity player) {
-            return player.getWorld().getRegistryKey().getValue().getPath();
         }
     }
 
