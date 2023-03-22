@@ -28,7 +28,7 @@ public class Utl {
     public static boolean inBetween(int i, int min, int max) {
         return i >= min && i <= max;
     }
-    public static boolean inBetweenR(double i, double min, double max) {
+    public static boolean inBetweenD(double i, double min, double max) {
         if (min > max) {
             return i >= min || i <= max;
         }
@@ -42,28 +42,8 @@ public class Utl {
     public static String createID() {
         return RandomStringUtils.random(8, true, true);
     }
-
-    // X Y Z
     public static class xyz {
         public static String fix(String loc) {
-            ArrayList<String> sp = new ArrayList<>(Arrays.asList(loc.split(" ")));
-            if (sp.size() == 1) sp = new ArrayList<>(Arrays.asList(loc.split("_")));
-            if (sp.size() == 1) return "0 0 0";
-            if (!isInt(sp.get(0))) sp.set(0, "0");
-            if (sp.size() == 3) {
-                if ((!sp.get(1).equals("n") && !isInt(sp.get(1)))) sp.set(1, "0");
-                if (!isInt(sp.get(2))) sp.set(2, "0");
-            } else {
-                if (!isInt(sp.get(1))) sp.set(1, "0");
-            }
-            if (sp.size() == 2)
-                return xzBounds(Integer.parseInt(sp.get(0))) + " " + xzBounds(Integer.parseInt(sp.get(1)));
-            if (sp.get(1).equals("n"))
-                return xzBounds(Integer.parseInt(sp.get(0))) + " n " + xzBounds(Integer.parseInt(sp.get(2)));
-            return xzBounds(Integer.parseInt(sp.get(0))) + " " + yBounds(Integer.parseInt(sp.get(1))) + " " + xzBounds(Integer.parseInt(sp.get(2)));
-        }
-        //todo figure this out
-        public static String setFix(String loc) {
             ArrayList<String> sp = new ArrayList<>(Arrays.asList(loc.split(" ")));
             if (sp.size() == 1) sp = new ArrayList<>(Arrays.asList(loc.split("_")));
             if (sp.size() == 1) return "0 0 0";
@@ -119,9 +99,7 @@ public class Utl {
             if (split.length == 3 && split[1].equals("n") && isInt(split[2])) return true;
             return split.length == 3 && isInt(split[2]) && isInt(split[2]);
         }
-
-        //DATAFORMAT
-        //ADD UNDERSCOORES AND N IF NEEDED //DISPLAY FORMAT?
+        //DATA/FILE FORMAT: ADD UNDERSCORES AND N IF NEEDED //DISPLAY FORMAT?
         public static String DFormat(String xyz) {
             String[] split = xyz.split(" ");
             if (split.length == 2) {
@@ -129,7 +107,7 @@ public class Utl {
             }
             return split[0] + "_" + split[1] + "_" + split[2];
         }
-        //REMOVE UNDERSCORES AND N
+        //PLAYER FORMAT: REMOVE UNDERSCORES AND N
         public static String PFormat(String xyz) {
             if (xyz.contains("_")) {
                 String[] split = xyz.split("_");
@@ -140,13 +118,12 @@ public class Utl {
             if (split[1].equals("n")) return split[0] + " " + split[2];
             return split[0] + " " + split[1] + " " + split[2];
         }
-        //REMOVE UNDERSCORES AND KEEP N
+        //CODE FORMAT: REMOVE UNDERSCORES AND KEEP N
         public static String CFormat(String xyz) {
             String[] split = xyz.split("_");
             return split[0] + " " + split[1] + " " + split[2];
         }
     }
-
     public static class player {
         public static String name(ServerPlayerEntity player) {
             return player.getName().getString();
@@ -157,7 +134,6 @@ public class Utl {
         public static String XYZ(ServerPlayerEntity player) {
             return player.getBlockX()+" "+player.getBlockY()+" "+player.getBlockZ();
         }
-
         public static void sendAs(String command, ServerPlayerEntity player) {
             try {
                 ParseResults<ServerCommandSource> parse =
@@ -228,10 +204,10 @@ public class Utl {
                     "red", "dark_red", "gold", "yellow", "green", "dark_green", "aqua", "dark_aqua",
                     "blue", "dark_blue", "pink", "purple", "white", "gray", "dark_gray", "black","ffffff"));
         }
-        public static MutableText add(String color, String text) {
-            return add(color,Text.literal(text));
+        public static MutableText set(String color, String text) {
+            return set(color,Text.literal(text));
         }
-        public static MutableText add(String color, Text text) {
+        public static MutableText set(String color, Text text) {
             //ASSUME THAT THERES NO RAINBOW
             return Text.literal("").append(text).styled(style -> style.withColor(getTC(color)));
         }
@@ -273,10 +249,10 @@ public class Utl {
             if (color.equals("dark_gray")) return 5592405;
             if (color.equals("black")) return 0;
             if (color.equals("rainbow")) return 16777215;
-            if (color.charAt(0)=='#') return parseHexColor(color);
+            if (color.charAt(0)=='#') return hexToRGB(color);
             return 16777215;
         }
-        public static int parseHexColor(String hexColor) {
+        public static int hexToRGB(String hexColor) {
             // Remove the # symbol if it exists
             if (hexColor.charAt(0) == '#') {
                 hexColor = hexColor.substring(1);

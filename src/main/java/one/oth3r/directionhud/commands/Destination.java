@@ -362,7 +362,7 @@ public class Destination {
             if (send) {
                 player.sendMessage(Text.literal("").append(CUtl.tag())
                         .append(lang("saved.add", Text.literal("")
-                                        .append(Utl.color.add(color,name + " "))
+                                        .append(Utl.color.set(color,name + " "))
                                                 .append(Text.literal("("+Utl.xyz.PFormat(xyz) + ")").setStyle(CUtl.C('7')))
                                         .styled(style -> style.withItalic(true)),
                                 Text.literal(Utl.dim.PFormat(dimension).toUpperCase()).setStyle(CUtl.sS()))));
@@ -511,7 +511,7 @@ public class Destination {
             color = Utl.color.fix(color,false,"white");
             if (getColors(player).get(i).equals(color.toLowerCase())) {
                 if (send) player.sendMessage(error("dest.saved.duplicate.color",
-                        Utl.color.add(getColors(player).get(i),getColors(player).get(i))));
+                        Utl.color.set(getColors(player).get(i),getColors(player).get(i))));
                 return;
             }
             List<String> all = getList(player);
@@ -523,7 +523,7 @@ public class Destination {
                 player.sendMessage(Text.literal("").append(CUtl.tag())
                                 .append(lang("saved.color",
                                         Text.literal(name).setStyle(CUtl.sS()),
-                                        Utl.color.add(color,Utl.color.formatPlayer(color,true)))));
+                                        Utl.color.set(color,Utl.color.formatPlayer(color,true)))));
                 Utl.player.sendAs("dest saved edit "+name, player);
             }
         }
@@ -556,7 +556,7 @@ public class Destination {
                     .append(" ")
                     .append(lang("saved.edit.color").setStyle(CUtl.pS()))
                     .append(" ")
-                    .append(Utl.color.add(getColors(player).get(i),Utl.color.formatPlayer(getColors(player).get(i),true)))
+                    .append(Utl.color.set(getColors(player).get(i),Utl.color.formatPlayer(getColors(player).get(i),true)))
                     .append("\n ")
                     //ORDER
                     .append(CUtl.button("✎",CUtl.HEX(CUtl.c.edit),2,"/dest saved edit order " + names.get(i) + " ",
@@ -632,7 +632,7 @@ public class Destination {
                                         .styled(style -> style.withColor(CUtl.HEX(Utl.dim.getHEX(getDimensions(player).get(realInt))))))
                                 .append(Text.literal("] "))
                                 //NAME
-                                .append(Utl.color.add(getColors(player).get(realInt),names.get(realInt)+" ").styled(style -> style
+                                .append(Utl.color.set(getColors(player).get(realInt),names.get(realInt)+" ").styled(style -> style
                                         .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                                                 Text.literal(getPLocations(player).get(realInt)).setStyle(CUtl.C('7'))))))
                                 //EDIT
@@ -882,7 +882,7 @@ public class Destination {
                 int i = saved.getNames(player).indexOf(xyz);
                 xyz = saved.getPLocations(player).get(i);
                 pxyz = Text.literal(" ("+xyz+")").setStyle(CUtl.C('7'));
-                pname = Utl.color.add(saved.getColors(player).get(i),saved.getNames(player).get(i));
+                pname = Utl.color.set(saved.getColors(player).get(i),saved.getNames(player).get(i));
                 name = saved.getNames(player).get(i);
                 DIM = Utl.dim.PFormat(saved.getDimensions(player).get(i));
                 color = " "+saved.getColors(player).get(i);
@@ -1065,13 +1065,13 @@ public class Destination {
                 setting = Utl.color.fix(setting,false, config.defaults.DESTDestParticleColor);
                 PlayerData.set.dest.setting.particles.destcolor(player, setting);
                 msg = Text.literal("").append(CUtl.tag())
-                        .append(lang("setting.particle.dest_color.set", Utl.color.add(setting,Utl.color.formatPlayer(setting,true))));
+                        .append(lang("setting.particle.dest_color.set", Utl.color.set(setting,Utl.color.formatPlayer(setting,true))));
             }
             if (type.equals("particleslinec")) {
                 setting = Utl.color.fix(setting,false, config.defaults.DESTLineParticleColor);
                 PlayerData.set.dest.setting.particles.linecolor(player, setting);
                 msg = Text.literal("").append(CUtl.tag())
-                        .append(lang("setting.particle.line_color.set", Utl.color.add(setting,Utl.color.formatPlayer(setting,true))));
+                        .append(lang("setting.particle.line_color.set", Utl.color.set(setting,Utl.color.formatPlayer(setting,true))));
             }
             boolean state = setting.equals("true");
             Text onoff = Text.literal("ON").setStyle(CUtl.C('a'));

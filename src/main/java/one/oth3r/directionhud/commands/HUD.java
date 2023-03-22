@@ -169,12 +169,12 @@ public class HUD {
         }
         double d = Math.toDegrees(Math.atan2(x, z));
         if (d < 0) d = d + 360;
-        if (Utl.inBetweenR(rotation, Utl.sub(d, 15, 360), (d+15)%360)) return "▲";
+        if (Utl.inBetweenD(rotation, Utl.sub(d, 15, 360), (d+15)%360)) return "▲";
 //        if (Utl.inBetweenR(rotation, d, (d+65)%360)) return "⬉";
-        if (Utl.inBetweenR(rotation, d, (d+115)%360)) return "◀";
+        if (Utl.inBetweenD(rotation, d, (d+115)%360)) return "◀";
 //        if (Utl.inBetweenR(rotation, d, (d+165)%360)) return "⬋";
 //        if (Utl.inBetweenR(rotation, Utl.sub(d, 65, 360), d)) return "⬈";
-        if (Utl.inBetweenR(rotation, Utl.sub(d, 115, 360), d)) return "▶";
+        if (Utl.inBetweenD(rotation, Utl.sub(d, 115, 360), d)) return "▶";
 //        if (Utl.inBetweenR(rotation, Utl.sub(d, 165, 360), d)) return "⬊";
         return "▼";
     }
@@ -710,7 +710,7 @@ public class HUD {
                 int finalI = i;
                 allObj.set(i, Text.literal("").append(allObj.get(i)).styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                         CUtl.lang("button.color.hover",
-                                Utl.color.add(allStr.get(finalI),Utl.color.formatPlayer(allStr.get(finalI),true)))))));
+                                Utl.color.set(allStr.get(finalI),Utl.color.formatPlayer(allStr.get(finalI),true)))))));
             }
 
             int typ;

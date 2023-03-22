@@ -21,7 +21,7 @@ public class LangReader {
         this.placeholders = placeholders;
     }
 
-    public MutableText getText() {
+    public MutableText getMutableText() {
         String translated = getLanguageValue(translationKey);
         if (placeholders != null && placeholders.length > 0) {
             //removed all double \\ and replaces with \
