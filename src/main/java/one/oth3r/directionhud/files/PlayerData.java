@@ -202,13 +202,15 @@ public class PlayerData {
     }
     public static void writeMap(ServerPlayerEntity player, Map<String, Object> map) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(getFile(player)))) {
-            writer.write(mapToJSONString(map));
+            writer.write(mapToJSONString(addExpires(player,map)));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
     public static void addPlayer(ServerPlayerEntity player) {
         Map<String, Object> map = getMap(player);
+        DirectionHUD.LOGGER.info("MAP: "+map);
+        DirectionHUD.LOGGER.info("FILE: "+getMap(player));
         map.put("name",Utl.player.name(player));
         writeMap(player, map);
         playerMap.put(player,removeUnnecessary(map));
@@ -216,17 +218,30 @@ public class PlayerData {
     @SuppressWarnings("unchecked")
     public static Map<String,Object> removeUnnecessary(Map<String,Object> map) {
         Map<String,Object> dest = (Map<String, Object>) map.get("destination");
-        Map<String,Object> dSet = (Map<String, Object>) dest.get("settings");
-        dSet.remove("track");
+        Map<String,Object> dSet = (Map<String, Object>) dest.get("setting");
         dSet.remove("send");
         dest.remove("saved");
+        dest.remove("lastdeath");
         map.put("destination", dest);
         map.remove("name");
-
-        //removes map.name, map.destination.saved, map.destination.settings.track & send
+        //removes map.name, map.destination.saved, map.destination.setting.send, map.destination.lastdeath
+        return map;
+    }
+    @SuppressWarnings("unchecked")
+    public static Map<String,Object> addExpires(ServerPlayerEntity player, Map<String,Object> map) {
+        Map<String,Object> cache = playerMap.get(player);
+        if (cache == null) return map;
+        Map<String,Object> cdest = (Map<String, Object>) cache.get("destination");
+        Map<String,Object> mdest = (Map<String, Object>) map.get("destination");
+        if (cdest.get("track")!=null) mdest.put("track",cdest.get("track"));
+        else if (mdest.get("track") != null) mdest.put("track", null);
+        if (cdest.get("suspended")!=null) mdest.put("suspended",cdest.get("suspended"));
+        else if (mdest.get("suspended")!=null) mdest.put("suspended",null);
+        map.put("destination",mdest);
         return map;
     }
     public static void removePlayer(ServerPlayerEntity player) {
+        writeMap(player,getMap(player));
         playerMap.remove(player);
     }
 
@@ -235,7 +250,7 @@ public class PlayerData {
         //hud
         Map<String,Object> hud = new HashMap<>();
         hud.put("enabled", config.HUDEnabled);
-        hud.put("settings", defaults.hudSettings());
+        hud.put("setting", defaults.hudSetting());
         hud.put("module", defaults.hudModule());
         hud.put("order", config.HUDOrder);
         hud.put("primary", HUD.color.defaultFormat(1));
@@ -243,7 +258,7 @@ public class PlayerData {
         //dest
         Map<String,Object> destination = new HashMap<>();
         destination.put("xyz", "f");
-        destination.put("settings", defaults.destSetting());
+        destination.put("setting", defaults.destSetting());
         destination.put("lastdeath", "f f f");
         destination.put("track", null);
         destination.put("suspended", null);
@@ -255,10 +270,10 @@ public class PlayerData {
         return map;
     }
     public static class defaults {
-        public static Map<String,Object> hudSettings() {
-            Map<String,Object> hudSettings = new HashMap<>();
-            hudSettings.put("time24h", config.HUD24HR);
-            return hudSettings;
+        public static Map<String,Object> hudSetting() {
+            Map<String,Object> hudSetting = new HashMap<>();
+            hudSetting.put("time24h", config.HUD24HR);
+            return hudSetting;
         }
         public static Map<String,Object> hudModule() {
             Map<String,Object> hudModule = new HashMap<>();
@@ -272,14 +287,14 @@ public class PlayerData {
             return hudModule;
         }
         public static Map<String,Object> destSetting() {
-            Map<String,Object> destSettings = new HashMap<>();
-            destSettings.put("autoclear", config.DESTAutoClear);
-            destSettings.put("autoclearradius", config.DESTAutoClearRad);
-            destSettings.put("ylevel", config.DESTYLevel);
-            destSettings.put("send", config.DESTSend);
-            destSettings.put("track", config.DESTTrack);
-            destSettings.put("particles", destParticles());
-            return destSettings;
+            Map<String,Object> destSetting = new HashMap<>();
+            destSetting.put("autoclear", config.DESTAutoClear);
+            destSetting.put("autoclearradius", config.DESTAutoClearRad);
+            destSetting.put("ylevel", config.DESTYLevel);
+            destSetting.put("send", config.DESTSend);
+            destSetting.put("track", config.DESTTrack);
+            destSetting.put("particles", destParticles());
+            return destSetting;
         }
         public static Map<String,Object> destParticles() {
             Map<String,Object> destParticles = new HashMap<>();
@@ -290,9 +305,6 @@ public class PlayerData {
             return destParticles;
         }
     }
-    //TODO
-    // WE ARE CLOSER /DEST SAVED DOESNT WORK IDK WHY I GOTTA SLEEP THO
-    // GL ON THE TEST ME!!
     public static Map<String,Object> getFromMap(ServerPlayerEntity player) {
         return playerMap.get(player);
     }
@@ -302,8 +314,8 @@ public class PlayerData {
             private static Map<String,Object> get(ServerPlayerEntity player) {
                 return (Map<String, Object>) getFromMap(player).get("hud");
             }
-            public static Map<String,Object> getSettings(ServerPlayerEntity player) {
-                return (Map<String,Object>) get(player).get("settings");
+            public static Map<String,Object> getSetting(ServerPlayerEntity player) {
+                return (Map<String,Object>) get(player).get("setting");
             }
             public static Map<String,Object> getModule(ServerPlayerEntity player) {
                 return (Map<String,Object>) get(player).get("module");
@@ -320,9 +332,9 @@ public class PlayerData {
             public static String secondary(ServerPlayerEntity player) {
                 return (String) get(player).get("secondary");
             }
-            public static class settings {
+            public static class setting {
                 public static boolean time24h(ServerPlayerEntity player) {
-                    return (boolean) getSettings(player).get("time24h");
+                    return (boolean) getSetting(player).get("time24h");
                 }
             }
             public static class module {
@@ -359,7 +371,7 @@ public class PlayerData {
                 return (Map<String, Object>) getMap(player).get("destination");
             }
             private static Map<String,Object> getSetting(ServerPlayerEntity player, boolean map) {
-                return (Map<String,Object>) get(player,map).get("settings");
+                return (Map<String,Object>) get(player,map).get("setting");
             }
             private static Map<String,Object> getParticleSetting(ServerPlayerEntity player) {
                 return (Map<String,Object>) dest.getSetting(player, true).get("particles");
@@ -388,7 +400,7 @@ public class PlayerData {
                 if (get(player,false).get("saved") == null) return new ArrayList<>();
                 return (ArrayList<String>) get(player,false).get("saved");
             }
-            public static class settings {
+            public static class setting {
                 public static boolean autoclear(ServerPlayerEntity player) {
                     return (boolean) getSetting(player, true).get("autoclear");
                 }
@@ -402,7 +414,7 @@ public class PlayerData {
                     return (boolean) getSetting(player, false).get("send");
                 }
                 public static boolean track(ServerPlayerEntity player) {
-                    return (boolean) getSetting(player, false).get("track");
+                    return (boolean) getSetting(player, true).get("track");
                 }
                 public static class particle {
                     public static boolean line(ServerPlayerEntity player) {
@@ -480,7 +492,7 @@ public class PlayerData {
             }
             public static class setting {
                 public static void time24h(ServerPlayerEntity player, boolean b) {
-                    Map<String,Object> data = get.hud.getSettings(player);
+                    Map<String,Object> data = get.hud.getSetting(player);
                     data.put("time24h", b);
                     setSetting(player, data);
                 }
@@ -500,6 +512,11 @@ public class PlayerData {
                 writeMap(player,map);
                 playerMap.put(player,map);
             }
+            public static void setM(ServerPlayerEntity player, Map<String,Object> dest) {
+                Map<String,Object> map = getFromMap(player);
+                map.put("destination",dest);
+                playerMap.put(player,map);
+            }
             private static void setSetting(ServerPlayerEntity player, Map<String,Object> setting) {
                 Map<String,Object> data = get.dest.get(player,false);
                 data.put("setting", setting);
@@ -513,27 +530,27 @@ public class PlayerData {
             private static void setTrack(ServerPlayerEntity player, Map<String,Object> setting) {
                 Map<String,Object> data = get.dest.get(player,true);
                 data.put("track", setting);
-                set(player, data);
+                setM(player, data);
             }
             private static void setSuspended(ServerPlayerEntity player, Map<String,Object> setting) {
                 Map<String,Object> data = get.dest.get(player,true);
                 data.put("suspended", setting);
-                set(player, data);
+                setM(player, data);
             }
             public static void setDest(ServerPlayerEntity player, String xyz) {
-                Map<String,Object> data = get.dest.get(player,true);
+                Map<String,Object> data = get.dest.get(player,false);
                 data.put("xyz", xyz);
                 set(player, data);
             }
             public static void setLastdeath(ServerPlayerEntity player, String lastdeath) {
                 Map<String,Object> data = get.dest.get(player,false);
                 data.put("lastdeath", lastdeath);
-                set(player, data);
+                setM(player, data);
             }
             public static void setTrackNull(ServerPlayerEntity player) {
                 Map<String,Object> data = get.dest.get(player,true);
                 data.put("track", null);
-                set(player, data);
+                setM(player, data);
             }
             public static void setSuspendedNull(ServerPlayerEntity player) {
                 Map<String,Object> data = get.dest.get(player,true);
@@ -547,17 +564,17 @@ public class PlayerData {
             }
             public static class setting {
                 public static void autoclear(ServerPlayerEntity player, boolean b) {
-                    Map<String,Object> data = get.dest.getSetting(player,true);
+                    Map<String,Object> data = get.dest.getSetting(player,false);
                     data.put("autoclear", b);
                     setSetting(player, data);
                 }
                 public static void autoclearrad(ServerPlayerEntity player, int b) {
-                    Map<String,Object> data = get.dest.getSetting(player,true);
+                    Map<String,Object> data = get.dest.getSetting(player,false);
                     data.put("autoclearradius", b);
                     setSetting(player, data);
                 }
                 public static void ylevel(ServerPlayerEntity player, boolean b) {
-                    Map<String,Object> data = get.dest.getSetting(player,true);
+                    Map<String,Object> data = get.dest.getSetting(player,false);
                     data.put("ylevel", b);
                     setSetting(player, data);
                 }

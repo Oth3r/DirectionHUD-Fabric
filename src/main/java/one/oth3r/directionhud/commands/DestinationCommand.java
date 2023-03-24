@@ -61,9 +61,9 @@ public class DestinationCommand {
             builder.suggest("clear");
             builder.suggest("saved");
             builder.suggest("settings");
-            if (PlayerData.get.dest.settings.send(player) && DirectionHUD.server.isRemote())
+            if (PlayerData.get.dest.setting.send(player) && DirectionHUD.server.isRemote())
                 builder.suggest("send");
-            if (PlayerData.get.dest.settings.track(player) && DirectionHUD.server.isRemote())
+            if (PlayerData.get.dest.setting.track(player) && DirectionHUD.server.isRemote())
                 builder.suggest("track");
             return builder.buildFuture();
         }

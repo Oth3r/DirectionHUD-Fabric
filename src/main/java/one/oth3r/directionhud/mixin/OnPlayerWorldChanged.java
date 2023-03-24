@@ -18,7 +18,7 @@ public class OnPlayerWorldChanged {
     @Inject(at = @At("HEAD"), method = "worldChanged(Lnet/minecraft/server/world/ServerWorld;)V")
     public void worldChangedCallback(ServerWorld world, CallbackInfo info) {
         ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
-        if (PlayerData.get.dest.settings.autoclear(player) && !Destination.get(player, "xyz").equals("f")) {
+        if (PlayerData.get.dest.setting.autoclear(player) && !Destination.get(player, "xyz").equals("f")) {
             String dest = Destination.get(player,"xyz");
             String dim = world.getRegistryKey().getValue().getPath();
             MutableText msg = Text.literal("").append(CUtl.lang("dest.cleared_dim").styled(style -> style

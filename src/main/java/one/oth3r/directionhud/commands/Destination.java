@@ -41,7 +41,7 @@ public class Destination {
                 suspend(player,tmp[0],5,lang("suspended.offline"));
                 return "f";
             }
-            if (!PlayerData.get.dest.settings.track(player)) {
+            if (!PlayerData.get.dest.setting.track(player)) {
                 clear(player);
                 player.sendMessage(Text.literal("").append(CUtl.tag())
                                 .append(lang("cleared",
@@ -51,7 +51,7 @@ public class Destination {
                                         .withItalic(true).withColor(CUtl.TC('7')))));
                 return "f";
             }
-            if (!PlayerData.get.dest.settings.track(argsPlayer)) {
+            if (!PlayerData.get.dest.setting.track(argsPlayer)) {
                 clear(player);
                 player.sendMessage(Text.literal("").append(CUtl.tag())
                         .append(lang("cleared",
@@ -67,7 +67,7 @@ public class Destination {
         y = tmp[1];
         z = tmp[2];
 
-        if (PlayerData.get.dest.settings.ylevel(player) && Utl.isInt(y)) {
+        if (PlayerData.get.dest.setting.ylevel(player) && Utl.isInt(y)) {
             y = String.valueOf(player.getBlockY());
         }
 
@@ -101,7 +101,7 @@ public class Destination {
         String[] l = xyz.split(" ");
         if (l[1].equals("n")) l[1] = String.valueOf(player.getBlockY());
         Vec3d loc = new Vec3d(Integer.parseInt(l[0]), Integer.parseInt(l[1]), Integer.parseInt(l[2]));
-        if (PlayerData.get.dest.settings.autoclear(player)) return player.getPos().distanceTo(loc) <= PlayerData.get.dest.settings.autoclearrad(player);
+        if (PlayerData.get.dest.setting.autoclear(player)) return player.getPos().distanceTo(loc) <= PlayerData.get.dest.setting.autoclearrad(player);
         else return false;
     }
     public static int getDist(ServerPlayerEntity player) {
@@ -134,7 +134,7 @@ public class Destination {
 
     public static Text setMSG(ServerPlayerEntity player) {
         Text msg = Text.literal(" ");
-        if (PlayerData.get.dest.settings.autoclear(player)) {
+        if (PlayerData.get.dest.setting.autoclear(player)) {
             Text button = CUtl.button(CUtl.button("off"),CUtl.TC('c'),1,"/dest settings autoclear false n",Text.literal("")
                     .append(Text.literal(CUtl.commandUsage.destSettings()).setStyle(CUtl.C('c')))
                     .append("\n")
@@ -583,7 +583,7 @@ public class Destination {
                     .append(" "+getPLocations(player).get(i))
                     .append("\n       ");
                     //SEND BUTTON
-            if (PlayerData.get.dest.settings.send(player) && DirectionHUD.server.isRemote()) {
+            if (PlayerData.get.dest.setting.send(player) && DirectionHUD.server.isRemote()) {
                 msg.append(CUtl.button("SEND", CUtl.HEX(CUtl.c.send), 2, "/dest send saved " + names.get(i) + " ",
                         Text.literal("Click to send the destination to another player")))
                         .append(" ");
@@ -854,7 +854,7 @@ public class Destination {
                 player.sendMessage(error("player", Text.literal(sendPLayer).setStyle(CUtl.sS())));
                 return;
             }
-            if (!PlayerData.get.dest.settings.send(player)) {
+            if (!PlayerData.get.dest.setting.send(player)) {
                 player.sendMessage(error("disabled"));
                 return;
             }
@@ -862,7 +862,7 @@ public class Destination {
                 player.sendMessage(error("dest.send.alone"));
                 return;
             }
-            if (!PlayerData.get.dest.settings.send(pl)) {
+            if (!PlayerData.get.dest.setting.send(pl)) {
                 player.sendMessage(error("dest.send.disabled_player", Text.literal(Utl.player.name(pl)).setStyle(CUtl.sS())));
                 return;
             }
@@ -948,11 +948,11 @@ public class Destination {
                 player.sendMessage(error("dest.track.alone"));
                 return;
             }
-            if (!PlayerData.get.dest.settings.track(player)) {
+            if (!PlayerData.get.dest.setting.track(player)) {
                 player.sendMessage(error("disabled"));
                 return;
             }
-            if (!PlayerData.get.dest.settings.track(pl)) {
+            if (!PlayerData.get.dest.setting.track(pl)) {
                 player.sendMessage(error("dest.track.disabled",
                         Text.literal(Utl.player.name(pl)).setStyle(CUtl.sS())));
                 return;
@@ -962,7 +962,8 @@ public class Destination {
                 return;
             }
             if (PlayerData.get.dest.getDest(player).equalsIgnoreCase(Utl.player.name(pl)+"")) {
-                player.sendMessage(error("dest.track.already_tracking"));
+                player.sendMessage(error("dest.track.already_tracking",
+                        Text.literal(Utl.player.name(pl)).setStyle(CUtl.sS())));
                 return;
             }
             String trackID = Utl.createID();
@@ -1003,7 +1004,7 @@ public class Destination {
                 pl.sendMessage(error("dest.track.expired"));
                 return;
             }
-            if (!PlayerData.get.dest.settings.track(player)) {
+            if (!PlayerData.get.dest.setting.track(player)) {
                 pl.sendMessage(error("dest.track.disabled",
                         Text.literal(Utl.player.name(pl)).setStyle(CUtl.sS())));
                 PlayerData.set.dest.setTrackNull(player);
@@ -1056,7 +1057,7 @@ public class Destination {
                 if (i > 15) i = 15;
                 if (i < 2) i = 2;
                 PlayerData.set.dest.setting.autoclearrad(player, i);
-                if (PlayerData.get.dest.settings.autoclear(player)) msg = Text.literal("").append(CUtl.tag())
+                if (PlayerData.get.dest.setting.autoclear(player)) msg = Text.literal("").append(CUtl.tag())
                         .append(lang("setting.autoclear_rad.set", Text.literal(i+"").setStyle(CUtl.C('a'))));
                 else msg = Text.literal("").append(CUtl.tag())
                         .append(lang("setting.autoclear_rad.set", Text.literal(i+"").setStyle(CUtl.C('c'))));
@@ -1121,7 +1122,7 @@ public class Destination {
             msg = Text.literal("").append(msg).append(" ").append(lang("ui.settings").setStyle(CUtl.pS()))
                     .append(Text.literal("\n                              \n").styled(style -> style.withStrikethrough(true)));
             char c;
-            if (PlayerData.get.dest.settings.autoclear(player)) c = 'a'; else c = 'c';
+            if (PlayerData.get.dest.setting.autoclear(player)) c = 'a'; else c = 'c';
             msg = Text.literal("").append(msg)
                     .append(" ")
                     .append(lang("setting.destination").setStyle(CUtl.pS()))
@@ -1133,10 +1134,10 @@ public class Destination {
                             .append(lang("setting.autoclear.info_2")
                                     .styled(style1 -> style1.withItalic(true).withColor(CUtl.TC('7'))))))))
                     .append(Text.literal(" "))
-                    .append(Text.literal("").append(toggleB(PlayerData.get.dest.settings.autoclear(player))).styled(style -> style
-                            .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings autoclear " + !PlayerData.get.dest.settings.autoclear(player)))))
+                    .append(Text.literal("").append(toggleB(PlayerData.get.dest.setting.autoclear(player))).styled(style -> style
+                            .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings autoclear " + !PlayerData.get.dest.setting.autoclear(player)))))
                     .append(Text.literal(" "))
-                    .append(CUtl.button(PlayerData.get.dest.settings.autoclearrad(player)+"", CUtl.TC(c),2,
+                    .append(CUtl.button(PlayerData.get.dest.setting.autoclearrad(player)+"", CUtl.TC(c),2,
                             "/dest settings autoclearrad ", CUtl.lang("button.autoclear_rad.hover").append("\n")
                                     .append(CUtl.lang("button.autoclear_rad.hover_2").styled(style -> style
                                             .withColor(CUtl.TC('7')).withItalic(true)))))
@@ -1147,8 +1148,8 @@ public class Destination {
                                     lang("setting.ylevel.info_2").setStyle(CUtl.sS()),
                                     lang("setting.ylevel.info_2").setStyle(CUtl.sS()))))))
                     .append(Text.literal(" "))
-                    .append(Text.literal("").append(toggleB(PlayerData.get.dest.settings.ylevel(player)))
-                            .styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings ylevel " + !PlayerData.get.dest.settings.ylevel(player)))))
+                    .append(Text.literal("").append(toggleB(PlayerData.get.dest.setting.ylevel(player)))
+                            .styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings ylevel " + !PlayerData.get.dest.setting.ylevel(player)))))
                     .append(Text.literal("\n "))
                     //PARTICLES
                     .append(lang("setting.particle").setStyle(CUtl.pS()))
@@ -1157,20 +1158,20 @@ public class Destination {
                     .append(lang("setting.particle.dest").styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                             lang("setting.particle.dest.info")))))
                     .append(Text.literal(" "))
-                    .append(Text.literal("").append(toggleB(PlayerData.get.dest.settings.particle.dest(player))).styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings particlesdest " + !PlayerData.get.dest.settings.particle.dest(player)))))
+                    .append(Text.literal("").append(toggleB(PlayerData.get.dest.setting.particle.dest(player))).styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings particlesdest " + !PlayerData.get.dest.setting.particle.dest(player)))))
                     .append(Text.literal(" "))
                     //COLOR
-                    .append(CUtl.button(CUtl.button("particle"), Utl.color.getTC(PlayerData.get.dest.settings.particle.destcolor(player)), 2,
+                    .append(CUtl.button(CUtl.button("particle"), Utl.color.getTC(PlayerData.get.dest.setting.particle.destcolor(player)), 2,
                             "/dest settings particlesdestc ", CUtl.lang("button.particle.hover")))
                     .append(Text.literal("\n  "))
                     //LINE
                     .append(lang("setting.particle.line").styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                             lang("setting.particle.line.info")))))
                     .append(Text.literal(" "))
-                    .append(Text.literal("").append(toggleB(PlayerData.get.dest.settings.particle.line(player))).styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings particlesline " + !PlayerData.get.dest.settings.particle.line(player)))))
+                    .append(Text.literal("").append(toggleB(PlayerData.get.dest.setting.particle.line(player))).styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings particlesline " + !PlayerData.get.dest.setting.particle.line(player)))))
                     .append(Text.literal(" "))
                     //COLOR
-                    .append(CUtl.button(CUtl.button("particle"),Utl.color.getTC(PlayerData.get.dest.settings.particle.linecolor(player)),2,
+                    .append(CUtl.button(CUtl.button("particle"),Utl.color.getTC(PlayerData.get.dest.setting.particle.linecolor(player)),2,
                             "/dest settings particleslinec ", CUtl.lang("button.particle.hover")))
                     .append(Text.literal("\n "))
                     //SOCIAL
@@ -1180,13 +1181,13 @@ public class Destination {
                     .append(lang("setting.send").styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                             lang("setting.send.info")))))
                     .append(Text.literal(" "))
-                    .append(Text.literal("").append(toggleB(PlayerData.get.dest.settings.send(player))).styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings send " + !PlayerData.get.dest.settings.send(player)))))
+                    .append(Text.literal("").append(toggleB(PlayerData.get.dest.setting.send(player))).styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings send " + !PlayerData.get.dest.setting.send(player)))))
                     .append(Text.literal("\n  "))
                     //TRACK
                     .append(lang("setting.track").styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                             lang("setting.track.info")))))
                     .append(Text.literal(" "))
-                    .append(Text.literal("").append(toggleB(PlayerData.get.dest.settings.track(player))).styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings track " + !PlayerData.get.dest.settings.track(player)))))
+                    .append(Text.literal("").append(toggleB(PlayerData.get.dest.setting.track(player))).styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings track " + !PlayerData.get.dest.setting.track(player)))))
                     .append(Text.literal("\n           "));
 
             msg = Text.literal("").append(msg)
@@ -1231,7 +1232,7 @@ public class Destination {
         //SEND
         int send = 0;
         TextColor sendC = CUtl.TC('7');
-        if (PlayerData.get.dest.settings.send(player) && DirectionHUD.server.isRemote()) {
+        if (PlayerData.get.dest.setting.send(player) && DirectionHUD.server.isRemote()) {
             send = 2;
             sendC = CUtl.HEX(CUtl.c.send);
         }
@@ -1241,7 +1242,7 @@ public class Destination {
         //TRACK
         int track = 0;
         TextColor trackC = CUtl.TC('7');
-        if (PlayerData.get.dest.settings.track(player) && DirectionHUD.server.isRemote()) {
+        if (PlayerData.get.dest.setting.track(player) && DirectionHUD.server.isRemote()) {
             track = 2;
             trackC = CUtl.HEX(CUtl.c.track);
         }

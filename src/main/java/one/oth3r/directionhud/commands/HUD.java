@@ -46,7 +46,7 @@ public class HUD {
         ArrayList<String> direction = new ArrayList<>();
         direction.add("p"+HUD.getPlayerDirection(player));
         ArrayList<String> time = new ArrayList<>();
-        if (PlayerData.get.hud.settings.time24h(player)) {
+        if (PlayerData.get.hud.setting.time24h(player)) {
             time.add("s"+HUD.getGameTime(false));
         } else {
             time.add("s"+HUD.getGameTime(true)+" ");
@@ -395,7 +395,7 @@ public class HUD {
                         .append(color.addColor(player,"]",1,55,20));
             }
             if (s.equalsIgnoreCase("time")) {
-                if (PlayerData.get.hud.settings.time24h(player)) {
+                if (PlayerData.get.hud.setting.time24h(player)) {
                     hoverT = Text.literal("")
                             .append(lang("module.time.info")).append("\n")
                             .append(color.addColor(player,"22:22",1,15,20));
@@ -469,7 +469,7 @@ public class HUD {
                     }
                     //ADDING 12HR / 24HR
                     if (moduleName.equals("time")) {
-                        if (PlayerData.get.hud.settings.time24h(player)) {
+                        if (PlayerData.get.hud.setting.time24h(player)) {
                             modules.put(moduleName, Text.literal("").append(modules.get(moduleName))
                                     .append(CUtl.button(CUtl.button("time.24hr"), CUtl.sTC(), 1, "/hud edit setting time 12hr",
                                             CUtl.lang("button.time.hover",

@@ -10,17 +10,17 @@ import one.oth3r.directionhud.utils.CUtl;
 
 public class DirHUD {
     public static void setDefaults(ServerPlayerEntity player) {
-        config.DESTAutoClear = PlayerData.get.dest.settings.autoclear(player);
-        config.DESTAutoClearRad = PlayerData.get.dest.settings.autoclearrad(player);
-        config.DESTDestParticles = PlayerData.get.dest.settings.particle.dest(player);
-        config.DESTDestParticleColor = PlayerData.get.dest.settings.particle.destcolor(player);
-        config.DESTLineParticles = PlayerData.get.dest.settings.particle.line(player);
-        config.DESTLineParticleColor = PlayerData.get.dest.settings.particle.linecolor(player);
-        config.DESTYLevel = PlayerData.get.dest.settings.ylevel(player);
-        config.DESTSend = PlayerData.get.dest.settings.send(player);
-        config.DESTTrack = PlayerData.get.dest.settings.track(player);
+        config.DESTAutoClear = PlayerData.get.dest.setting.autoclear(player);
+        config.DESTAutoClearRad = PlayerData.get.dest.setting.autoclearrad(player);
+        config.DESTDestParticles = PlayerData.get.dest.setting.particle.dest(player);
+        config.DESTDestParticleColor = PlayerData.get.dest.setting.particle.destcolor(player);
+        config.DESTLineParticles = PlayerData.get.dest.setting.particle.line(player);
+        config.DESTLineParticleColor = PlayerData.get.dest.setting.particle.linecolor(player);
+        config.DESTYLevel = PlayerData.get.dest.setting.ylevel(player);
+        config.DESTSend = PlayerData.get.dest.setting.send(player);
+        config.DESTTrack = PlayerData.get.dest.setting.track(player);
 
-        config.HUD24HR = PlayerData.get.hud.settings.time24h(player);
+        config.HUD24HR = PlayerData.get.hud.setting.time24h(player);
         config.HUDCompass = PlayerData.get.hud.module.compass(player);
         config.HUDCoordinates = PlayerData.get.hud.module.coordinates(player);
         config.HUDDistance = PlayerData.get.hud.module.distance(player);
