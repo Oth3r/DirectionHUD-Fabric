@@ -14,9 +14,10 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.WorldSavePath;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DirectionHUDClient implements ClientModInitializer {
-
     @Override
     public void onInitializeClient() {
         DirectionHUD.isClient = true;

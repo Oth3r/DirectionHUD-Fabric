@@ -24,8 +24,8 @@ public class LoopManager {
             if (PlayerData.get.hud.state(player)) {
                 HUD.build(player);
             }
-            if (Destination.getDist(player) <= PlayerData.get.dest.setting.autoclearrad(player)
-                    && PlayerData.get.dest.setting.autoclear(player)
+            if (Destination.getDist(player) <= PlayerData.get.dest.settings.autoclearrad(player)
+                    && PlayerData.get.dest.settings.autoclear(player)
                     && Destination.checkDestination(player)) Destination.clear(player,
                     CUtl.lang("dest.cleared_reached").styled(style -> style
                             .withItalic(true).withColor(CUtl.TC('7'))));
@@ -50,19 +50,19 @@ public class LoopManager {
                     Vec3d PlayerLoc = player.getPos().add(0, 1, 0);
                     if (player.getVehicle() != null) PlayerLoc.add(0,-0.2,0);
                     Vec3d DestinationLoc = new Vec3d(Integer.parseInt(Destination.get(player, "x")), Integer.parseInt(Destination.get(player, "y")), Integer.parseInt(Destination.get(player, "z"))).add(0.5, 0.5, 0.5);
-                    if (PlayerData.get.dest.setting.particle.dest(player)) {
+                    if (PlayerData.get.dest.settings.particle.dest(player)) {
                         Vec3d p1 = DestinationLoc.add(0, 3, 0);
                         double space = 1;
                         Vec3d vector = DestinationLoc.add(0, -3, 0).subtract(p1).normalize().multiply(space);
                         double covered = 0;
                         for (; covered <= 6; p1 = p1.add(vector)) {
                             if (PlayerLoc.distanceTo(DestinationLoc) > 0.5 && PlayerLoc.distanceTo(DestinationLoc) < 101) {
-                                player.getWorld().spawnParticles(player, new DustParticleEffect(new Vector3f(Vec3d.unpackRgb(Utl.color.getCodeRGB(PlayerData.get.dest.setting.particle.destcolor(player))).toVector3f()), 3), true, p1.getX(), p1.getY(), p1.getZ(), 1, 0, 0, 0, 1);
+                                player.getWorld().spawnParticles(player, new DustParticleEffect(new Vector3f(Vec3d.unpackRgb(Utl.color.getCodeRGB(PlayerData.get.dest.settings.particle.destcolor(player))).toVector3f()), 3), true, p1.getX(), p1.getY(), p1.getZ(), 1, 0, 0, 0, 1);
                             }
                             covered += space;
                         }
                     }
-                    if (PlayerData.get.dest.setting.particle.line(player)) {
+                    if (PlayerData.get.dest.settings.particle.line(player)) {
                         double distance = PlayerLoc.distanceTo(DestinationLoc);
                         Vec3d p3 = PlayerLoc.subtract(0, 0.2, 0);
                         double space2 = 1;
@@ -73,7 +73,7 @@ public class LoopManager {
                                 if (covered2 > 50) {
                                     break;
                                 }
-                                player.getWorld().spawnParticles(player, new DustParticleEffect(new Vector3f(Vec3d.unpackRgb(Utl.color.getCodeRGB(PlayerData.get.dest.setting.particle.linecolor(player))).toVector3f()), 1), true, p3.getX(), p3.getY(), p3.getZ(), 1, 0, 0, 0, 1);
+                                player.getWorld().spawnParticles(player, new DustParticleEffect(new Vector3f(Vec3d.unpackRgb(Utl.color.getCodeRGB(PlayerData.get.dest.settings.particle.linecolor(player))).toVector3f()), 1), true, p3.getX(), p3.getY(), p3.getZ(), 1, 0, 0, 0, 1);
                             }
                             covered2 += space2;
                         }
