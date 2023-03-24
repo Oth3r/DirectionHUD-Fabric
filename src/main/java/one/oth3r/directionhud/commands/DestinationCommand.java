@@ -84,9 +84,12 @@ public class DestinationCommand {
                     }
                 }
                 if (pos == 4) return builder.suggest(player.getBlockX()).buildFuture();
-                if (pos == 5) return builder.suggest(player.getBlockY()).buildFuture();
-                if (pos == 6) {
-                    builder.suggest(player.getBlockZ());
+
+                if (pos == 5 && args.length >= 5) {
+                    if (Utl.isInt(args[4])) return builder.suggest(player.getBlockY()).buildFuture();
+                }
+                if (pos == 6 && args.length >= 5) {
+                    if (Utl.isInt(args[4])) builder.suggest(player.getBlockZ());
                     if (args.length == 7 && !Utl.isInt(args[6]))
                         for (String s : Utl.color.getList()) builder.suggest(s);
                     for (String s : Utl.dim.getList()) builder.suggest(s);
@@ -379,41 +382,48 @@ public class DestinationCommand {
             //ADD
             if (args[1].equalsIgnoreCase("add")) {
                 String playerDIM = player.getWorld().getRegistryKey().getValue().getPath();
-                //dest add <name>
+                //dest saved add <name>
                 if (args.length == 3) {
                     Destination.saved.add(true, player, args[2], player.getBlockX() + " " + player.getBlockZ(), playerDIM, null);
                     return 1;
                 }
-                if (!Utl.inBetween(args.length, 5, 8)) {
+                if (!Utl.inBetween(args.length, 4, 8)) {
                     player.sendMessage(CUtl.usage(CUtl.commandUsage.destAdd()));
                     return 1;
                 }
-                //dest add <name> x y
+                //dest saved add <name> color
+                //dest saved add <name> dim
+                if (args.length == 4) {
+                    if (Utl.dim.getList().contains(args[3].toLowerCase())) Destination.saved.add(true, player, args[2], Utl.player.XYZ(player), args[3], null);
+                    else Destination.saved.add(true, player, args[2], Utl.player.XYZ(player), playerDIM, args[3]);
+                    return 1;
+                }
+                //dest saved add <name> x y
                 if (args.length == 5) {
                     Destination.saved.add(true, player, args[2], args[3] + " " + args[4], playerDIM, null);
                     return 1;
                 }
-                //dest add <name> x y color
+                //dest saved add <name> x y color
                 if (args.length == 6 && !Utl.isInt(args[5]) && !Utl.dim.checkValid(args[5])) {
                     Destination.saved.add(true, player, args[2],args[3] + " " + args[4], playerDIM, args[5]);
                     return 1;
                 }
-                //dest add <name> x y DIM
+                //dest saved add <name> x y DIM
                 if (args.length == 6 && !Utl.isInt(args[5])) {
                     Destination.saved.add(true, player, args[2],args[3] + " " + args[4], args[5], null);
                     return 1;
                 }
-                //dest add <name> x y z
+                //dest saved add <name> x y z
                 if (args.length == 6 && Utl.isInt(args[5])) {
                     Destination.saved.add(true, player, args[2], args[3] +" "+ args[4] +" "+ args[5], playerDIM, null);
                     return 1;
                 }
-                //dest add <name> x y DIM color
+                //dest saved add <name> x y DIM color
                 if (args.length == 7 && !Utl.isInt(args[5])) {
                     Destination.saved.add(true, player, args[2], args[3] +" "+ args[4], args[5], args[6]);
                     return 1;
                 }
-                //dest add <name> x y z color
+                //dest saved add <name> x y z color
                 if (args.length == 7 && !Utl.isInt(args[6]) && !Utl.dim.checkValid(args[6])) {
                     Destination.saved.add(true, player, args[2], args[3] +" "+ args[4] +" "+ args[5], playerDIM ,args[6]);
                     return 1;

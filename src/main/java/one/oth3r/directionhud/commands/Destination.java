@@ -330,7 +330,7 @@ public class Destination {
         public static void add(boolean send, ServerPlayerEntity player, String name, String xyz, String dimension, String color) {
             List<String> names = getNames(player);
             List<String> all = getList(player);
-            if (color == null) color = "white";
+            Style colorS;
             if (names.contains(name)) {
                 if (send) player.sendMessage(error("dest.saved.duplicate"));
                 return;
@@ -343,7 +343,8 @@ public class Destination {
                 if (send) player.sendMessage(error("dimension"));
                 return;
             }
-            color = Utl.color.fix(color,false,"white");
+            colorS = Style.EMPTY.withColor(Utl.color.getTC(Utl.color.fix(color==null?"yellow":color,false,"yellow")));
+            color = Utl.color.fix(color==null?"white":color,false,"white");
             //todo config file shit
 //            if (getList(player).size() >= Utl.Config.maxSavedDestinations()) {
 //                if (send) player.sendMessage(CUtl.error("Reached the max number of saved destinations!"));
@@ -358,11 +359,12 @@ public class Destination {
             xyz = Utl.xyz.DFormat(xyz);
 
             all.add(name+" "+xyz+" "+dimension.toLowerCase()+" "+color.toLowerCase());
+
             setList(player, all);
             if (send) {
                 player.sendMessage(Text.literal("").append(CUtl.tag())
                         .append(lang("saved.add", Text.literal("")
-                                        .append(Utl.color.set(color,name + " "))
+                                        .append(Text.literal(name + " ").setStyle(colorS))
                                                 .append(Text.literal("("+Utl.xyz.PFormat(xyz) + ")").setStyle(CUtl.C('7')))
                                         .styled(style -> style.withItalic(true)),
                                 Text.literal(Utl.dim.PFormat(dimension).toUpperCase()).setStyle(CUtl.sS()))));
