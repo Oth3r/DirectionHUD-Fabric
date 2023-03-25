@@ -4,7 +4,7 @@ that enhances the vanilla experience.
 With the mod, you can save coordinates, track other players, see death locations, all with full customization to the HUD and Destination settings.
 <br><br>
 *Why is it coded in a plugin style?* - DirectionHUD is a port of one of my old private plugins; it might be ported back to spigot in the future. <br>
-![overview](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMWNkZmFlMWNhNzA1NzVkNjllMmJmZWRkNmVhZWQ0MTAyNDA1MmQ2YSZjdD1n/5exhL6dOI6DF18rSqY/giphy.gif)
+![overview](https://cdn.discordapp.com/attachments/801291003494400021/1089247576450142338/ezgif.com-resize.gif)
 
 ## Features
 
@@ -16,12 +16,12 @@ Toggle and sort HUD modules to your liking, change the colors and style. <br>
 ### Saving Coordinates
 Tired of writing down base locations?<br>
 Save, set, convert, and edit coordinates easily using the chat UI. <br>
-![saving](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOTIzOTBjZDY2YWY0ZGQ1ZGExYzU0NGJjNGIzY2I5NmY4MWQwY2NmYSZjdD1n/UH48xQRk374lvq1jnr/giphy-downsized-large.gif)
+![saving](https://cdn.discordapp.com/attachments/801291003494400021/1089251451236257932/saved.gif)
 
 ### Tracking
 Having trouble ~~hunting down~~ keeping up with your friends?<br>
 Send a tracking request and start your adventures! <br>
-![tracking](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZjAxMzI1Nzk0ZjNmYTljMjdkMDY2YTI2MGNhNzE1NTllYzcyOTliZSZjdD1n/QkcKKCbRCeNDr7gB5M/giphy.gif)
+![tracking](https://cdn.discordapp.com/attachments/801291003494400021/1089253521985122497/tracking.gif)
 
 ### Death Logs
 *Which cave did i die in...*<br>
@@ -38,7 +38,7 @@ Toggle destination settings, like auto clearing and particles. <br>
 Set config settings to set defaults when running on server, 
 or use modmenu + clothconfig on client. (currently not working, waiting for a mod menu update) <br>
 **/directionhud defaults** also works on the client - set defaults to your current settings with one click <br>
-![config file](https://i.imgur.com/SbrmqUL.png)
+![config file](https://cdn.discordapp.com/attachments/801291003494400021/1089254576223436891/config.png)
 ## Future Goals
 
 ### More customization
