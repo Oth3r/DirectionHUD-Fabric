@@ -268,7 +268,7 @@ public class Destination {
             return PlayerData.get.dest.getSaved(player);
         }
         public static void setList(ServerPlayerEntity player, List<String> list) {
-            PlayerData.set.dest.setSaved(player, list);
+            PlayerData.set.dest.setSaved(player, new ArrayList<>(list));
         }
         public static List<String> getListIndex(ServerPlayerEntity player, Integer i) {
             return Arrays.asList(getList(player).get(i).split(" "));
@@ -786,7 +786,7 @@ public class Destination {
                         .append(Text.literal(get(player, 1) + "\n  "))
                         .append(CUtl.CButton.dest.set("/dest set " + get(player, 1)))
                         .append(" ");
-                if (pDIM.equals("NETHER")) {
+                if (pDIM.equals("the_nether")) {
                     msg = Text.literal("").append(msg)
                             .append(CUtl.CButton.dest.convert("/dest set " + Utl.xyz.divide(get(player, 1))))
                             .append(" ");
@@ -805,7 +805,7 @@ public class Destination {
                 msg = Text.literal("").append(msg).append(get(player, 2) + "\n  ")
                         .append(CUtl.CButton.dest.set("/dest set " + get(player, 2)))
                         .append(" ");
-                if (pDIM.equals("NORMAL")) {
+                if (pDIM.equals("overworld")) {
                     msg = Text.literal("").append(msg)
                             .append(CUtl.CButton.dest.convert("/dest set " + Utl.xyz.divide(get(player, 2))))
                             .append(" ");
@@ -841,7 +841,7 @@ public class Destination {
             }
             msg = Text.literal("").append(msg)
                     .append(CUtl.button(CUtl.button("delete"), resetC, reset, "/dest lastdeath cl",
-                            CUtl.lang("button.delete.hover_lastdeath", lang("lastdeath.clear_all")).setStyle(CUtl.C('c'))));
+                            CUtl.lang("button.delete.hover_lastdeath", lang("lastdeath.clear_all").setStyle(CUtl.C('c')))));
             msg = Text.literal("").append(msg).append("  ")
                     .append(CUtl.CButton.back("/dest"))
                     .append(Text.literal("\n                                     ").styled(style -> style.withStrikethrough(true)));
@@ -964,7 +964,8 @@ public class Destination {
                 return;
             }
             if (PlayerData.get.dest.getDest(player).equalsIgnoreCase(Utl.player.name(pl)+"")) {
-                player.sendMessage(error("dest.track.already_tracking"));
+                player.sendMessage(error("dest.track.already_tracking",
+                        Text.literal(Utl.player.name(pl)).setStyle(CUtl.sS())));
                 return;
             }
             String trackID = Utl.createID();

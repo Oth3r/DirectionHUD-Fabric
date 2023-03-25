@@ -1,138 +1,316 @@
 package one.oth3r.directionhud.files;
 
+import net.minecraft.server.network.ServerPlayerEntity;
 import one.oth3r.directionhud.DirectionHUD;
 import one.oth3r.directionhud.commands.HUD;
 import one.oth3r.directionhud.utils.Utl;
-import net.minecraft.server.network.ServerPlayerEntity;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 
 public class PlayerData {
-    public static File playerdata(ServerPlayerEntity player) {
+    public static Map<ServerPlayerEntity,Map<String,Object>> playerMap = new HashMap<>();
+    public static File getFile(ServerPlayerEntity player) {
         return new File(DirectionHUD.playerData+player.getUuidAsString()+".json");
     }
-    @SuppressWarnings("unchecked")
-    public static class defaults {
-        public static JSONObject hudSetting() {
-            JSONObject hudsetting = new JSONObject();
-            hudsetting.put("time24h", config.HUD24HR);
-            return hudsetting;
+    private static Map<String, Object> parseObject(String jsonString) {
+        Map<String, Object> map = new HashMap<>();
+        int i = 0;
+        int depth = 0;
+        String key = null;
+        while (i < jsonString.length()) {
+            char c = jsonString.charAt(i);
+            if (c == '"') {
+                int j = i + 1;
+                while (j < jsonString.length() && jsonString.charAt(j) != '"') {
+                    j++;
+                }
+                key = jsonString.substring(i + 1, j);
+                i = j + 1;
+            } else if (Character.isWhitespace(c)) {
+                i++;
+            } else if (c == ':') {
+                while (Character.isWhitespace(jsonString.charAt(i+1))) {
+                    i++;
+                }
+                Map.Entry<Object, Integer> valuePair = parseValue(jsonString.substring(i + 1));
+                Object value = valuePair.getKey();
+                i += valuePair.getValue()+1;
+                map.put(key, value);
+                key = null;
+            } else if (c == '{') {
+                depth++;
+                i++;
+            } else if (c == '}') {
+                depth--;
+                i++;
+                if (depth == 0) {
+                    break;
+                }
+            } else if (c == ',') {
+                i++;
+            } else {
+                throw new IllegalArgumentException("Invalid JSON string: " + jsonString);
+            }
         }
-        public static JSONObject hudModule() {
-            JSONObject hudmodule = new JSONObject();
-            hudmodule.put("coordinates", config.HUDCoordinates);
-            hudmodule.put("distance", config.HUDDistance);
-            hudmodule.put("destination", config.HUDDestination);
-            hudmodule.put("direction", config.HUDDirection);
-            hudmodule.put("compass", config.HUDCompass);
-            hudmodule.put("time", config.HUDTime);
-            hudmodule.put("weather", config.HUDWeather);
-            return hudmodule;
-        }
-        public static JSONObject destSetting() {
-            JSONObject destsetting = new JSONObject();
-            destsetting.put("autoclear", config.DESTAutoClear);
-            destsetting.put("autoclearradius", config.DESTAutoClearRad);
-            destsetting.put("ylevel", config.DESTYLevel);
-            destsetting.put("send", config.DESTSend);
-            destsetting.put("track", config.DESTTrack);
-            destsetting.put("particles", destSettingParticles());
-            return destsetting;
-        }
-        public static JSONObject destSettingParticles() {
-            JSONObject destsettingP = new JSONObject();
-            destsettingP.put("line", config.DESTLineParticles);
-            destsettingP.put("linecolor", config.DESTLineParticleColor);
-            destsettingP.put("dest", config.DESTDestParticles);
-            destsettingP.put("destcolor", config.DESTDestParticleColor);
-            return destsettingP;
+        return map;
+    }
+    private static Map.Entry<Object, Integer> parseValue(String jsonString) {
+        if (jsonString.startsWith("{")) {
+            Map<String, Object> map = parseObject(jsonString);
+            int i = 1;
+            int depth = 1;
+            while (i < jsonString.length()) {
+                char c = jsonString.charAt(i);
+                i++;
+                if (c == '{') {
+                    depth++;
+                }
+                if (c == '}') {
+                    depth--;
+                    if (depth == 0) break;
+                }
+            }
+            return new AbstractMap.SimpleEntry<>(map, i);
+        } else if (jsonString.startsWith("[")) {
+            int i = 1;
+            int depth = 1;
+            while (i < jsonString.length()) {
+                char c = jsonString.charAt(i);
+                i++;
+                if (c == '[') {
+                    depth++;
+                }
+                if (c == ']') {
+                    depth--;
+                    if (depth == 0) break;
+                }
+            }
+            return new AbstractMap.SimpleEntry<>(parseArray(jsonString), i+1);
+        } else if (jsonString.startsWith("\"")) {
+            int i = 1;
+            while (i < jsonString.length() && jsonString.charAt(i) != '"') {
+                i++;
+            }
+            return new AbstractMap.SimpleEntry<>(jsonString.substring(1, i), i + 1);
+        } else if (jsonString.startsWith("true")) {
+            return new AbstractMap.SimpleEntry<>(true, 4);
+        } else if (jsonString.startsWith("false")) {
+            return new AbstractMap.SimpleEntry<>(false, 5);
+        } else if (jsonString.startsWith("null")) {
+            return new AbstractMap.SimpleEntry<>(null, 4);
+        } else {
+            int i = 0;
+            while (i < jsonString.length() && (Character.isDigit(jsonString.charAt(i)) || jsonString.charAt(i) == '-')) {
+                i++;
+            }
+            if (i < jsonString.length() && jsonString.charAt(i) == '.') {
+                i++;
+                while (i < jsonString.length() && Character.isDigit(jsonString.charAt(i))) {
+                    i++;
+                }
+                return new AbstractMap.SimpleEntry<>(Double.parseDouble(jsonString.substring(0, i)), i);
+            } else {
+                return new AbstractMap.SimpleEntry<>(Integer.parseInt(jsonString.substring(0, i)), i);
+            }
         }
     }
-
-    @SuppressWarnings("unchecked")
-    public static void addPlayer(ServerPlayerEntity player) {
-        if (playerExist(player)) {
-            update(player);
-            return;
+    private static Object parseArray(String jsonString) {
+        ArrayList<Object> array = new ArrayList<>();
+        int i = 1;
+        while (i < jsonString.length()) {
+            char c = jsonString.charAt(i);
+            if (c == ',') {
+                i++;
+            } else if (Character.isWhitespace(c)) {
+                i++;
+            } else if (c == ']') {
+                break;
+            } else {
+                while (Character.isWhitespace(jsonString.charAt(i+1))) {
+                    i++;
+                }
+                Map.Entry<Object, Integer> valuePair = parseValue(jsonString.substring(i));
+                Object value = valuePair.getKey();
+                i += valuePair.getValue();
+                array.add(value);
+            }
         }
+        return array;
+    }
+    public static Map<String, Object> getMap(ServerPlayerEntity player) {
+        File file = getFile(player);
+        if (!file.exists()) {
+            return getDefaults(player);
+        }
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String jsonString = br.readLine();
+            return parseObject(jsonString);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new HashMap<>();
+    }
+    @SuppressWarnings("unchecked")
+    private static String mapToJSONString(Map<String, Object> map) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("{");
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            builder.append("\"");
+            builder.append(entry.getKey());
+            builder.append("\":");
+            if (entry.getValue() instanceof Map) {
+                builder.append(mapToJSONString((Map<String, Object>) entry.getValue()));
+            } else if (entry.getValue() instanceof String) {
+                builder.append("\"");
+                builder.append(entry.getValue());
+                builder.append("\"");
+            } else if (entry.getValue() instanceof List) {
+                List<Object> list = (List<Object>) entry.getValue();
+                builder.append("[");
+                for (Object item : list) {
+                    if (item instanceof Map) {
+                        builder.append(mapToJSONString((Map<String, Object>) item));
+                    } else if (item instanceof String) {
+                        builder.append("\"");
+                        builder.append(item);
+                        builder.append("\"");
+                    } else {
+                        builder.append(item);
+                    }
+                    builder.append(",");
+                }
+                if (!list.isEmpty()) {
+                    builder.deleteCharAt(builder.length() - 1);
+                }
+                builder.append("]");
+            } else {
+                builder.append(entry.getValue());
+            }
+            builder.append(",");
+        }
+        builder.deleteCharAt(builder.length() - 1);
+        builder.append("}");
+        return builder.toString();
+    }
+    public static void writeMap(ServerPlayerEntity player, Map<String, Object> map) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(getFile(player)))) {
+            writer.write(mapToJSONString(addExpires(player,map)));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    public static void addPlayer(ServerPlayerEntity player) {
+        Map<String, Object> map = getMap(player);
+        map.put("name",Utl.player.name(player));
+        writeMap(player, map);
+        playerMap.put(player,removeUnnecessary(map));
+    }
+    @SuppressWarnings("unchecked")
+    public static Map<String,Object> removeUnnecessary(Map<String,Object> map) {
+        Map<String,Object> dest = (Map<String, Object>) map.get("destination");
+        Map<String,Object> dSet = (Map<String, Object>) dest.get("setting");
+        dSet.remove("send");
+        dest.remove("saved");
+        dest.remove("lastdeath");
+        map.put("destination", dest);
+        map.remove("name");
+        //removes map.name, map.destination.saved, map.destination.setting.send, map.destination.lastdeath
+        return map;
+    }
+    @SuppressWarnings("unchecked")
+    public static Map<String,Object> addExpires(ServerPlayerEntity player, Map<String,Object> map) {
+        //since the counters are stored in the map, when the file gets saved, it updates the file.
+        Map<String,Object> cache = playerMap.get(player);
+        if (cache == null) return map;
+        Map<String,Object> cdest = (Map<String, Object>) cache.get("destination");
+        Map<String,Object> mdest = (Map<String, Object>) map.get("destination");
+        if (cdest.get("track")!=null) mdest.put("track",cdest.get("track"));
+        else if (mdest.get("track") != null) mdest.put("track", null);
+        if (cdest.get("suspended")!=null) mdest.put("suspended",cdest.get("suspended"));
+        else if (mdest.get("suspended")!=null) mdest.put("suspended",null);
+        map.put("destination",mdest);
+        return map;
+    }
+    public static void removePlayer(ServerPlayerEntity player) {
+        writeMap(player,getMap(player));
+        playerMap.remove(player);
+    }
 
-        JSONObject hud = new JSONObject();
+    public static Map<String,Object> getDefaults(ServerPlayerEntity player) {
+        Map<String,Object> map = new HashMap<>();
+        //hud
+        Map<String,Object> hud = new HashMap<>();
         hud.put("enabled", config.HUDEnabled);
         hud.put("setting", defaults.hudSetting());
         hud.put("module", defaults.hudModule());
         hud.put("order", config.HUDOrder);
         hud.put("primary", HUD.color.defaultFormat(1));
         hud.put("secondary", HUD.color.defaultFormat(2));
-
-        JSONObject destination = new JSONObject();
+        //dest
+        Map<String,Object> destination = new HashMap<>();
         destination.put("xyz", "f");
         destination.put("setting", defaults.destSetting());
         destination.put("lastdeath", "f f f");
         destination.put("track", null);
         destination.put("suspended", null);
-
-        JSONObject data = new JSONObject();
-        data.put("version", 1.0);
-        data.put("name", Utl.player.name(player));
-        data.put("hud", hud);
-        data.put("destination", destination);
-
-        writeData(player, data);
+        //base
+        map.put("version", 1.0);
+        map.put("name", Utl.player.name(player));
+        map.put("hud", hud);
+        map.put("destination", destination);
+        return map;
+    }
+    public static class defaults {
+        public static Map<String,Object> hudSetting() {
+            Map<String,Object> hudSetting = new HashMap<>();
+            hudSetting.put("time24h", config.HUD24HR);
+            return hudSetting;
+        }
+        public static Map<String,Object> hudModule() {
+            Map<String,Object> hudModule = new HashMap<>();
+            hudModule.put("coordinates", config.HUDCoordinates);
+            hudModule.put("distance", config.HUDDistance);
+            hudModule.put("destination", config.HUDDestination);
+            hudModule.put("direction", config.HUDDirection);
+            hudModule.put("compass", config.HUDCompass);
+            hudModule.put("time", config.HUDTime);
+            hudModule.put("weather", config.HUDWeather);
+            return hudModule;
+        }
+        public static Map<String,Object> destSetting() {
+            Map<String,Object> destSetting = new HashMap<>();
+            destSetting.put("autoclear", config.DESTAutoClear);
+            destSetting.put("autoclearradius", config.DESTAutoClearRad);
+            destSetting.put("ylevel", config.DESTYLevel);
+            destSetting.put("send", config.DESTSend);
+            destSetting.put("track", config.DESTTrack);
+            destSetting.put("particles", destParticles());
+            return destSetting;
+        }
+        public static Map<String,Object> destParticles() {
+            Map<String,Object> destParticles = new HashMap<>();
+            destParticles.put("line", config.DESTLineParticles);
+            destParticles.put("linecolor", config.DESTLineParticleColor);
+            destParticles.put("dest", config.DESTDestParticles);
+            destParticles.put("destcolor", config.DESTDestParticleColor);
+            return destParticles;
+        }
+    }
+    public static Map<String,Object> getFromMap(ServerPlayerEntity player) {
+        return playerMap.get(player);
     }
     @SuppressWarnings("unchecked")
-    public static void update(ServerPlayerEntity player) {
-        JSONObject data = getData(player);
-        data.put("name", Utl.player.name(player));
-        writeData(player, data);
-    }
-
-    private static void writeData(ServerPlayerEntity player, JSONObject write) {
-        try (FileWriter file = new FileWriter(playerdata(player))) {
-            file.write(write.toJSONString());
-            file.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static JSONObject getData(ServerPlayerEntity player) {
-        JSONParser jsonParser = new JSONParser();
-        try (FileReader reader = new FileReader(playerdata(player))) {
-            return (JSONObject) jsonParser.parse(reader);
-        } catch (IOException | ParseException e) {
-            addPlayer(player);
-            try (FileReader reader = new FileReader(playerdata(player))) {
-                return (JSONObject) jsonParser.parse(reader);
-            } catch (IOException | ParseException ignored) {}
-        }
-        return new JSONObject();
-    }
-
-    private static boolean playerExist(ServerPlayerEntity player) {
-        try (FileReader ignored = new FileReader(playerdata(player))) {
-            return true;
-        } catch (IOException e) {return false;}
-    }
-
     public static class get {
         public static class hud {
-            private static JSONObject get(ServerPlayerEntity player) {
-                return (JSONObject) getData(player).get("hud");
+            private static Map<String,Object> get(ServerPlayerEntity player) {
+                return (Map<String, Object>) getFromMap(player).get("hud");
             }
-            private static JSONObject getSetting(ServerPlayerEntity player) {
-                return (JSONObject) get(player).get("setting");
+            public static Map<String,Object> getSetting(ServerPlayerEntity player) {
+                return (Map<String,Object>) get(player).get("setting");
             }
-            private static JSONObject getModule(ServerPlayerEntity player) {
-                return (JSONObject) get(player).get("module");
+            public static Map<String,Object> getModule(ServerPlayerEntity player) {
+                return (Map<String,Object>) get(player).get("module");
             }
             public static String order(ServerPlayerEntity player) {
                 return (String) get(player).get("order");
@@ -176,60 +354,55 @@ public class PlayerData {
             }
         }
         public static class dest {
-            private static JSONObject get(ServerPlayerEntity player) {
-                return (JSONObject) getData(player).get("destination");
+            private static Map<String,Object> get(ServerPlayerEntity player, boolean map) {
+                if (map) return (Map<String,Object>) getFromMap(player).get("destination");
+                return (Map<String, Object>) getMap(player).get("destination");
             }
-            private static JSONObject getSetting(ServerPlayerEntity player) {
-                return (JSONObject) get(player).get("setting");
+            private static Map<String,Object> getSetting(ServerPlayerEntity player, boolean map) {
+                return (Map<String,Object>) get(player,map).get("setting");
             }
-            private static JSONObject getParticleSetting(ServerPlayerEntity player) {
-                return (JSONObject) dest.getSetting(player).get("particles");
+            private static Map<String,Object> getParticleSetting(ServerPlayerEntity player) {
+                return (Map<String,Object>) dest.getSetting(player, true).get("particles");
             }
-            private static JSONObject getTrack(ServerPlayerEntity player) {
-                if (get(player).get("track") == null) return new JSONObject();
-                return (JSONObject) get(player).get("track");
+            private static Map<String,Object> getTrack(ServerPlayerEntity player) {
+                if (get(player,true).get("track") == null) return new HashMap<>();
+                return (Map<String,Object>) get(player,true).get("track");
             }
-            private static JSONObject getSuspended(ServerPlayerEntity player) {
-                if (get(player).get("suspended") == null) return new JSONObject();
-                return (JSONObject) get(player).get("suspended");
+            private static Map<String,Object> getSuspended(ServerPlayerEntity player) {
+                if (get(player,true).get("suspended") == null) return new HashMap<>();
+                return (Map<String,Object>) get(player,true).get("suspended");
             }
             public static String getLastdeath(ServerPlayerEntity player) {
-                return get(player).get("lastdeath").toString();
+                return get(player,false).get("lastdeath").toString();
             }
             public static boolean getTrackingPending(ServerPlayerEntity player) {
-                return get(player).get("track") != null;
+                return get(player,true).get("track") != null;
             }
             public static boolean getSuspendedState(ServerPlayerEntity player) {
-                return get(player).get("suspended") != null;
+                return get(player,true).get("suspended") != null;
             }
             public static String getDest(ServerPlayerEntity player) {
-                return get(player).get("xyz").toString();
+                return get(player,true).get("xyz").toString();
             }
             public static ArrayList<String> getSaved(ServerPlayerEntity player) {
-                ArrayList<String> listdata = new ArrayList<>();
-                JSONArray jArray = (JSONArray)get(player).get("saved");
-                if (jArray != null) {
-                    for (Object o : jArray) {
-                        listdata.add(o.toString());
-                    }
-                }
-                return listdata;
+                if (get(player,false).get("saved") == null) return new ArrayList<>();
+                return (ArrayList<String>) get(player,false).get("saved");
             }
             public static class setting {
                 public static boolean autoclear(ServerPlayerEntity player) {
-                    return (boolean) getSetting(player).get("autoclear");
+                    return (boolean) getSetting(player, true).get("autoclear");
                 }
                 public static int autoclearrad(ServerPlayerEntity player) {
-                    return Integer.parseInt(getSetting(player).get("autoclearradius").toString());
+                    return Integer.parseInt(getSetting(player, true).get("autoclearradius").toString());
                 }
                 public static boolean ylevel(ServerPlayerEntity player) {
-                    return (boolean) getSetting(player).get("ylevel");
+                    return (boolean) getSetting(player, true).get("ylevel");
                 }
                 public static boolean send(ServerPlayerEntity player) {
-                    return (boolean) getSetting(player).get("send");
+                    return (boolean) getSetting(player, false).get("send");
                 }
                 public static boolean track(ServerPlayerEntity player) {
-                    return (boolean) getSetting(player).get("track");
+                    return (boolean) getSetting(player, true).get("track");
                 }
                 public static class particle {
                     public static boolean line(ServerPlayerEntity player) {
@@ -267,189 +440,160 @@ public class PlayerData {
             }
         }
     }
-    @SuppressWarnings("unchecked")
     public static class set {
         public static class hud {
-            public static void set(ServerPlayerEntity player, JSONObject hud) {
-                JSONObject data = getData(player);
-                data.put("hud", hud);
-                writeData(player, data);
+            public static void set(ServerPlayerEntity player, Map<String,Object> hud) {
+                Map<String,Object> map = getMap(player);
+                map.put("hud",hud);
+                writeMap(player,map);
+                playerMap.put(player,removeUnnecessary(map));
             }
-            private static void setSetting(ServerPlayerEntity player, JSONObject setting) {
-                JSONObject data = get.hud.get(player);
+            private static void setSetting(ServerPlayerEntity player, Map<String,Object> setting) {
+                Map<String,Object> data = get.hud.get(player);
                 data.put("setting", setting);
                 set(player, data);
             }
-            public static void setModule(ServerPlayerEntity player, JSONObject module) {
-                JSONObject data = get.hud.get(player);
+            public static void setModule(ServerPlayerEntity player, Map<String,Object> module) {
+                Map<String,Object> data = get.hud.get(player);
                 data.put("module", module);
                 set(player, data);
             }
             public static void order(ServerPlayerEntity player, String order) {
-                JSONObject data = get.hud.get(player);
+                Map<String,Object> data = get.hud.get(player);
                 data.put("order", order);
                 set(player, data);
             }
             public static void state(ServerPlayerEntity player, boolean b) {
-                JSONObject data = get.hud.get(player);
+                Map<String,Object> data = get.hud.get(player);
                 data.put("enabled", b);
                 set(player, data);
             }
             public static void primary(ServerPlayerEntity player, String color) {
-                JSONObject data = get.hud.get(player);
+                Map<String,Object> data = get.hud.get(player);
                 data.put("primary", color);
                 set(player, data);
             }
             public static void secondary(ServerPlayerEntity player, String color) {
-                JSONObject data = get.hud.get(player);
+                Map<String,Object> data = get.hud.get(player);
                 data.put("secondary", color);
                 set(player, data);
             }
             public static class setting {
                 public static void time24h(ServerPlayerEntity player, boolean b) {
-                    JSONObject data = get.hud.getSetting(player);
+                    Map<String,Object> data = get.hud.getSetting(player);
                     data.put("time24h", b);
                     setSetting(player, data);
                 }
             }
             public static class module {
-                public static void byName(ServerPlayerEntity player,String moduleName ,boolean b) {
-                    JSONObject data = get.hud.getModule(player);
+                public static void byName(ServerPlayerEntity player,String moduleName,boolean b) {
+                    Map<String,Object> data = get.hud.getModule(player);
                     data.put(moduleName, b);
                     setModule(player, data);
                 }
-//                public static void coordinates(ServerPlayerEntity player, boolean b) {
-//                    JSONObject data = get.hud.getModule(player);
-//                    data.put("coordinates", b);
-//                    setModule(player, data);
-//                }
-//                public static void distance(ServerPlayerEntity player, boolean b) {
-//                    JSONObject data = get.hud.getModule(player);
-//                    data.put("distance", b);
-//                    setModule(player, data);
-//                }
-//                public static void compass(ServerPlayerEntity player, boolean b) {
-//                    JSONObject data = get.hud.getModule(player);
-//                    data.put("compass", b);
-//                    setModule(player, data);
-//                }
-//                public static void destination(ServerPlayerEntity player, boolean b) {
-//                    JSONObject data = get.hud.getModule(player);
-//                    data.put("destination", b);
-//                    setModule(player, data);
-//                }
-//                public static void direction(ServerPlayerEntity player, boolean b) {
-//                    JSONObject data = get.hud.getModule(player);
-//                    data.put("direction", b);
-//                    setModule(player, data);
-//                }
-//                public static void time(ServerPlayerEntity player, boolean b) {
-//                    JSONObject data = get.hud.getModule(player);
-//                    data.put("time", b);
-//                    setModule(player, data);
-//                }
-//                public static void weather(ServerPlayerEntity player, boolean b) {
-//                    JSONObject data = get.hud.getModule(player);
-//                    data.put("weather", b);
-//                    setModule(player, data);
-//                }
             }
         }
         public static class dest {
-            public static void set(ServerPlayerEntity player, JSONObject dest) {
-                JSONObject data = getData(player);
-                data.put("destination", dest);
-                writeData(player, data);
+            public static void set(ServerPlayerEntity player, Map<String,Object> dest) {
+                Map<String,Object> map = getMap(player);
+                map.put("destination",dest);
+                writeMap(player,map);
+                playerMap.put(player,map);
             }
-            private static void setSetting(ServerPlayerEntity player, JSONObject setting) {
-                JSONObject data = get.dest.get(player);
+            public static void setM(ServerPlayerEntity player, Map<String,Object> dest) {
+                Map<String,Object> map = getFromMap(player);
+                map.put("destination",dest);
+                playerMap.put(player,map);
+            }
+            private static void setSetting(ServerPlayerEntity player, Map<String,Object> setting) {
+                Map<String,Object> data = get.dest.get(player,false);
                 data.put("setting", setting);
                 set(player, data);
             }
-            private static void setParticleSetting(ServerPlayerEntity player, JSONObject setting) {
-                JSONObject data = get.dest.getSetting(player);
+            private static void setParticleSetting(ServerPlayerEntity player, Map<String,Object> setting) {
+                Map<String,Object> data = get.dest.getSetting(player,false);
                 data.put("particles", setting);
                 setSetting(player, data);
             }
-            private static void setTrack(ServerPlayerEntity player, JSONObject setting) {
-                JSONObject data = get.dest.get(player);
+            private static void setTrack(ServerPlayerEntity player, Map<String,Object> setting) {
+                Map<String,Object> data = get.dest.get(player,true);
                 data.put("track", setting);
-                set(player, data);
+                setM(player, data);
             }
-            private static void setSuspended(ServerPlayerEntity player, JSONObject setting) {
-                JSONObject data = get.dest.get(player);
+            private static void setSuspended(ServerPlayerEntity player, Map<String,Object> setting) {
+                Map<String,Object> data = get.dest.get(player,true);
                 data.put("suspended", setting);
-                set(player, data);
+                setM(player, data);
             }
             public static void setDest(ServerPlayerEntity player, String xyz) {
-                JSONObject data = get.dest.get(player);
+                Map<String,Object> data = get.dest.get(player,false);
                 data.put("xyz", xyz);
                 set(player, data);
             }
             public static void setLastdeath(ServerPlayerEntity player, String lastdeath) {
-                JSONObject data = get.dest.get(player);
+                Map<String,Object> data = get.dest.get(player,false);
                 data.put("lastdeath", lastdeath);
                 set(player, data);
             }
             public static void setTrackNull(ServerPlayerEntity player) {
-                JSONObject data = get.dest.get(player);
+                Map<String,Object> data = get.dest.get(player,true);
                 data.put("track", null);
-                set(player, data);
+                setM(player, data);
             }
             public static void setSuspendedNull(ServerPlayerEntity player) {
-                JSONObject data = get.dest.get(player);
+                Map<String,Object> data = get.dest.get(player,true);
                 data.put("suspended", null);
-                set(player, data);
+                setM(player, data);
             }
-            public static void setSaved(ServerPlayerEntity player, List<String> saved) {
-                JSONObject data = get.dest.get(player);
+            public static void setSaved(ServerPlayerEntity player, ArrayList<String> saved) {
+                Map<String,Object> data = get.dest.get(player,false);
                 data.put("saved", saved);
                 set(player, data);
             }
             public static class setting {
                 public static void autoclear(ServerPlayerEntity player, boolean b) {
-                    JSONObject data = get.dest.getSetting(player);
+                    Map<String,Object> data = get.dest.getSetting(player,false);
                     data.put("autoclear", b);
                     setSetting(player, data);
                 }
                 public static void autoclearrad(ServerPlayerEntity player, int b) {
-                    JSONObject data = get.dest.getSetting(player);
+                    Map<String,Object> data = get.dest.getSetting(player,false);
                     data.put("autoclearradius", b);
                     setSetting(player, data);
                 }
                 public static void ylevel(ServerPlayerEntity player, boolean b) {
-                    JSONObject data = get.dest.getSetting(player);
+                    Map<String,Object> data = get.dest.getSetting(player,false);
                     data.put("ylevel", b);
                     setSetting(player, data);
                 }
                 public static void send(ServerPlayerEntity player, boolean b) {
-                    JSONObject data = get.dest.getSetting(player);
+                    Map<String,Object> data = get.dest.getSetting(player,false);
                     data.put("send", b);
                     setSetting(player, data);
                 }
                 public static void track(ServerPlayerEntity player, boolean b) {
-                    JSONObject data = get.dest.getSetting(player);
+                    Map<String,Object> data = get.dest.getSetting(player,false);
                     data.put("track", b);
                     setSetting(player, data);
                 }
                 public static class particles {
                     public static void line(ServerPlayerEntity player, boolean b) {
-                        JSONObject data = get.dest.getParticleSetting(player);
+                        Map<String,Object> data = get.dest.getParticleSetting(player);
                         data.put("line", b);
                         setParticleSetting(player, data);
                     }
                     public static void linecolor(ServerPlayerEntity player, String b) {
-                        JSONObject data = get.dest.getParticleSetting(player);
+                        Map<String,Object> data = get.dest.getParticleSetting(player);
                         data.put("linecolor", b);
                         setParticleSetting(player, data);
                     }
                     public static void dest(ServerPlayerEntity player, boolean b) {
-                        JSONObject data = get.dest.getParticleSetting(player);
+                        Map<String,Object> data = get.dest.getParticleSetting(player);
                         data.put("dest", b);
                         setParticleSetting(player, data);
                     }
                     public static void destcolor(ServerPlayerEntity player, String b) {
-                        JSONObject data = get.dest.getParticleSetting(player);
+                        Map<String,Object> data = get.dest.getParticleSetting(player);
                         data.put("destcolor", b);
                         setParticleSetting(player, data);
                     }
@@ -457,29 +601,29 @@ public class PlayerData {
             }
             public static class track {
                 public static void id(ServerPlayerEntity player, String b) {
-                    JSONObject data = get.dest.getTrack(player);
+                    Map<String,Object> data = get.dest.getTrack(player);
                     data.put("id", b);
                     setTrack(player, data);
                 }
                 public static void expire(ServerPlayerEntity player, int b) {
-                    JSONObject data = get.dest.getTrack(player);
+                    Map<String,Object> data = get.dest.getTrack(player);
                     data.put("expire", b);
                     setTrack(player, data);
                 }
                 public static void target(ServerPlayerEntity player, String b) {
-                    JSONObject data = get.dest.getTrack(player);
+                    Map<String,Object> data = get.dest.getTrack(player);
                     data.put("target", b);
                     setTrack(player, data);
                 }
             }
             public static class suspended {
                 public static void expire(ServerPlayerEntity player, int b) {
-                    JSONObject data = get.dest.getSuspended(player);
+                    Map<String,Object> data = get.dest.getSuspended(player);
                     data.put("expire", b);
                     setSuspended(player, data);
                 }
                 public static void target(ServerPlayerEntity player, String b) {
-                    JSONObject data = get.dest.getSuspended(player);
+                    Map<String,Object> data = get.dest.getSuspended(player);
                     data.put("target", b);
                     setSuspended(player, data);
                 }

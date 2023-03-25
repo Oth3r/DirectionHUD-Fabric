@@ -14,9 +14,10 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.WorldSavePath;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DirectionHUDClient implements ClientModInitializer {
-
     @Override
     public void onInitializeClient() {
         DirectionHUD.isClient = true;
@@ -31,14 +32,12 @@ public class DirectionHUDClient implements ClientModInitializer {
         });
         DirectionHUD.config = FabricLoader.getInstance().getConfigDir().toFile()+"/";
         config.load();
-        //PLAYER JOIN
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             PlayerData.addPlayer(handler.player);
         });
-        //PLAYER LEAVE
-//        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
-//            DirectionHUD.LOGGER.info(handler.player.getUuidAsString()+"LEFT");
-//        });
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
+            PlayerData.removePlayer(handler.player);
+        });
         //COMMANDS
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             DirHUDCommand.register(dispatcher);
