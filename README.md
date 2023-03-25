@@ -4,14 +4,14 @@ that enhances the vanilla experience.
 With the mod, you can save coordinates, track other players, see death locations, all with full customization to the HUD and Destination settings.
 <br><br>
 *Why is it coded in a plugin style?* - DirectionHUD is a port of one of my old private plugins; it might be ported back to spigot in the future. <br>
-![overview](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOGFiMTlkYzFiNGE1NzQ3MWQ4ZTEyMDExYmU1NGQ3MTI1Yzc3OTY5NSZjdD1n/e2mPTVcrSUf69SahWg/giphy.gif)
+![overview](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMWNkZmFlMWNhNzA1NzVkNjllMmJmZWRkNmVhZWQ0MTAyNDA1MmQ2YSZjdD1n/5exhL6dOI6DF18rSqY/giphy.gif)
 
 ## Features
 
 ### HUD Customization
 Ever wanted everything to be RGB?<br>
 Toggle and sort HUD modules to your liking, change the colors and style. <br>
-![hudcustomization](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWFlYWY3MWRhMDZiOTA0ODk4MzRiMzMzZWE5ZTZkY2M5NmZmMjE3YyZjdD1n/CoBgjCTe0AEuqkvafe/giphy-downsized-large.gif)
+![hudcustomization](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYTRhNDNiODQ0N2NhOTU0YjczMzhlMWM5YTQyMTkzZTRjZjUyNzU4YSZjdD1n/WGu92TqhTHlQXuFZcv/giphy.gif)
 
 ### Saving Coordinates
 Tired of writing down base locations?<br>
@@ -21,18 +21,18 @@ Save, set, convert, and edit coordinates easily using the chat UI. <br>
 ### Tracking
 Having trouble ~~hunting down~~ keeping up with your friends?<br>
 Send a tracking request and start your adventures! <br>
-![tracking](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOTE0MjRmM2NmMDVkOTZhNjc5ZTliMmE3ZDgwNWIxZDIyODZlNDFjNSZjdD1n/6RAyZOb6PbjMnaZjGM/giphy.gif)
+![tracking](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZjAxMzI1Nzk0ZjNmYTljMjdkMDY2YTI2MGNhNzE1NTllYzcyOTliZSZjdD1n/QkcKKCbRCeNDr7gB5M/giphy.gif)
 
 ### Death Logs
 *Which cave did i die in...*<br>
 See your last deaths in each dimension.
 <br>
-![lastdeath](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMzAwZTEwODExMDhmOWUyMWRmM2EzM2JkOGFiYTZlNmY2N2VhYzkyNyZjdD1n/rkGADfj7eAKdNIKA3J/giphy-downsized-large.gif)
+![lastdeath](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWYwMDI3MmU4YjNmNjVlNzc3N2QzYTg2ZGMxNWNjM2Q3NzhmODZmYiZjdD1n/dZRxf1oDGW6SFsmyCZ/giphy.gif)
 
 ### Destination Customization
 MORE CUSTOMIZATION<br>
 Toggle destination settings, like auto clearing and particles. <br>
-![destcustomization](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMzliMjA4ZWNkY2ZmMjM3MmI2MGZhZmMzYzY5NTc3YzgxNTM5OTBkNiZjdD1n/nHwMOOuptwfbuiM6Q9/giphy-downsized-large.gif)
+![destcustomization](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmNhYmMzYmM1ODBiYzIzNTI0YmQ2NjE0NmZiNTc4OGU1NGExOThmYiZjdD1n/njJ0RiLccOMZ0c3yH5/giphy.gif)
 
 ### Config Settings
 Set config settings to set defaults when running on server, 
