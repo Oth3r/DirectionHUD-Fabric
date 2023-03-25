@@ -11,7 +11,7 @@ With the mod, you can save coordinates, track other players, see death locations
 ### HUD Customization
 Ever wanted everything to be RGB?<br>
 Toggle and sort HUD modules to your liking, change the colors and style. <br>
-![hud customization](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWFlYWY3MWRhMDZiOTA0ODk4MzRiMzMzZWE5ZTZkY2M5NmZmMjE3YyZjdD1n/CoBgjCTe0AEuqkvafe/giphy-downsized-large.gif)
+![hudcustomization](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWFlYWY3MWRhMDZiOTA0ODk4MzRiMzMzZWE5ZTZkY2M5NmZmMjE3YyZjdD1n/CoBgjCTe0AEuqkvafe/giphy-downsized-large.gif)
 
 ### Saving Coordinates
 Tired of writing down base locations?<br>
@@ -32,7 +32,7 @@ See your last deaths in each dimension.
 ### Destination Customization
 MORE CUSTOMIZATION<br>
 Toggle destination settings, like auto clearing and particles. <br>
-![dest customization](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMzliMjA4ZWNkY2ZmMjM3MmI2MGZhZmMzYzY5NTc3YzgxNTM5OTBkNiZjdD1n/nHwMOOuptwfbuiM6Q9/giphy-downsized-large.gif)
+![destcustomization](https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMzliMjA4ZWNkY2ZmMjM3MmI2MGZhZmMzYzY5NTc3YzgxNTM5OTBkNiZjdD1n/nHwMOOuptwfbuiM6Q9/giphy-downsized-large.gif)
 
 ### Config Settings
 Set config settings to set defaults when running on server, 
