@@ -14,31 +14,28 @@ public class PlayerData {
         return new File(DirectionHUD.playerData+player.getUuidAsString()+".json");
     }
     private static Map<String, Object> parseObject(String jsonString) {
-//        DirectionHUD.LOGGER.info("OBJECT: "+jsonString);
-        String ky = Utl.createID().substring(6);
         Map<String, Object> map = new HashMap<>();
         int i = 0;
-        int depth = 0; // track depth of nested objects
+        int depth = 0;
         String key = null;
         while (i < jsonString.length()) {
             char c = jsonString.charAt(i);
-//            DirectionHUD.LOGGER.info(ky+" "+i+" "+c);
             if (c == '"') {
                 int j = i + 1;
                 while (j < jsonString.length() && jsonString.charAt(j) != '"') {
                     j++;
                 }
                 key = jsonString.substring(i + 1, j);
-                i = j + 1; // skip over the closing quote
+                i = j + 1;
             } else if (Character.isWhitespace(c)) {
-                i++; // skip whitespace
+                i++;
             } else if (c == ':') {
                 while (Character.isWhitespace(jsonString.charAt(i+1))) {
                     i++;
                 }
                 Map.Entry<Object, Integer> valuePair = parseValue(jsonString.substring(i + 1));
                 Object value = valuePair.getKey();
-                i += valuePair.getValue()+1; // skip over the value
+                i += valuePair.getValue()+1;
                 map.put(key, value);
                 key = null;
             } else if (c == '{') {
@@ -48,7 +45,7 @@ public class PlayerData {
                 depth--;
                 i++;
                 if (depth == 0) {
-                    break; // end of object
+                    break;
                 }
             } else if (c == ',') {
                 i++;
@@ -59,7 +56,6 @@ public class PlayerData {
         return map;
     }
     private static Map.Entry<Object, Integer> parseValue(String jsonString) {
-//        DirectionHUD.LOGGER.info("VALUE:"+jsonString);
         if (jsonString.startsWith("{")) {
             Map<String, Object> map = parseObject(jsonString);
             int i = 1;
@@ -120,17 +116,14 @@ public class PlayerData {
         }
     }
     private static Object parseArray(String jsonString) {
-//        DirectionHUD.LOGGER.info("ARRAY: "+jsonString);
-        String ky = Utl.createID().substring(6);
         ArrayList<Object> array = new ArrayList<>();
         int i = 1;
         while (i < jsonString.length()) {
             char c = jsonString.charAt(i);
-//            DirectionHUD.LOGGER.info(ky+" "+i+" "+c);
             if (c == ',') {
                 i++;
             } else if (Character.isWhitespace(c)) {
-                i++; // skip whitespace
+                i++;
             } else if (c == ']') {
                 break;
             } else {
@@ -139,7 +132,7 @@ public class PlayerData {
                 }
                 Map.Entry<Object, Integer> valuePair = parseValue(jsonString.substring(i));
                 Object value = valuePair.getKey();
-                i += valuePair.getValue(); // skip over the value
+                i += valuePair.getValue();
                 array.add(value);
             }
         }
@@ -209,8 +202,6 @@ public class PlayerData {
     }
     public static void addPlayer(ServerPlayerEntity player) {
         Map<String, Object> map = getMap(player);
-        DirectionHUD.LOGGER.info("MAP: "+map);
-        DirectionHUD.LOGGER.info("FILE: "+getMap(player));
         map.put("name",Utl.player.name(player));
         writeMap(player, map);
         playerMap.put(player,removeUnnecessary(map));
@@ -229,6 +220,7 @@ public class PlayerData {
     }
     @SuppressWarnings("unchecked")
     public static Map<String,Object> addExpires(ServerPlayerEntity player, Map<String,Object> map) {
+        //since the counters are stored in the map, when the file gets saved, it updates the file.
         Map<String,Object> cache = playerMap.get(player);
         if (cache == null) return map;
         Map<String,Object> cdest = (Map<String, Object>) cache.get("destination");
@@ -364,10 +356,6 @@ public class PlayerData {
         public static class dest {
             private static Map<String,Object> get(ServerPlayerEntity player, boolean map) {
                 if (map) return (Map<String,Object>) getFromMap(player).get("destination");
-                DirectionHUD.LOGGER.info("MAP DEST: "+getFromMap(player).get("destination"));
-                DirectionHUD.LOGGER.info("FILE DEST: "+getMap(player).get("destination"));
-                DirectionHUD.LOGGER.info("MAP: "+getFromMap(player));
-                DirectionHUD.LOGGER.info("FILE: "+getMap(player));
                 return (Map<String, Object>) getMap(player).get("destination");
             }
             private static Map<String,Object> getSetting(ServerPlayerEntity player, boolean map) {
@@ -545,7 +533,7 @@ public class PlayerData {
             public static void setLastdeath(ServerPlayerEntity player, String lastdeath) {
                 Map<String,Object> data = get.dest.get(player,false);
                 data.put("lastdeath", lastdeath);
-                setM(player, data);
+                set(player, data);
             }
             public static void setTrackNull(ServerPlayerEntity player) {
                 Map<String,Object> data = get.dest.get(player,true);
@@ -555,7 +543,7 @@ public class PlayerData {
             public static void setSuspendedNull(ServerPlayerEntity player) {
                 Map<String,Object> data = get.dest.get(player,true);
                 data.put("suspended", null);
-                set(player, data);
+                setM(player, data);
             }
             public static void setSaved(ServerPlayerEntity player, ArrayList<String> saved) {
                 Map<String,Object> data = get.dest.get(player,false);

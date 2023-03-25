@@ -786,7 +786,7 @@ public class Destination {
                         .append(Text.literal(get(player, 1) + "\n  "))
                         .append(CUtl.CButton.dest.set("/dest set " + get(player, 1)))
                         .append(" ");
-                if (pDIM.equals("NETHER")) {
+                if (pDIM.equals("the_nether")) {
                     msg = Text.literal("").append(msg)
                             .append(CUtl.CButton.dest.convert("/dest set " + Utl.xyz.divide(get(player, 1))))
                             .append(" ");
@@ -805,7 +805,7 @@ public class Destination {
                 msg = Text.literal("").append(msg).append(get(player, 2) + "\n  ")
                         .append(CUtl.CButton.dest.set("/dest set " + get(player, 2)))
                         .append(" ");
-                if (pDIM.equals("NORMAL")) {
+                if (pDIM.equals("overworld")) {
                     msg = Text.literal("").append(msg)
                             .append(CUtl.CButton.dest.convert("/dest set " + Utl.xyz.divide(get(player, 2))))
                             .append(" ");
@@ -841,7 +841,7 @@ public class Destination {
             }
             msg = Text.literal("").append(msg)
                     .append(CUtl.button(CUtl.button("delete"), resetC, reset, "/dest lastdeath cl",
-                            CUtl.lang("button.delete.hover_lastdeath", lang("lastdeath.clear_all")).setStyle(CUtl.C('c'))));
+                            CUtl.lang("button.delete.hover_lastdeath", lang("lastdeath.clear_all").setStyle(CUtl.C('c')))));
             msg = Text.literal("").append(msg).append("  ")
                     .append(CUtl.CButton.back("/dest"))
                     .append(Text.literal("\n                                     ").styled(style -> style.withStrikethrough(true)));
