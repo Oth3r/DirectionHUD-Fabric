@@ -158,7 +158,7 @@ public class config {
         public static boolean HUDDestination = true;
         public static boolean HUDDirection = true;
         public static boolean HUDTime = true;
-        public static boolean HUDWeather = false;
+        public static boolean HUDWeather = true;
         public static boolean HUD24HR = false;
         public static String HUDPrimaryColor = CUtl.c.pri;
         public static boolean HUDPrimaryBold = false;
@@ -168,7 +168,7 @@ public class config {
         public static boolean HUDSecondaryItalics = false;
         public static boolean DESTAutoClear = true;
         public static int DESTAutoClearRad = 2;
-        public static boolean DESTYLevel = true;
+        public static boolean DESTYLevel = false;
         public static boolean DESTLineParticles = true;
         public static String DESTLineParticleColor = CUtl.c.sec;
         public static boolean DESTDestParticles = true;

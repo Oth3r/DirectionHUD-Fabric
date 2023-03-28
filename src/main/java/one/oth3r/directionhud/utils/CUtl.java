@@ -63,108 +63,115 @@ public class CUtl {
         }
     }
     public static class c {
-        public static String convert = "ffa93f";
-        public static String set = "fff540";
-        public static String save = "1ee16f";
-        public static String setting = "e9e9e9";
-        public static String lastdeath = "ac4dff";
-        public static String send = "52e1ff";
-        public static String track = "ff6426";
-        public static String edit = "5070ff";
-        public static String dest = "29a2ff";
-        public static String hud = "29ff69";
-        public static String defaults = "ff6629";
-        public static String back = "ff9500";
-        public static String sec = "ffee35";
-        public static String pri = "4dff50";
+        public static String convert = "#ffa93f";
+        public static String set = "#fff540";
+        public static String save = "#1ee16f";
+        public static String add = "#36ff89";
+        public static String setting = "#e9e9e9";
+        public static String lastdeath = "#ac4dff";
+        public static String send = "#52e1ff";
+        public static String track = "#ff6426";
+        public static String edit = "#5070ff";
+        public static String dest = "#29a2ff";
+        public static String hud = "#29ff69";
+        public static String defaults = "#ff6629";
+        public static String back = "#ff9500";
+        public static String sec = "#ffee35";
+        public static String pri = "#2993ff";
     }
     public static class CButton {
         public static Text back(String cmd) {
-            return button(button("back"), HEX(c.back),1, cmd, Text.literal("")
+            return button(SBtn("back"), HEX(c.back),1, cmd, Text.literal("")
                     .append(Text.literal(cmd).setStyle(HEXS(c.back)))
                     .append("\n")
-                    .append(lang("button.back.hover")));
+                    .append(TBtn("back.hover")));
         }
         public static class dest {
             public static Text convert(String cmd) {
-                return button(button("convert"), HEX(c.convert), 1, cmd, lang("button.convert.hover").setStyle(HEXS(c.convert)));
+                return button(SBtn("dest.convert"), HEX(c.convert), 1, cmd, TBtn("dest.convert.hover").setStyle(HEXS(c.convert)));
             }
             public static Text set(String cmd) {
-                return button(button("set"), HEX(c.set), 1, cmd, lang("button.set.hover").setStyle(HEXS(c.set)));
+                return button(SBtn("dest.set"), HEX(c.set), 1, cmd, TBtn("dest.set.hover").setStyle(HEXS(c.set)));
             }
             public static Text settings() {
-                return CUtl.button(button("dest.settings"), CUtl.HEX(c.setting),1, "/dest settings", Text.literal("")
+                return button(SBtn("dest.settings"), HEX(c.setting),1, "/dest settings", Text.literal("")
                         .append(Text.literal(commandUsage.destSettings()).setStyle(HEXS(c.setting)))
-                        .append("\n").append(lang("button.dest.settings.hover")));
+                        .append("\n").append(TBtn("dest.settings.hover")));
             }
             public static Text saved() {
-                return CUtl.button(button("dest.saved"), CUtl.HEX(c.save),1, "/dest saved", Text.literal("")
-                        .append(Text.literal(commandUsage.destSaved()).setStyle(CUtl.HEXS(c.save)))
-                        .append("\n").append(lang("button.dest.saved.hover")));
+                return button(SBtn("dest.saved"), HEX(c.save),1, "/dest saved", Text.literal("")
+                        .append(Text.literal(commandUsage.destSaved()).setStyle(HEXS(c.save)))
+                        .append("\n").append(TBtn("dest.saved.hover")));
+            }
+            public static Text add() {
+                return button("+", HEX(c.add),2, "/dest add ", Text.literal("")
+                        .append(Text.literal(commandUsage.destAdd()).setStyle(HEXS(c.add)))
+                        .append("\n").append(TBtn("dest.add.hover",
+                                TBtn("dest.add.hover_2").setStyle(HEXS(c.add)))));
             }
             public static Text set() {
-                return CUtl.button(button("dest.set"), HEX(c.set),2, "/dest set ", Text.literal("")
+                return button(SBtn("dest.set"), HEX(c.set),2, "/dest set ", Text.literal("")
                         .append(Text.literal(commandUsage.destSet()).setStyle(HEXS(c.set)))
-                        .append("\n").append(lang("button.dest.set.hover")));
+                        .append("\n").append(TBtn("dest.set.hover_info")));
             }
             public static Text clear(TextColor color, int i) {
-                return CUtl.button(button("dest.clear"), color, i, "/dest clear", Text.literal("")
+                return button(SBtn("dest.clear"), color, i, "/dest clear", Text.literal("")
                         .append(Text.literal(commandUsage.destClear()).styled(style -> style.withColor(color)))
-                        .append("\n").append(lang("button.dest.clear.hover")));
+                        .append("\n").append(TBtn("dest.clear.hover")));
             }
             public static Text lastdeath() {
-                return CUtl.button(button("dest.lastdeath"), CUtl.HEX(c.lastdeath),1, "/dest lastdeath", Text.literal("")
+                return button(SBtn("dest.lastdeath"), HEX(c.lastdeath),1, "/dest lastdeath", Text.literal("")
                         .append(Text.literal(commandUsage.destLastdeath()).setStyle(HEXS(c.lastdeath)))
-                        .append("\n").append(lang("button.dest.lastdeath.hover")));
+                        .append("\n").append(TBtn("dest.lastdeath.hover")));
             }
-            public static Text send(TextColor color, int i) {
-                return CUtl.button(button("dest.send"), color, i, "/dest send ", Text.literal("")
-                        .append(Text.literal(commandUsage.destSend()).styled(style -> style.withColor(color)))
-                        .append("\n").append(lang("button.dest.send.hover")));
+            public static Text send() {
+                return button(SBtn("dest.send"), HEX(c.send), 2, "/dest send ", Text.literal("")
+                        .append(Text.literal(commandUsage.destSend()).setStyle(HEXS(c.send)))
+                        .append("\n").append(TBtn("dest.send.hover")));
             }
-            public static Text track(TextColor color, int i) {
-                return CUtl.button(button("dest.track"), color, i, "/dest track ", Text.literal("")
-                        .append(Text.literal(commandUsage.destTrack()).styled(style1 -> style1.withColor(color)))
-                        .append("\n").append(lang("button.dest.track.hover")));
+            public static Text track() {
+                return button(SBtn("dest.track"), HEX(c.track), 2, "/dest track ", Text.literal("")
+                        .append(Text.literal(commandUsage.destTrack()).setStyle(HEXS(c.track)))
+                        .append("\n").append(TBtn("dest.track.hover")));
             }
         }
         public static class hud {
             public static Text color() {
                 return Text.literal("").append(Text.literal("")
                         .append("[")
-                        .append(Utl.color.rainbow(button("hud.color"),15f,45f))
+                        .append(Utl.color.rainbow(SBtn("hud.color"),15f,45f))
                         .append("]")).styled(style -> style
                         .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/hud color"))
                         .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("")
                                 .append(Utl.color.rainbow(commandUsage.hudColor(),10f,23f))
-                                .append("\n").append(lang("button.hud.color.hover")))));
+                                .append("\n").append(TBtn("hud.color.hover")))));
             }
             public static Text edit() {
-                return CUtl.button(button("hud.edit"), CUtl.HEX(c.edit), 1, "/hud edit", Text.literal("")
+                return button(SBtn("hud.edit"), HEX(c.edit), 1, "/hud edit", Text.literal("")
                         .append(Text.literal(commandUsage.hudEdit()).setStyle(HEXS(c.edit)))
-                        .append("\n").append(lang("button.hud.edit.hover")));
+                        .append("\n").append(TBtn("hud.edit.hover")));
             }
             public static Text toggle(Character color, String type) {
-                return CUtl.button(button("hud.toggle"), CUtl.TC(color), 1, "/hud toggle "+ type, Text.literal("")
-                        .append(Text.literal(commandUsage.hudToggle()).setStyle(CUtl.C(color)))
-                        .append("\n").append(lang("button.hud.toggle.hover")));
+                return button(SBtn("hud.toggle"), TC(color), 1, "/hud toggle "+ type, Text.literal("")
+                        .append(Text.literal(commandUsage.hudToggle()).setStyle(C(color)))
+                        .append("\n").append(TBtn("hud.toggle.hover")));
             }
         }
         public static class dirHUD {
             public static Text hud() {
-                return CUtl.button(button("dirhud.hud"), CUtl.HEX(c.hud), 1, "/hud", Text.literal("")
+                return button(SBtn("dirhud.hud"), HEX(c.hud), 1, "/hud", Text.literal("")
                         .append(Text.literal(commandUsage.hud()).setStyle(HEXS(c.hud)))
-                        .append("\n").append(lang("button.dirhud.hud.hover")));
+                        .append("\n").append(TBtn("dirhud.hud.hover")));
             }
             public static Text dest() {
-                return CUtl.button(button("dirhud.dest"), CUtl.HEX(c.dest), 1, "/dest", Text.literal("")
+                return button(SBtn("dirhud.dest"), HEX(c.dest), 1, "/dest", Text.literal("")
                         .append(Text.literal(commandUsage.dest()).setStyle(HEXS(c.dest)))
-                        .append("\n").append(lang("button.dirhud.dest.hover")));
+                        .append("\n").append(TBtn("dirhud.dest.hover")));
             }
             public static Text defaults() {
-                return CUtl.button(button("dirhud.defaults"), CUtl.HEX(c.defaults), 1, "/dirhud defaults", Text.literal("")
+                return button(SBtn("dirhud.defaults"), HEX(c.defaults), 1, "/dirhud defaults", Text.literal("")
                         .append(Text.literal(commandUsage.defaults()).setStyle(HEXS(c.defaults)))
-                        .append("\n").append(lang("button.dirhud.defaults.hover")));
+                        .append("\n").append(TBtn("dirhud.defaults.hover")));
             }
         }
     }
@@ -236,8 +243,14 @@ public class CUtl {
                 .append(Text.literal(bText).styled(style -> style.withColor(color)))
                 .append(Text.literal("]")));
     }
-    public static String button(String key) {
-        return lang("button."+key).getString();
+    public static String SBtn(String key) {
+        return TBtn(key).getString();
+    }
+    public static MutableText TBtn(String key) {
+        return lang("button."+key);
+    }
+    public static MutableText TBtn(String key, Object... args) {
+        return lang("button."+key,args);
     }
     public static class commandUsage {
         public static String hud() {return "/hud";}
@@ -245,7 +258,7 @@ public class CUtl {
         public static String hudColor() {return "/hud color";}
         public static String hudEdit() {return "/hud edit";}
         public static String dest() {return "/dest | /destination";}
-        public static String destAdd() {return "/dest saved add <name> (x) (y) (z) (dimension) (color)";}
+        public static String destAdd() {return "/dest (saved) add <name> (x) (y) (z) (dimension) (color)";}
         public static String destSet() {return "/dest set <x> (y) <z> | /dest set saved <name>";}
         public static String destLastdeath() {return "/dest lastdeath";}
         public static String destClear() {return "/dest clear";}

@@ -42,6 +42,14 @@ public class Utl {
     public static String createID() {
         return RandomStringUtils.random(8, true, true);
     }
+    public static String[] trimStart(String[] arr, int numToRemove) {
+        if (numToRemove > arr.length) {
+            return new String[0];
+        }
+        String[] result = new String[arr.length - numToRemove];
+        System.arraycopy(arr, numToRemove, result, 0, result.length);
+        return result;
+    }
     public static class xyz {
         public static String fix(String loc) {
             ArrayList<String> sp = new ArrayList<>(Arrays.asList(loc.split(" ")));

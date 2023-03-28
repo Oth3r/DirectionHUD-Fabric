@@ -13,7 +13,6 @@ import java.util.*;
 import java.util.List;
 
 public class HUD {
-    //puts "hud." in front of CUtl.lang
     private static MutableText lang(String key) {
         return CUtl.lang("hud."+key);
     }
@@ -230,7 +229,7 @@ public class HUD {
             if (!HUD.order.validCheck(module)) return;
             Text text = Text.literal("").append(CUtl.tag())
                     .append(lang("module.toggle",
-                            CUtl.button(toggle ? "on" : "off"),
+                            CUtl.SBtn(toggle ? "on" : "off"),
                             Text.literal(langName(module)).setStyle(CUtl.sS())));
             //OFF
             if (!toggle && HUD.order.moduleState(player, module)) HUD.order.removeModule(player, module);
@@ -471,12 +470,12 @@ public class HUD {
                     if (moduleName.equals("time")) {
                         if (PlayerData.get.hud.setting.time24h(player)) {
                             modules.put(moduleName, Text.literal("").append(modules.get(moduleName))
-                                    .append(CUtl.button(CUtl.button("time.24hr"), CUtl.sTC(), 1, "/hud edit setting time 12hr",
+                                    .append(CUtl.button(CUtl.SBtn("time.24hr"), CUtl.sTC(), 1, "/hud edit setting time 12hr",
                                             CUtl.lang("button.time.hover",
                                                     CUtl.lang("button.time.12hr").setStyle(CUtl.sS())))));
                         } else {
                             modules.put(moduleName, Text.literal("").append(modules.get(moduleName))
-                                    .append(CUtl.button(CUtl.button("time.12hr"), CUtl.sTC(),1,"/hud edit setting time 24hr",
+                                    .append(CUtl.button(CUtl.SBtn("time.12hr"), CUtl.sTC(),1,"/hud edit setting time 24hr",
                                             CUtl.lang("button.time.hover",
                                                     CUtl.lang("button.time.24hr").setStyle(CUtl.sS())))));
                         }
@@ -520,13 +519,12 @@ public class HUD {
             }
             msg = Text.literal("").append(msg)
                     .append(Text.literal("          "))
-                    .append(CUtl.button(CUtl.button("reset"), CUtl.TC('c'),1,"/hud edit reset",
+                    .append(CUtl.button(CUtl.SBtn("reset"), CUtl.TC('c'),1,"/hud edit reset",
                             CUtl.lang("button.reset.hover_edit").setStyle(CUtl.C('c'))))
                     .append(Text.literal("  "))
                     .append(CUtl.CButton.back("/hud"))
                     .append(Text.literal("\n"))
                     .append(Text.literal("                                               ").styled(style -> style.withStrikethrough(true)));
-
             player.sendMessage(msg);
         }
     }
@@ -648,13 +646,13 @@ public class HUD {
 
             //PRIMARY
             msg = Text.literal("").append(msg).append(" ")
-                    .append(CUtl.button(player,CUtl.button("color.primary"), 1,15, 20, 1, "/hud color edt pri",
+                    .append(CUtl.button(player,CUtl.SBtn("color.primary"), 1,15, 20, 1, "/hud color edt pri",
                             CUtl.lang("button.color.edit.hover",
                                     addColor(player,CUtl.lang("button.color.primary"),1,15,20))))
                     .append(Text.literal(" "));
             //SECONDARY
             msg = Text.literal("").append(msg)
-                    .append(CUtl.button(player,CUtl.button("color.secondary"), 2,15,20, 1, "/hud color edt sec",
+                    .append(CUtl.button(player,CUtl.SBtn("color.secondary"), 2,15,20, 1, "/hud color edt sec",
                             CUtl.lang("button.color.edit.hover",
                                     addColor(player,CUtl.lang("button.color.secondary"),2,15,20))))
                     .append(Text.literal("\n\n      "));
@@ -662,7 +660,7 @@ public class HUD {
 
             //RESET
             msg = Text.literal("").append(msg)
-                    .append(CUtl.button(CUtl.button("reset"), CUtl.TC('c'), 1, "/hud color rset",
+                    .append(CUtl.button(CUtl.SBtn("reset"), CUtl.TC('c'), 1, "/hud color rset",
                             CUtl.lang("button.reset.hover_color",
                                     CUtl.lang("button.all").setStyle(CUtl.C('c')))))
                     .append(Text.literal("  "))
@@ -699,7 +697,7 @@ public class HUD {
             Text dark_gray = colorButton("D", CUtl.TC('8'));
             Text black = colorButton("B", CUtl.TC('0'));
 
-            Text reset = colorButton(CUtl.button("reset"), CUtl.TC('c'));
+            Text reset = colorButton(CUtl.SBtn("reset"), CUtl.TC('c'));
             Text back = CUtl.CButton.back("/hud color");
 
 
@@ -780,7 +778,7 @@ public class HUD {
                     .append(allObj.get(15))
                     .append(Text.literal("\n\n "))
                     .append(Text.literal("")
-                            .append("[").append(Utl.color.rainbow(CUtl.button("color.rgb"),15,95)).append("]")
+                            .append("[").append(Utl.color.rainbow(CUtl.SBtn("color.rgb"),15,95)).append("]")
                             .styled(style -> style
                                     .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                                             CUtl.lang("button.color.rgb.hover",
@@ -788,18 +786,20 @@ public class HUD {
                                     .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
                                             "/hud color set "+(typ == 1 ? "primary" : "secondary")+" rainbow"))))
                     .append(Text.literal(" "))
-                    .append(CUtl.button(CUtl.button("color.custom"), CUtl.HEX("#ff97e0"), 2,
+                    .append(CUtl.button(CUtl.SBtn("color.custom"),
+                            CUtl.HEX(getHUDColors(player)[typ-1].contains("#")? getHUDColors(player)[typ-1]: "#ff97e0"), 2,
                             "/hud color set "+(typ == 1 ? "primary" : "secondary")+" ",
                             CUtl.lang("button.color.custom.hover",
-                                    CUtl.lang("button.color.custom.hover_2").styled(style -> style.withColor(CUtl.HEX("#ff97e0"))))))
+                                    CUtl.lang("button.color.custom.hover_2").setStyle(
+                                            CUtl.HEXS(getHUDColors(player)[typ-1].contains("#")? getHUDColors(player)[typ-1]: "#ff97e0")))))
                     .append(Text.literal("\n\n "))
-                    .append(CUtl.button(CUtl.button("color.bold"),CUtl.TC(getHUDBold(player, typ) ? 'a' : 'c'), 1,
+                    .append(CUtl.button(CUtl.SBtn("color.bold"),CUtl.TC(getHUDBold(player, typ) ? 'a' : 'c'), 1,
                             "/hud color bold "+(typ == 1 ? "primary" : "secondary")+" "+(getHUDBold(player, typ) ? "false" : "true"),
                             CUtl.lang("button.color.bold.hover",
                                     CUtl.lang("button."+(getHUDBold(player,typ)?"off":"on")).setStyle(CUtl.C(getHUDBold(player,typ)?'c':'a')),
                                     lang("color."+(typ==1?"primary":"secondary")))))
                     .append(Text.literal(" "))
-                    .append(CUtl.button(CUtl.button("color.italics"),CUtl.TC(getHUDItalics(player, typ) ? 'a' : 'c'), 1,
+                    .append(CUtl.button(CUtl.SBtn("color.italics"),CUtl.TC(getHUDItalics(player, typ) ? 'a' : 'c'), 1,
                             "/hud color italics "+(typ == 1 ? "primary" : "secondary")+" "+(getHUDItalics(player, typ) ? "false" : "true"),
                             CUtl.lang("button.color.italics.hover",
                                     CUtl.lang("button."+(getHUDItalics(player,typ)?"off":"on")).setStyle(CUtl.C(getHUDItalics(player,typ)?'c':'a')),
@@ -812,11 +812,14 @@ public class HUD {
             player.sendMessage(msg, false);
         }
     }
-    public static void toggle(ServerPlayerEntity player, String state, boolean Return) {
+    public static void toggle(ServerPlayerEntity player, Boolean state, boolean Return) {
         if (state == null) {
             if (PlayerData.get.hud.state(player)) player.sendMessage(Text.of(""), true);
             PlayerData.set.hud.state(player, !PlayerData.get.hud.state(player));
-        } else PlayerData.set.hud.state(player, state.equals("true"));
+        } else {
+            if (!state) player.sendMessage(Text.of(""),true);
+            PlayerData.set.hud.state(player, state);
+        }
         Text text = Text.literal("").append(CUtl.tag())
                 .append(lang("toggle",
                         CUtl.lang("button."+(PlayerData.get.hud.state(player)?"on":"off")).setStyle(CUtl.C(PlayerData.get.hud.state(player)?'a':'c'))));
@@ -824,22 +827,24 @@ public class HUD {
         else player.sendMessage(text);
     }
     public static void UI(ServerPlayerEntity player, Text abovemsg) {
-        Text msg = Text.literal("");
-        if (abovemsg != null) msg = Text.literal("").append(msg).append(abovemsg).append("\n ");
-        msg = Text.literal("").append(msg).append(" ").append(lang("ui").setStyle(CUtl.pS()))
+        MutableText msg = Text.literal("");
+        if (abovemsg != null) msg.append(abovemsg).append("\n");
+        msg.append(" ")
+                .append(lang("ui").setStyle(CUtl.pS()))
                 .append(Text.literal("\n                                 \n").styled(style -> style.withStrikethrough(true)))
                 .append(Text.literal(" "));
         //COLOR
-        msg = Text.literal("").append(msg).append(CUtl.CButton.hud.color()).append(" ");
+        msg.append(CUtl.CButton.hud.color()).append(" ");
         //EDIT
-        msg = Text.literal("").append(msg).append(CUtl.CButton.hud.edit()).append(" ");
+        msg.append(CUtl.CButton.hud.edit()).append(" ");
         //TOGGLE
         char color = 'c';
         String type = "false";
         if (!PlayerData.get.hud.state(player)) { type = "true"; color = 'a'; }
-        msg = Text.literal("").append(msg).append(CUtl.CButton.hud.toggle(color, type))
-                .append("\n\n ").append(CUtl.CButton.back("/directionhud"))
-                .append(Text.literal("\n                                 ").styled(style -> style.withStrikethrough(true)));
+        msg.append(CUtl.CButton.hud.toggle(color, type)).append("\n\n ");
+        //BACK
+        msg.append(CUtl.CButton.back("/directionhud"));
+        msg.append(Text.literal("\n                                 ").styled(style -> style.withStrikethrough(true)));
         player.sendMessage(msg);
     }
     //782

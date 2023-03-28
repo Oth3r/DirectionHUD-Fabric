@@ -5,19 +5,11 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.text.MutableText;
-import one.oth3r.directionhud.DirectionHUD;
-import one.oth3r.directionhud.files.PlayerData;
-import one.oth3r.directionhud.utils.CUtl;
-import one.oth3r.directionhud.utils.Utl;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
+import one.oth3r.directionhud.utils.CUtl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -62,7 +54,7 @@ public class HUDCommand {
             builder.suggest("toggle");
             return builder.buildFuture();
         }
-        if (pos > 1 && args.length < 5) {
+        if (pos != args.length) {
             return builder.buildFuture();
         }
         if (pos == 4 && args[2].equals("set")) {
@@ -175,7 +167,7 @@ public class HUDCommand {
                 return 1;
             }
             if (args.length != 2) return 1;
-            HUD.toggle(player, args[1], true);
+            HUD.toggle(player, Boolean.parseBoolean(args[1]), true);
             return 1;
         }
 

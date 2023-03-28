@@ -1,10 +1,5 @@
 package one.oth3r.directionhud;
 
-import one.oth3r.directionhud.commands.DestinationCommand;
-import one.oth3r.directionhud.commands.DirHUDCommand;
-import one.oth3r.directionhud.commands.HUDCommand;
-import one.oth3r.directionhud.files.PlayerData;
-import one.oth3r.directionhud.files.config;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -12,10 +7,13 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.util.WorldSavePath;
+import one.oth3r.directionhud.commands.DestinationCommand;
+import one.oth3r.directionhud.commands.DirHUDCommand;
+import one.oth3r.directionhud.commands.HUDCommand;
+import one.oth3r.directionhud.files.PlayerData;
+import one.oth3r.directionhud.files.config;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 
 public class DirectionHUDClient implements ClientModInitializer {
     @Override
@@ -26,7 +24,6 @@ public class DirectionHUDClient implements ClientModInitializer {
             DirectionHUD.server = s;
             DirectionHUD.commandManager = s.getCommandManager();
             DirectionHUD.playerData = DirectionHUD.server.getSavePath(WorldSavePath.ROOT).normalize()+"/directionhud/playerdata/";
-            DirectionHUD.config = FabricLoader.getInstance().getConfigDir().toFile()+"/";
             File dir = new File(DirectionHUD.playerData);
             if (!dir.exists()) dir.mkdirs();
         });

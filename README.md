@@ -3,8 +3,11 @@ DirectionHUD is a fully customizable Minecraft Fabric mod
 that enhances the vanilla experience. 
 With the mod, you can save coordinates, track other players, see death locations, all with full customization to the HUD and Destination commands.
 <br><br>
-*Why is it coded in a plugin style?* - DirectionHUD is a port of one of my old private plugins; it might be ported back to spigot in the future. <br>
 <img src="https://cdn.discordapp.com/attachments/801291003494400021/1089247576450142338/ezgif.com-resize.gif" alt="Image">
+<br>
+***Where does the mod work?*** - DirectionHUD both works on client and server, but for now the client side only supports single player. With anything that can change with time.
+<br>
+***Why is it coded like a plugin?*** - DirectionHUD is a port of one of my old private plugins; it might be ported back to spigot later on. <br>
 
 ## Features
 

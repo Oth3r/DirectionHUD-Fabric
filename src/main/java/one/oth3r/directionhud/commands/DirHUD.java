@@ -50,10 +50,10 @@ public class DirHUD {
         MutableText msg = Text.literal(" ").append(CUtl.lang("dirhud.ui.defaults").setStyle(CUtl.pS()))
                 .append(Text.literal("\n                                 \n").styled(style -> style.withStrikethrough(true)))
                 .append(" ")
-                .append(CUtl.button(CUtl.button("dirhud.defaults.set"),CUtl.HEX(CUtl.c.set),1,"/dirhud defaults set",
+                .append(CUtl.button(CUtl.SBtn("dirhud.defaults.set"),CUtl.HEX(CUtl.c.set),1,"/dirhud defaults set",
                         CUtl.lang("button.dirhud.defaults.set.hover")))
                 .append("  ")
-                .append(CUtl.button(CUtl.button("dirhud.defaults.reset"),CUtl.TC('c'),1,"/dirhud defaults reset",
+                .append(CUtl.button(CUtl.SBtn("dirhud.defaults.reset"),CUtl.TC('c'),1,"/dirhud defaults reset",
                         CUtl.lang("button.dirhud.defaults.reset.hover")))
                 .append("  ")
                 .append(CUtl.CButton.back("/dirhud"))

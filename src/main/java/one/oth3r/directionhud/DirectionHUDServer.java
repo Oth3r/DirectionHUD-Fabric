@@ -25,12 +25,12 @@ public class DirectionHUDServer implements DedicatedServerModInitializer {
             DirectionHUD.playerManager = s.getPlayerManager();
             DirectionHUD.server = s;
             DirectionHUD.commandManager = s.getCommandManager();
-            LangReader.loadLanguageFile("en_us");
             System.out.println();
             DirectionHUD.playerData = FabricLoader.getInstance().getConfigDir().toFile()+"/directionhud/playerdata/";
             File dir = new File(DirectionHUD.playerData);
             if (!dir.exists()) dir.mkdirs();
         });
+        LangReader.loadLanguageFile("en_us");
         DirectionHUD.config = FabricLoader.getInstance().getConfigDir().toFile()+"/";
         config.load();
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
