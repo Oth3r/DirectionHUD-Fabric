@@ -47,7 +47,7 @@ or use modmenu + clothconfig on client. (currently not working, waiting for a mo
 ### More customization
 * Disabling certain commands in config
 * Turn off lastdeath in settings, since minecraft added the recovery compass (I made that feature before they added that smh)
-* Setting limits to certain thing's ect.
+* Setting limits to certain features, ect.
 
 ### Client UI
 Straying away from the plugin feel for client users.<br>

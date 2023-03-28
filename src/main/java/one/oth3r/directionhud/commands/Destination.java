@@ -704,7 +704,7 @@ public class Destination {
             player.sendMessage(msg);
         }
         public static void UI(ServerPlayerEntity player, int pg) {
-            Text addB = CUtl.button(CUtl.SBtn("dest.add"), CUtl.HEX(CUtl.c.add), 2, "/dest saved add ", Text.literal("")
+            Text addB = CUtl.button(CUtl.SBtn("dest.add"), CUtl.HEX(CUtl.c.add), 2, "/dest add ", Text.literal("")
                     .append(Text.literal(CUtl.commandUsage.destAdd()).setStyle(CUtl.HEXS(CUtl.c.add)))
                     .append("\n").append(CUtl.TBtn("dest.add.hover",
                             CUtl.TBtn("dest.add.hover_2").setStyle(CUtl.HEXS(CUtl.c.add))).setStyle(CUtl.C('f'))));
