@@ -10,6 +10,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import one.oth3r.directionhud.DirectionHUD;
 import one.oth3r.directionhud.files.PlayerData;
+import one.oth3r.directionhud.files.config;
 import one.oth3r.directionhud.utils.CUtl;
 import one.oth3r.directionhud.utils.Utl;
 
@@ -56,10 +57,10 @@ public class DestinationCommand {
         assert player != null;
         String[] args = context.getInput().split(" ");
         if (pos == 1) {
-            builder.suggest("lastdeath");
+            if (config.lastdeath) builder.suggest("lastdeath");
+            if (config.DESTSaving) builder.suggest("saved");
             builder.suggest("set");
             builder.suggest("clear");
-            builder.suggest("saved");
             builder.suggest("settings");
             builder.suggest("add");
             if (PlayerData.get.dest.setting.send(player) && DirectionHUD.server.isRemote())

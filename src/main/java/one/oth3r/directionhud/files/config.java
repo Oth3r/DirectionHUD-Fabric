@@ -9,6 +9,9 @@ import java.io.*;
 import java.util.Properties;
 
 public class config {
+    public static boolean DESTSaving = defaults.DESTSaving;
+    public static int MAXSaved = defaults.MAXSaved;
+    public static boolean lastdeath = defaults.lastdeath;
     public static boolean HUDEnabled = defaults.HUDEnabled;
     public static String HUDOrder = defaults.HUDOrder;
     public static boolean HUDCoordinates = defaults.HUDCoordinates;
@@ -72,6 +75,10 @@ public class config {
             var properties = new Properties();
             properties.load(fileStream);
             fileStream.close();
+            //CONFIG
+            DESTSaving = Boolean.parseBoolean((String) properties.computeIfAbsent("destination-saving", a -> defaults.DESTSaving+""));
+            MAXSaved = Integer.parseInt((String) properties.computeIfAbsent("destination-max-saved", a -> defaults.MAXSaved+""));
+            lastdeath = Boolean.parseBoolean((String) properties.computeIfAbsent("lastdeath", a -> defaults.lastdeath+""));
             //HUD
             HUDEnabled = Boolean.parseBoolean((String) properties.computeIfAbsent("enabled", a -> defaults.HUDEnabled+""));
             HUDOrder = HUD.order.fixOrder((String) properties.computeIfAbsent("order", a -> defaults.HUDOrder));
@@ -100,7 +107,6 @@ public class config {
             DESTDestParticleColor = Utl.color.fix((String) properties.computeIfAbsent("dest-particle-color", a -> defaults.DESTDestParticleColor),false,defaults.DESTDestParticleColor);
             DESTSend = Boolean.parseBoolean((String) properties.computeIfAbsent("send", a -> defaults.DESTSend+""));
             DESTTrack = Boolean.parseBoolean((String) properties.computeIfAbsent("track", a -> defaults.DESTTrack+""));
-
             save();
         } catch (Exception f) {
             //read fail
@@ -110,8 +116,12 @@ public class config {
     }
     public static void save() {
         try (var file = new FileOutputStream(configFile(), false)) {
-            file.write("# DirectionHUD Defaults".getBytes());
-            file.write("\n\n# HUD".getBytes());
+            file.write("# DirectionHUD Config v1.0\n".getBytes());
+            file.write(("\ndestination-saving=" + HUDEnabled).getBytes());
+            file.write(("\ndestination-max-saved=" + HUDEnabled).getBytes());
+            file.write(("\nlastdeath=" + HUDEnabled).getBytes());
+            file.write(("# DirectionHUD Player Defaults\n").getBytes());
+            file.write("\n# HUD".getBytes());
             file.write(("\nenabled=" + HUDEnabled).getBytes());
             file.write(("\norder=" + HUDOrder).getBytes());
             file.write(("\n# " + CUtl.lang("config.hud.order.hover_file").getString()).getBytes());
@@ -150,6 +160,9 @@ public class config {
         }
     }
     public static class defaults {
+        public static boolean DESTSaving = true;
+        public static int MAXSaved = 50;
+        public static boolean lastdeath = true;
         public static boolean HUDEnabled = true;
         public static String HUDOrder = HUD.order.allModules();
         public static boolean HUDCoordinates = true;

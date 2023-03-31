@@ -415,6 +415,7 @@ public class Destination {
             return 1;
         }
         public static int lastdeathCMD(ServerPlayerEntity player, String[] args) {
+            if (!config.lastdeath) return 1;
             if (args.length == 0) {
                 Destination.lastdeath.UI(player, null);
                 return 1;
@@ -791,6 +792,10 @@ public class Destination {
             List<String> names = getNames(player);
             List<String> all = getList(player);
             Style colorS;
+            if (getList(player).size() >= config.MAXSaved) {
+                if (send) player.sendMessage(error("dest.saved.max"));
+                return;
+            }
             if (names.contains(name)) {
                 if (send) player.sendMessage(error("dest.saved.duplicate"));
                 return;
@@ -809,11 +814,6 @@ public class Destination {
             }
             colorS = Style.EMPTY.withColor(Utl.color.getTC(Utl.color.fix(color==null?"yellow":color,false,"yellow")));
             color = Utl.color.fix(color==null?"white":color,false,"white");
-            //todo config file shit
-//            if (getList(player).size() >= Utl.Config.maxSavedDestinations()) {
-//                if (send) player.sendMessage(CUtl.error("Reached the max number of saved destinations!"));
-//                return;
-//            }
             if (!Utl.xyz.check(xyz)) {
                 player.sendMessage(error("coordinates"));
                 return;
