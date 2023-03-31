@@ -1,5 +1,7 @@
 package one.oth3r.directionhud.commands;
 
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.*;
 import net.minecraft.util.math.Vec3d;
@@ -10,8 +12,14 @@ import one.oth3r.directionhud.utils.CUtl;
 import one.oth3r.directionhud.utils.Utl;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 public class Destination {
+    //todo button to view saved when adding a destination or sm like that
+    // make it so you can tab full coordinates like in minecraft, tp command
+    // here's something for the future, add support for like 2 decimals, uhh that's gonna suck maybe not
+    // disable save button when receiving from /dest send
+    // dont allow saving a destination "saved"
     private static MutableText lang(String key) {
         return CUtl.lang("dest."+key);
     }
@@ -245,7 +253,7 @@ public class Destination {
     public static void suspend(ServerPlayerEntity player, String tplayerName, int timeM, MutableText reason) {
         PlayerData.set.dest.suspended.expire(player, timeM*60);
         PlayerData.set.dest.suspended.target(player, tplayerName);
-        Destination.clear(player);
+        clear(player);
         Text text = CUtl.tag()
                 .append(lang("suspended",
                         lang("suspended_time",timeM).setStyle(CUtl.C('7'))))
@@ -255,95 +263,141 @@ public class Destination {
     public static boolean checkDestination(ServerPlayerEntity player) {
         return !get(player, "xyz").equals("f");
     }
-    public static int addCMD(ServerPlayerEntity player, String[] args) {
-        String playerDIM = Utl.player.dim(player);
-        //dest saved add <name>
-        if (args.length == 1) {
-            Destination.saved.add(true, player, args[0], player.getBlockX() + " " + player.getBlockZ(), playerDIM, null);
+    public static class commandExecutor {
+        public static int setCMD(ServerPlayerEntity player, String[] args) {
+            if (!Utl.inBetween(args.length, 2,4)) {
+                player.sendMessage(CUtl.usage(CUtl.commandUsage.destSet()));
+                return 1;
+            }
+            // /dest set saved <name> (convert)
+            if (args[0].equalsIgnoreCase("saved")) {
+                if (!config.DESTSaving) return 1;
+                if (args.length == 2) Destination.setName(player, args[1], false);
+                if (args.length == 3 && args[2].equalsIgnoreCase("convert")) Destination.setName(player, args[1], true);
+                return 1;
+            }
+            if (!Utl.isInt(args[0]) || !Utl.isInt(args[1])) return 1;
+            // /dest set x z
+            if (args.length == 2) {
+                Destination.set(true, player, args[0] +" n "+ args[1]);
+                return 1;
+            }
+            // /dest set x z DIM (hidden)
+            if (args.length == 3 && !Utl.isInt(args[2])) {
+                Destination.setConvert(player, args[0] +" n "+ args[1], args[2]);
+                return 1;
+            }
+            // /dest set x y z
+            if (args.length == 3 && Utl.isInt(args[2])) {
+                Destination.set(true, player, args[0] +" "+ args[1] +" "+ args[2]);
+                return 1;
+            }
+            // /dest set x y z DIM (hidden)
+            if (args.length == 4) {
+                Destination.setConvert(player, args[0] +" "+ args[1] +" "+ args[2], args[3]);
+                return 1;
+            }
             return 1;
         }
-        if (!Utl.inBetween(args.length, 2, 6)) {
-            player.sendMessage(CUtl.usage(CUtl.commandUsage.destAdd()));
+        public static int addCMD(ServerPlayerEntity player, String[] args) {
+            String playerDIM = Utl.player.dim(player);
+            //dest saved add <name>
+            if (args.length == 1) {
+                saved.add(true, player, args[0], player.getBlockX() + " " + player.getBlockZ(), playerDIM, null);
+                return 1;
+            }
+            if (!Utl.inBetween(args.length, 2, 6)) {
+                player.sendMessage(CUtl.usage(CUtl.commandUsage.destAdd()));
+                return 1;
+            }
+            //dest saved add <name> color
+            //dest saved add <name> dim
+            if (args.length == 2) {
+                if (Utl.dim.checkValid(args[1])) saved.add(true, player, args[0], Utl.player.XYZ(player), args[1], null);
+                else saved.add(true, player, args[0], Utl.player.XYZ(player), playerDIM, args[1]);
+                return 1;
+            }
+            //dest saved add <name> x y
+            if (args.length == 3) {
+                saved.add(true, player, args[0], args[1] + " " + args[2], playerDIM, null);
+                return 1;
+            }
+            //dest saved add <name> x y color
+            if (args.length == 4 && !Utl.isInt(args[3]) && !Utl.dim.checkValid(args[3])) {
+                saved.add(true, player, args[0],args[1] + " " + args[2], playerDIM, args[3]);
+                return 1;
+            }
+            //dest saved add <name> x y DIM
+            if (args.length == 4 && !Utl.isInt(args[3])) {
+                saved.add(true, player, args[0],args[1] + " " + args[2], args[3], null);
+                return 1;
+            }
+            //dest saved add <name> x y z
+            if (args.length == 4 && Utl.isInt(args[3])) {
+                saved.add(true, player, args[0], args[1] +" "+ args[2] +" "+ args[3], playerDIM, null);
+                return 1;
+            }
+            //dest saved add <name> x y DIM color
+            if (args.length == 5 && !Utl.isInt(args[3])) {
+                saved.add(true, player, args[0], args[1] +" "+ args[2], args[3], args[4]);
+                return 1;
+            }
+            //dest saved add <name> x y z color
+            if (args.length == 5 && !Utl.dim.checkValid(args[4])) {
+                saved.add(true, player, args[0], args[1] +" "+ args[2] +" "+ args[3], playerDIM ,args[4]);
+                return 1;
+            }
+            //dest saved add <name> x y z DIM
+            if (args.length == 5) {
+                saved.add(true, player, args[0], args[1] +" "+ args[2] +" "+ args[3], args[4], null);
+            }
+            //dest saved add <name> x y z DIM color
+            if (args.length == 6) {
+                saved.add(true, player, args[0], args[1] +" "+ args[2] +" "+ args[3], args[4], args[5]);
+            }
             return 1;
         }
-        //dest saved add <name> color
-        //dest saved add <name> dim
-        if (args.length == 2) {
-            if (Utl.dim.getList().contains(args[1].toLowerCase())) Destination.saved.add(true, player, args[0], Utl.player.XYZ(player), args[1], null);
-            else Destination.saved.add(true, player, args[0], Utl.player.XYZ(player), playerDIM, args[1]);
+        public static int removeCMD(ServerPlayerEntity player, String[] args) {
+            if (!config.DESTSaving) return 1;
+            if (args.length == 1) Destination.saved.delete(true, player, args[0]);
             return 1;
         }
-        //dest saved add <name> x y
-        if (args.length == 3) {
-            Destination.saved.add(true, player, args[0], args[1] + " " + args[2], playerDIM, null);
-            return 1;
-        }
-        //dest saved add <name> x y color
-        if (args.length == 4 && !Utl.isInt(args[3]) && !Utl.dim.checkValid(args[3])) {
-            Destination.saved.add(true, player, args[0],args[1] + " " + args[2], playerDIM, args[3]);
-            return 1;
-        }
-        //dest saved add <name> x y DIM
-        if (args.length == 4 && !Utl.isInt(args[3])) {
-            Destination.saved.add(true, player, args[0],args[1] + " " + args[2], args[3], null);
-            return 1;
-        }
-        //dest saved add <name> x y z
-        if (args.length == 4 && Utl.isInt(args[3])) {
-            Destination.saved.add(true, player, args[0], args[1] +" "+ args[2] +" "+ args[3], playerDIM, null);
-            return 1;
-        }
-        //dest saved add <name> x y DIM color
-        if (args.length == 5 && !Utl.isInt(args[3])) {
-            Destination.saved.add(true, player, args[0], args[1] +" "+ args[2], args[3], args[4]);
-            return 1;
-        }
-        //dest saved add <name> x y z color
-        if (args.length == 5 && !Utl.isInt(args[4]) && !Utl.dim.checkValid(args[4])) {
-            Destination.saved.add(true, player, args[0], args[1] +" "+ args[2] +" "+ args[3], playerDIM ,args[4]);
-            return 1;
-        }
-        if (args.length == 5) {
-            Destination.saved.add(true, player, args[0], args[1] +" "+ args[2] +" "+ args[3], args[4], null);
-        }
-        if (args.length == 6) {
-            Destination.saved.add(true, player, args[0], args[1] +" "+ args[2] +" "+ args[3], args[4], args[5]);
-        }
-        return 1;
-    }
-    public static class saved {
         public static int savedCMD(ServerPlayerEntity player, String[] args) {
+            if (!config.DESTSaving) {
+                player.sendMessage(CUtl.error(CUtl.lang("error.command")));
+                return 1;
+            }
             if (args.length == 0) {
-                UI(player, 1);
+                saved.UI(player, 1);
                 return 1;
             }
             if (args.length == 1 && Utl.isInt(args[0])) {
-                Destination.saved.UI(player, Integer.parseInt(args[0]));
+                saved.UI(player, Integer.parseInt(args[0]));
                 return 1;
             }
             if (args[0].equalsIgnoreCase("edit")) {
                 if (args.length == 1) return 1;
-                if (args.length == 2) Destination.saved.viewDestinationUI(true, player, args[1]);
+                if (args.length == 2) saved.viewDestinationUI(true, player, args[1]);
                 if (args[1].equalsIgnoreCase("name")) {
                     if (args.length == 3) player.sendMessage(error("dest.edit.name"));
-                    if (args.length == 4) Destination.saved.editName(true, player, args[2], args[3]);
+                    if (args.length == 4) saved.editName(true, player, args[2], args[3]);
                 }
                 if (args[1].equalsIgnoreCase("color")) {
                     if (args.length == 3) player.sendMessage(error("dest.edit.color"));
-                    if (args.length == 4) Destination.saved.editColor(true, player, args[2], args[3]);
+                    if (args.length == 4) saved.editColor(true, player, args[2], args[3]);
                 }
                 if (args[1].equalsIgnoreCase("order")) {
                     if (args.length == 3) player.sendMessage(error("dest.edit.order"));
-                    if (args.length == 4) Destination.saved.editOrder(true, player, args[2], args[3]);
+                    if (args.length == 4) saved.editOrder(true, player, args[2], args[3]);
                 }
                 if (args[1].equalsIgnoreCase("dim")) {
                     if (args.length == 3) player.sendMessage(error("dest.edit.dimension"));
-                    if (args.length == 4) Destination.saved.editDimension(true, player, args[2], args[3]);
+                    if (args.length == 4) saved.editDimension(true, player, args[2], args[3]);
                 }
                 if (args[1].equalsIgnoreCase("loc")) {
                     if (args.length == 3) player.sendMessage(error("dest.edit.location"));
-                    if (args.length == 5) Destination.saved.editLocation(true, player, args[2], args[3] +" "+ args[4]);
-                    if (args.length == 6) Destination.saved.editLocation(true, player, args[2], args[3] +" "+ args[4] +" "+ args[5]);
+                    if (args.length == 5) saved.editLocation(true, player, args[2], args[3] +" "+ args[4]);
+                    if (args.length == 6) saved.editLocation(true, player, args[2], args[3] +" "+ args[4] +" "+ args[5]);
                 }
                 return 1;
             }
@@ -357,8 +411,319 @@ public class Destination {
             if (args[0].equalsIgnoreCase("add")) {
                 return addCMD(player,Utl.trimStart(args,1));
             }
+            player.sendMessage(CUtl.usage(CUtl.commandUsage.destSaved()));
             return 1;
         }
+        public static int lastdeathCMD(ServerPlayerEntity player, String[] args) {
+            if (args.length == 0) {
+                Destination.lastdeath.UI(player, null);
+                return 1;
+            }
+            if (args.length == 1) {
+                if (args[0].equalsIgnoreCase("cl")) {
+                    Destination.lastdeath.clear(true, player, "all");
+                }
+                if (args[0].equalsIgnoreCase("cl_ow")) {
+                    Destination.lastdeath.clear(true, player, "ow");
+                }
+                if (args[0].equalsIgnoreCase("cl_n")) {
+                    Destination.lastdeath.clear(true, player, "n");
+                }
+                if (args[0].equalsIgnoreCase("cl_e")) {
+                    Destination.lastdeath.clear(true, player, "e");
+                }
+                return 1;
+            }
+            player.sendMessage(CUtl.usage(CUtl.commandUsage.destLastdeath()));
+            return 1;
+        }
+        public static int settingsCMD(ServerPlayerEntity player, String[] args) {
+            if (args.length == 0) Destination.settings.UI(player, null);
+            if (args.length == 1 && args[0].equalsIgnoreCase("reset")) Destination.settings.reset(player, false);
+            if (args.length == 2) {
+                if (args[0].equalsIgnoreCase("reset")) Destination.settings.reset(player, true);
+                else Destination.settings.change(player, args[0], args[1], true);
+            }
+            if (args.length == 3) Destination.settings.change(player, args[0], args[1], false);
+            return 1;
+        }
+        public static int sendCMD(ServerPlayerEntity player, String[] args) {
+            if (!Utl.inBetween(args.length, 3, 6)) {
+                player.sendMessage(CUtl.usage(CUtl.commandUsage.destSend()));
+                return 1;
+            }
+            // /dest send <IGN> saved <name>
+            if (args[1].equalsIgnoreCase("saved")) {
+                if (args.length > 3) player.sendMessage(CUtl.usage(CUtl.commandUsage.destSend()));
+                else Destination.social.send(player, args[0], args[2], "saved", null);
+                return 1;
+            }
+            String pDIM = Utl.dim.PFormat(Utl.player.dim(player));
+            //dest send <IGN> <xyz or xy> (dimension)
+            //dest send <IGN> (name) <xyz or xy> (dimension)
+            //dest send IGN x z
+            if (args.length == 3) {
+                Destination.social.send(player, args[0], args[1]+" "+args[2], pDIM, null);
+            }
+            //dest send IGN NAME x z
+            if (args.length == 4 && !Utl.isInt(args[1])) {
+                Destination.social.send(player, args[0], args[2]+" "+args[3], pDIM, args[1]);
+                return 1;
+            }
+            //dest send IGN x z DIM
+            if (args.length == 4 && !Utl.isInt(args[3])) {
+                Destination.social.send(player, args[0], args[1]+" "+args[2], args[3], null);
+                return 1;
+            }
+            //dest send IGN x y z
+            if (args.length == 4) {
+                Destination.social.send(player, args[0], args[1]+" "+args[2]+" "+args[3], pDIM, null);
+            }
+            //dest send IGN NAME x z DIM
+            if (args.length == 5 && !Utl.isInt(args[1]) && !Utl.isInt(args[4])) {
+                Destination.social.send(player, args[0], args[2]+" "+args[3], args[4], args[1]);
+                return 1;
+            }
+            //dest send IGN NAME x y z
+            if (args.length == 5 && !Utl.isInt(args[1])) {
+                Destination.social.send(player, args[0], args[2]+" "+args[3]+" "+args[4], pDIM, args[1]);
+                return 1;
+            }
+            //dest send IGN x y z DIM
+            if (args.length == 5) {
+                Destination.social.send(player, args[0], args[1]+" "+args[2]+" "+args[3], args[4], null);
+            }
+            //dest send IGN NAME x y z DIM
+            if (args.length == 6 && !Utl.isInt(args[1])) {
+                Destination.social.send(player, args[0], args[2]+" "+args[3]+" "+args[4], args[5],args[1]);
+            }
+            return 1;
+        }
+        public static int trackCMD(ServerPlayerEntity player, String[] args) {
+            //dest track <name>
+            if (args.length == 1) {
+                Destination.social.track(player, args[0]);
+                return 1;
+            }
+            if (args.length == 3) {
+                //dest track accept/deny <name> <id>
+                if (args[0].equalsIgnoreCase("acp")) {
+                    Destination.social.trackAccept(player, args[1], args[2]);
+                    return 1;
+                }
+                if (args[0].equalsIgnoreCase("dny")) {
+                    Destination.social.trackDeny(player, args[1], args[2]);
+                    return 1;
+                }
+            }
+            player.sendMessage(CUtl.usage(CUtl.commandUsage.destTrack()));
+            return 1;
+        }
+    }
+    public static class commandSuggester {
+        public static CompletableFuture<Suggestions> addCMD(ServerPlayerEntity player, SuggestionsBuilder builder, int pos, String[] args) {
+            // add <name> <x> (y) <z> (dim) (color)
+            if (pos == 0) return builder.suggest("name").buildFuture();
+            // add <name> (<x> (dim) (color))
+            if (pos == 1 && args.length == 2) {
+                if (!Utl.isInt(args[1])) {
+                    for (String s : Utl.color.getList()) builder.suggest(s);
+                    for (String s : Utl.dim.getList()) builder.suggest(s);
+                    return builder.buildFuture();
+                }
+            }
+            // add <name> (<x>)
+            if (pos == 1) return builder.suggest(player.getBlockX()).buildFuture();
+            // add <name> <x> ((y))
+            if (pos == 2) {
+                if (Utl.isInt(args[1])) return builder.suggest(player.getBlockY()).buildFuture();
+            }
+            // add <name> <x> (y) (<z> (dim) (color))
+            if (pos == 3) {
+                if (Utl.isInt(args[1])) builder.suggest(player.getBlockZ());
+                if (args.length == 4 && !Utl.isInt(args[3])) {
+                    for (String s : Utl.color.getList()) builder.suggest(s);
+                    for (String s : Utl.dim.getList()) builder.suggest(s);
+                }
+                return builder.buildFuture();
+            }
+            // add <name> <x> (y) <z> ((dim) (color))
+            if (pos == 4) {
+                if (Utl.isInt(args[3])) {
+                    for (String s : Utl.dim.getList()) builder.suggest(s);
+                    if (args.length == 5 && !Utl.dim.checkValid(args[4]))
+                        for (String s : Utl.color.getList()) builder.suggest(s);
+                    return builder.buildFuture();
+                }
+                if (Utl.dim.checkValid(args[3]))
+                    for (String s : Utl.color.getList()) builder.suggest(s);
+                return builder.buildFuture();
+            }
+            // add <name> <x> (y) <z> (dim) ((color))
+            if (pos == 5) {
+                if (Utl.isInt(args[3]) && Utl.dim.checkValid(args[4])) {
+                    for (String s : Utl.color.getList()) builder.suggest(s);
+                    return builder.buildFuture();
+                }
+            }
+            return builder.buildFuture();
+        }
+        public static CompletableFuture<Suggestions> savedCMD(ServerPlayerEntity player, SuggestionsBuilder builder, int pos, String[] args) {
+            if (!config.DESTSaving) return builder.buildFuture();
+            // saved add
+            // saved edit type name <arg>
+            // saved send name <IGN>
+            if (pos == 0) return builder.suggest("add").buildFuture();
+            // saved add
+            if (args[0].equalsIgnoreCase("add")) {
+                return Destination.commandSuggester.addCMD(player,builder,pos-1,Utl.trimStart(args,1));
+            }
+            // saved edit
+            if (args[0].equalsIgnoreCase("edit")) {
+                if (pos < 1) return builder.buildFuture();
+                // saved edit type name (<arg>)
+                if (args[1].equalsIgnoreCase("loc")) {
+                    if (pos == 3) return builder.suggest(player.getBlockX()).buildFuture();
+                    if (pos == 4) return builder.suggest(player.getBlockY()).buildFuture();
+                    if (pos == 5) return builder.suggest(player.getBlockZ()).buildFuture();
+                }
+                if (pos == 3) {
+                    if (args[1].equalsIgnoreCase("name")) builder.suggest("name");
+                    if (args[1].equalsIgnoreCase("color")) for (String s : Utl.color.getList()) builder.suggest(s);
+                    if (args[1].equalsIgnoreCase("dim")) for (String s : Utl.dim.getList()) builder.suggest(s);
+                    return builder.buildFuture();
+                }
+            }
+            // saved send
+            if (args[0].equalsIgnoreCase("send")) {
+                // saved send name (<ign>)
+                if (pos != 2) return builder.buildFuture();
+                for (String s : Utl.player.getList()) {
+                    if (s.equals(Utl.player.name(player))) continue;
+                    builder.suggest(s);
+                }
+                return builder.buildFuture();
+            }
+            return builder.buildFuture();
+        }
+        public static CompletableFuture<Suggestions> settingsCMD(SuggestionsBuilder builder, int pos, String[] args) {
+            // settings setting <arg>
+            // settings <reset>
+            if (pos == 0) return builder.suggest("reset").buildFuture();
+            if (pos == 1) {
+                if (args[0].equals("particlesdestc") || args[0].equals("particleslinec")) {
+                    for (String s : Utl.color.getList()) builder.suggest(s);
+                    return builder.buildFuture();
+                }
+            }
+            return builder.buildFuture();
+        }
+        public static CompletableFuture<Suggestions> setCMD(ServerPlayerEntity player, SuggestionsBuilder builder, int pos, String[] args) {
+            // set <saved> <name> (convert)
+            // set <x> (y) <z> (dim)
+            if (pos == 0) {
+                if (config.DESTSaving) builder.suggest("saved");
+                builder.suggest(player.getBlockX());
+                return builder.buildFuture();
+            }
+            // set <saved, x> ((name) (y))
+            if (pos == 1) {
+                if (args[0].equalsIgnoreCase("saved") && config.DESTSaving) {
+                    for (String s : Destination.saved.getNames(player)) builder.suggest(s);
+                    return builder.buildFuture();
+                }
+                return builder.suggest(player.getBlockY()).buildFuture();
+            }
+            // set <saved> <name> ((convert))
+            // set <x> (y) (<z> (dim))
+            if (pos == 2) {
+                if (!Utl.isInt(args[1])) {
+                    return builder.suggest("convert").buildFuture();
+                }
+                for (String s : Utl.dim.getList()) builder.suggest(s);
+                return builder.suggest(player.getBlockZ()).buildFuture();
+            }
+            // set <x> (y) <z> (dim)
+            if (pos == 3) {
+                if (Utl.isInt(args[1]))
+                    for (String s : Utl.dim.getList()) builder.suggest(s);
+                return builder.buildFuture();
+            }
+            return builder.buildFuture();
+        }
+        public static CompletableFuture<Suggestions> sendCMD(ServerPlayerEntity player, SuggestionsBuilder builder, int pos, String[] args) {
+            // send <player> <saved> <name>
+            // send <player> (name) <x> (y) <z> (dimension)
+            if (pos == 0) {
+                for (String p : Utl.player.getList()) {
+                    if (p.equals(Utl.player.name(player))) continue;
+                    builder.suggest(p);
+                }
+                return builder.buildFuture();
+            }
+            // send <player> (<saved>, (name), <x>)
+            if (pos == 1) {
+                if (config.DESTSaving) builder.suggest("saved");
+                builder.suggest(player.getBlockX());
+                builder.suggest("name");
+                builder.buildFuture();
+            }
+            // send <player> <saved> (<name>)
+            // send <player> (name) (<x>)
+            // send <player> <x> ((y))
+            if (pos == 2) {
+                if (args[1].equalsIgnoreCase("saved") && config.DESTSaving) {
+                    for (String s : Destination.saved.getNames(player)) builder.suggest(s);
+                    return builder.buildFuture();
+                }
+                if (!Utl.isInt(args[1])) {
+                    return builder.suggest(player.getBlockX()).buildFuture();
+                }
+                return builder.suggest(player.getBlockY()).buildFuture();
+            }
+            // send <player> (name) <x> ((y))
+            // send <player> <x> (y) (<z> (dimension))
+            if (pos == 3) {
+                if (!Utl.isInt(args[1])) {
+                    return builder.suggest(player.getBlockY()).buildFuture();
+                }
+                if (args.length == 4)
+                    for (String s : Utl.dim.getList()) builder.suggest(s);
+                return builder.suggest(player.getBlockZ()).buildFuture();
+            }
+            // send <player> (name) <x> (y) (<z> (dimension))
+            // send <player> <x> (y) <z> ((dimension))
+            if (pos == 4) {
+                if (!Utl.isInt(args[1])) {
+                    if (args.length == 5)
+                        for (String s : Utl.dim.getList()) builder.suggest(s);
+                    builder.suggest(player.getBlockZ());
+                    return builder.buildFuture();
+                }
+                for (String s : Utl.dim.getList()) builder.suggest(s);
+                return builder.buildFuture();
+            }
+            // send <player> (name) <x> (y) <z> ((dimension))
+            if (pos == 5) {
+                if (!Utl.isInt(args[1])) {
+                    for (String s : Utl.dim.getList()) builder.suggest(s);
+                    return builder.buildFuture();
+                }
+            }
+            return builder.buildFuture();
+        }
+        public static CompletableFuture<Suggestions> trackCMD(ServerPlayerEntity player, SuggestionsBuilder builder, int pos, String[] args) {
+            // track <player>
+            if (pos == 0) {
+                for (String p : Utl.player.getList()) {
+                    if (p.equals(Utl.player.name(player))) continue;
+                    builder.suggest(p);
+                }
+            }
+            return builder.buildFuture();
+        }
+    }
+    public static class saved {
         public static List<String> getList(ServerPlayerEntity player) {
             return PlayerData.get.dest.getSaved(player);
         }
@@ -430,6 +795,10 @@ public class Destination {
                 if (send) player.sendMessage(error("dest.saved.duplicate"));
                 return;
             }
+            if (name.equalsIgnoreCase("saved")) {
+                if (send) player.sendMessage(error("dest.saved.not_allowed"));
+                return;
+            }
             if (name.length() > 16) {
                 if (send) player.sendMessage(error("dest.saved.length",16));
                 return;
@@ -490,6 +859,10 @@ public class Destination {
             }
             if (names.contains(newName)) {
                 if (send) player.sendMessage(error("dest.saved.duplicat"));
+                return;
+            }
+            if (newName.equalsIgnoreCase("saved")) {
+                if (send) player.sendMessage(error("dest.saved.not_allowed"));
                 return;
             }
             if (newName.length() > 16) {
