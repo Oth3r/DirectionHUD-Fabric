@@ -68,7 +68,7 @@ public class DestinationCommand {
                 builder.suggest("track");
             return builder.buildFuture();
         }
-        if (pos != args.length) {
+        if (pos > args.length) {
             return builder.buildFuture();
         }
         //SAVED
@@ -96,6 +96,15 @@ public class DestinationCommand {
                     if (pos == 5) return builder.suggest(player.getBlockX()).buildFuture();
                     if (pos == 6) return builder.suggest(player.getBlockY()).buildFuture();
                     if (pos == 7) return builder.suggest(player.getBlockZ()).buildFuture();
+                }
+            }
+            if (args[2].equalsIgnoreCase("send")) {
+                if (pos == 4) {
+                    for (ServerPlayerEntity p : DirectionHUD.server.getPlayerManager().getPlayerList()) {
+                        if (p.equals(player)) continue;
+                        builder.suggest(p.getName().getString());
+                    }
+                    return builder.buildFuture();
                 }
             }
             return builder.buildFuture();
@@ -148,7 +157,6 @@ public class DestinationCommand {
             // /dest send <player> <saved> <name>
             // /dest send <player> (name) <x> (y) <z> (dimension)
             if (pos == 2) {
-                DirectionHUD.server.getPlayerManager().getPlayerList();
                 for (ServerPlayerEntity p : DirectionHUD.server.getPlayerManager().getPlayerList()) {
                     if (p.equals(player)) continue;
                     builder.suggest(p.getName().getString());
@@ -241,6 +249,7 @@ public class DestinationCommand {
         if (pos == 5 && args.length > 4) {
             if (Utl.isInt(args[4])) {
                 for (String s : Utl.dim.getList()) builder.suggest(s);
+                if (args.length > 5 && !Utl.dim.checkValid(args[5])) for (String s : Utl.color.getList()) builder.suggest(s);
                 return builder.buildFuture();
             }
             if (Utl.dim.checkValid(args[4]))
