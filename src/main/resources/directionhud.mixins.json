@@ -8,6 +8,7 @@
     "OnPlayerWorldChanged"
   ],
   "client": [
+    "ActionBarMixin"
   ],
   "injectors": {
     "defaultRequire": 1
