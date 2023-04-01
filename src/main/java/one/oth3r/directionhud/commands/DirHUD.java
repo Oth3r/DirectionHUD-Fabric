@@ -1,5 +1,6 @@
 package one.oth3r.directionhud.commands;
 
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -60,6 +61,20 @@ public class DirHUD {
                 .append(Text.literal("\n                                 ").styled(style -> style.withStrikethrough(true)));
         player.sendMessage(msg);
     }
+    public static void reload(ServerPlayerEntity player) {
+        if (player == null) {
+            if (DirectionHUD.config == null) DirectionHUD.config = FabricLoader.getInstance().getConfigDir().toFile()+"/";
+            config.load();
+            DirectionHUD.LOGGER.info(CUtl.lang("dirhud.reload", CUtl.lang("dirhud.reload_2")).getString());
+            return;
+        }
+        if (!player.hasPermissionLevel(2)) return;
+        MutableText msg = CUtl.tag(CUtl.lang("dirhud.reload",
+                CUtl.lang("dirhud.reload_2").setStyle(CUtl.C('a'))));
+        if (DirectionHUD.config == null) DirectionHUD.config = FabricLoader.getInstance().getConfigDir().toFile()+"/";
+        config.load();
+        player.sendMessage(msg);
+    }
     public static void UI(ServerPlayerEntity player) {
         //todo
         // if a reload command is needed, add one
@@ -69,11 +84,13 @@ public class DirHUD {
                 .append(Text.literal("\n                                 \n").styled(style -> style.withStrikethrough(true)))
                 .append(Text.literal(" "));
         //hud
-        msg.append(CUtl.CButton.dirHUD.hud()).append("  ");
+        if (config.HUDEditing) msg.append(CUtl.CButton.dirHUD.hud()).append("  ");
         //dest
         msg.append(CUtl.CButton.dirHUD.dest());
         if (!DirectionHUD.server.isRemote()) {
             msg.append("\n\n ").append(CUtl.CButton.dirHUD.defaults());
+        } else if (player.hasPermissionLevel(2)) {
+            msg.append("\n\n ").append(CUtl.CButton.dirHUD.reload());
         }
         msg.append(Text.literal("\n                                 ").styled(style -> style.withStrikethrough(true)));
         player.sendMessage(msg);
