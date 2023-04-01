@@ -13,6 +13,7 @@ public class config {
     public static int MAXSaved = defaults.MAXSaved;
     public static boolean deathsaving = defaults.deathsaving;
     public static boolean HUDEditing = defaults.HUDEditing;
+    public static boolean online = defaults.online;
     public static boolean HUDEnabled = defaults.HUDEnabled;
     public static String HUDOrder = defaults.HUDOrder;
     public static boolean HUDCoordinates = defaults.HUDCoordinates;
@@ -82,6 +83,7 @@ public class config {
             MAXSaved = Integer.parseInt((String) properties.computeIfAbsent("destination-max-saved", a -> defaults.MAXSaved+""));
             deathsaving = Boolean.parseBoolean((String) properties.computeIfAbsent("death-saving", a -> defaults.deathsaving +""));
             HUDEditing = Boolean.parseBoolean((String) properties.computeIfAbsent("hud-editing", a -> defaults.HUDEditing +""));
+            online = Boolean.parseBoolean((String) properties.computeIfAbsent("online-mode", a -> defaults.online +""));
             //HUD
             HUDEnabled = Boolean.parseBoolean((String) properties.computeIfAbsent("enabled", a -> defaults.HUDEnabled+""));
             HUDOrder = HUD.order.fixOrder((String) properties.computeIfAbsent("order", a -> defaults.HUDOrder));
@@ -124,6 +126,8 @@ public class config {
             file.write(("\ndestination-max-saved=" + MAXSaved).getBytes());
             file.write(("\ndeath-saving=" + deathsaving).getBytes());
             file.write(("\nhud-editing=" + HUDEditing).getBytes());
+            file.write(("\nTurn off for offline mode servers, uses a name based file system:").getBytes());
+            file.write(("\nonline-mode=" + online).getBytes());
             file.write(("\n\n# DirectionHUD Player Defaults\n").getBytes());
             file.write("\n# HUD".getBytes());
             file.write(("\nenabled=" + HUDEnabled).getBytes());
@@ -169,6 +173,7 @@ public class config {
         public static int MAXSaved = 50;
         public static boolean deathsaving = true;
         public static boolean HUDEditing = true;
+        public static boolean online = true;
         public static boolean HUDEnabled = true;
         public static String HUDOrder = HUD.order.allModules();
         public static boolean HUDCoordinates = true;
