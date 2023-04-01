@@ -16,10 +16,8 @@ import java.util.concurrent.CompletableFuture;
 
 public class Destination {
     //todo button to view saved when adding a destination or sm like that
-    // make it so you can tab full coordinates like in minecraft, tp command
-    // here's something for the future, add support for like 2 decimals, uhh that's gonna suck maybe not
-    // disable save button when receiving from /dest send
-    // dont allow saving a destination "saved"
+    // new dest setting "lastdeath" that disables lastdeath, maybe rename social to settings or sm
+    // rebuild config screen, like like no documentation lmao
     private static MutableText lang(String key) {
         return CUtl.lang("dest."+key);
     }
@@ -534,14 +532,14 @@ public class Destination {
                 }
             }
             // add <name> (<x>)
-            if (pos == 1) return builder.suggest(player.getBlockX()).buildFuture();
+            if (pos == 1) return Utl.xyzSuggester(player,builder,"x").buildFuture();
             // add <name> <x> ((y))
             if (pos == 2) {
-                if (Utl.isInt(args[1])) return builder.suggest(player.getBlockY()).buildFuture();
+                if (Utl.isInt(args[1])) return Utl.xyzSuggester(player,builder,"y").buildFuture();
             }
             // add <name> <x> (y) (<z> (dim) (color))
             if (pos == 3) {
-                if (Utl.isInt(args[1])) builder.suggest(player.getBlockZ());
+                if (Utl.isInt(args[1])) builder.add(Utl.xyzSuggester(player,builder,"z"));
                 if (args.length == 4 && !Utl.isInt(args[3])) {
                     for (String s : Utl.color.getList()) builder.suggest(s);
                     for (String s : Utl.dim.getList()) builder.suggest(s);
@@ -584,9 +582,9 @@ public class Destination {
                 if (pos < 1) return builder.buildFuture();
                 // saved edit type name (<arg>)
                 if (args[1].equalsIgnoreCase("loc")) {
-                    if (pos == 3) return builder.suggest(player.getBlockX()).buildFuture();
-                    if (pos == 4) return builder.suggest(player.getBlockY()).buildFuture();
-                    if (pos == 5) return builder.suggest(player.getBlockZ()).buildFuture();
+                    if (pos == 3) return Utl.xyzSuggester(player,builder,"x").buildFuture();
+                    if (pos == 4) return Utl.xyzSuggester(player,builder,"y").buildFuture();
+                    if (pos == 5) return Utl.xyzSuggester(player,builder,"z").buildFuture();
                 }
                 if (pos == 3) {
                     if (args[1].equalsIgnoreCase("name")) builder.suggest("name");
@@ -624,7 +622,7 @@ public class Destination {
             // set <x> (y) <z> (dim)
             if (pos == 0) {
                 if (config.DESTSaving) builder.suggest("saved");
-                builder.suggest(player.getBlockX());
+                builder.add(Utl.xyzSuggester(player,builder,"x"));
                 return builder.buildFuture();
             }
             // set <saved, x> ((name) (y))
@@ -633,7 +631,7 @@ public class Destination {
                     for (String s : Destination.saved.getNames(player)) builder.suggest(s);
                     return builder.buildFuture();
                 }
-                return builder.suggest(player.getBlockY()).buildFuture();
+                return Utl.xyzSuggester(player,builder,"y").buildFuture();
             }
             // set <saved> <name> ((convert))
             // set <x> (y) (<z> (dim))
@@ -642,7 +640,7 @@ public class Destination {
                     return builder.suggest("convert").buildFuture();
                 }
                 for (String s : Utl.dim.getList()) builder.suggest(s);
-                return builder.suggest(player.getBlockZ()).buildFuture();
+                return Utl.xyzSuggester(player,builder,"z").buildFuture();
             }
             // set <x> (y) <z> (dim)
             if (pos == 3) {
@@ -665,7 +663,7 @@ public class Destination {
             // send <player> (<saved>, (name), <x>)
             if (pos == 1) {
                 if (config.DESTSaving) builder.suggest("saved");
-                builder.suggest(player.getBlockX());
+                builder.add(Utl.xyzSuggester(player,builder,"x"));
                 builder.suggest("name");
                 builder.buildFuture();
             }
@@ -678,19 +676,19 @@ public class Destination {
                     return builder.buildFuture();
                 }
                 if (!Utl.isInt(args[1])) {
-                    return builder.suggest(player.getBlockX()).buildFuture();
+                    return Utl.xyzSuggester(player,builder,"x").buildFuture();
                 }
-                return builder.suggest(player.getBlockY()).buildFuture();
+                return Utl.xyzSuggester(player,builder,"y").buildFuture();
             }
             // send <player> (name) <x> ((y))
             // send <player> <x> (y) (<z> (dimension))
             if (pos == 3) {
                 if (!Utl.isInt(args[1])) {
-                    return builder.suggest(player.getBlockY()).buildFuture();
+                    return Utl.xyzSuggester(player,builder,"y").buildFuture();
                 }
                 if (args.length == 4)
                     for (String s : Utl.dim.getList()) builder.suggest(s);
-                return builder.suggest(player.getBlockZ()).buildFuture();
+                return builder.add(Utl.xyzSuggester(player,builder,"z")).buildFuture();
             }
             // send <player> (name) <x> (y) (<z> (dimension))
             // send <player> <x> (y) <z> ((dimension))
@@ -698,7 +696,7 @@ public class Destination {
                 if (!Utl.isInt(args[1])) {
                     if (args.length == 5)
                         for (String s : Utl.dim.getList()) builder.suggest(s);
-                    builder.suggest(player.getBlockZ());
+                    builder.add(Utl.xyzSuggester(player,builder,"z"));
                     return builder.buildFuture();
                 }
                 for (String s : Utl.dim.getList()) builder.suggest(s);
@@ -1378,13 +1376,13 @@ public class Destination {
                     .append(Text.literal("["))
                     .append(Text.literal(Utl.dim.getLetter(DIM)).setStyle(CUtl.HEXS(Utl.dim.getHEX(DIM))))
                     .append(Text.literal("] "))
-                    .append(pname).append(pxyz).append(" ")
-                    .append(CUtl.button(CUtl.SBtn("dest.add"), CUtl.HEX(CUtl.c.add),2, "/dest saved add "+ name +" "+ xyz +" "+ DIM + color,
-                                    CUtl.TBtn("dest.add.hover_save",
-                                            CUtl.TBtn("dest.add.hover_2").setStyle(CUtl.HEXS(CUtl.c.add))).setStyle(CUtl.HEXS(CUtl.c.add))))
-                    .append(" ")
-                    .append(CUtl.CButton.dest.set("/dest set " + xyz))
+                    .append(pname).append(pxyz).append(" ");
+            if (config.DESTSaving)
+                msg.append(CUtl.button(CUtl.SBtn("dest.add"), CUtl.HEX(CUtl.c.add),2, "/dest saved add "+ name +" "+ xyz +" "+ DIM + color,
+                                CUtl.TBtn("dest.add.hover_save",
+                                        CUtl.TBtn("dest.add.hover_2").setStyle(CUtl.HEXS(CUtl.c.add))).setStyle(CUtl.HEXS(CUtl.c.add))))
                     .append(" ");
+            msg.append(CUtl.CButton.dest.set("/dest set " + xyz)).append(" ");
             if (Utl.dim.showConvertButton(plDimension, Utl.dim.CFormat(DIM))) {
                 msg.append(CUtl.CButton.dest.convert("/dest set " +xyz+" "+DIM)).append(" ");
             }
