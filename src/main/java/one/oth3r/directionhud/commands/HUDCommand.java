@@ -8,6 +8,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import one.oth3r.directionhud.files.config;
 import one.oth3r.directionhud.utils.CUtl;
 
 import java.util.concurrent.CompletableFuture;
@@ -47,6 +48,7 @@ public class HUDCommand {
     public static CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder, int pos) {
         ServerPlayerEntity player = context.getSource().getPlayer();
         assert player != null;
+        if (!config.HUDEditing) return builder.buildFuture();
         String[] args = context.getInput().split(" ");
         if (pos == 1) {
             builder.suggest("edit");
@@ -64,6 +66,7 @@ public class HUDCommand {
     }
     private static int command(ServerCommandSource source, String arg) {
         ServerPlayerEntity player = source.getPlayer();
+        if (!config.HUDEditing) return 1;
         if (player == null) return 1;
         String[] args;
 

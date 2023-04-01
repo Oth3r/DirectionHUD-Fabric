@@ -11,7 +11,8 @@ import java.util.Properties;
 public class config {
     public static boolean DESTSaving = defaults.DESTSaving;
     public static int MAXSaved = defaults.MAXSaved;
-    public static boolean lastdeath = defaults.lastdeath;
+    public static boolean deathsaving = defaults.deathsaving;
+    public static boolean HUDEditing = defaults.HUDEditing;
     public static boolean HUDEnabled = defaults.HUDEnabled;
     public static String HUDOrder = defaults.HUDOrder;
     public static boolean HUDCoordinates = defaults.HUDCoordinates;
@@ -37,6 +38,7 @@ public class config {
     public static String DESTDestParticleColor = defaults.DESTDestParticleColor;
     public static boolean DESTSend = defaults.DESTSend;
     public static boolean DESTTrack = defaults.DESTTrack;
+    public static boolean DESTLastdeath = defaults.DESTLastdeath;
     public static void resetDefaults() {
         HUDEnabled = defaults.HUDEnabled;
         HUDOrder = defaults.HUDOrder;
@@ -78,7 +80,8 @@ public class config {
             //CONFIG
             DESTSaving = Boolean.parseBoolean((String) properties.computeIfAbsent("destination-saving", a -> defaults.DESTSaving+""));
             MAXSaved = Integer.parseInt((String) properties.computeIfAbsent("destination-max-saved", a -> defaults.MAXSaved+""));
-            lastdeath = Boolean.parseBoolean((String) properties.computeIfAbsent("lastdeath", a -> defaults.lastdeath+""));
+            deathsaving = Boolean.parseBoolean((String) properties.computeIfAbsent("death-saving", a -> defaults.deathsaving +""));
+            HUDEditing = Boolean.parseBoolean((String) properties.computeIfAbsent("hud-editing", a -> defaults.HUDEditing +""));
             //HUD
             HUDEnabled = Boolean.parseBoolean((String) properties.computeIfAbsent("enabled", a -> defaults.HUDEnabled+""));
             HUDOrder = HUD.order.fixOrder((String) properties.computeIfAbsent("order", a -> defaults.HUDOrder));
@@ -117,10 +120,11 @@ public class config {
     public static void save() {
         try (var file = new FileOutputStream(configFile(), false)) {
             file.write("# DirectionHUD Config v1.0\n".getBytes());
-            file.write(("\ndestination-saving=" + HUDEnabled).getBytes());
-            file.write(("\ndestination-max-saved=" + HUDEnabled).getBytes());
-            file.write(("\nlastdeath=" + HUDEnabled).getBytes());
-            file.write(("# DirectionHUD Player Defaults\n").getBytes());
+            file.write(("\ndestination-saving=" + DESTSaving).getBytes());
+            file.write(("\ndestination-max-saved=" + MAXSaved).getBytes());
+            file.write(("\ndeath-saving=" + deathsaving).getBytes());
+            file.write(("\nhud-editing=" + HUDEditing).getBytes());
+            file.write(("\n\n# DirectionHUD Player Defaults\n").getBytes());
             file.write("\n# HUD".getBytes());
             file.write(("\nenabled=" + HUDEnabled).getBytes());
             file.write(("\norder=" + HUDOrder).getBytes());
@@ -155,6 +159,7 @@ public class config {
             file.write(("\ndest-particle-color=" + DESTDestParticleColor).getBytes());
             file.write(("\nsend=" + HUDDirection).getBytes());
             file.write(("\ntrack=" + HUDTime).getBytes());
+            file.write(("\nlastdeath=" + DESTLastdeath).getBytes());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -162,7 +167,8 @@ public class config {
     public static class defaults {
         public static boolean DESTSaving = true;
         public static int MAXSaved = 50;
-        public static boolean lastdeath = true;
+        public static boolean deathsaving = true;
+        public static boolean HUDEditing = true;
         public static boolean HUDEnabled = true;
         public static String HUDOrder = HUD.order.allModules();
         public static boolean HUDCoordinates = true;
@@ -188,5 +194,6 @@ public class config {
         public static String DESTDestParticleColor = CUtl.c.pri;
         public static boolean DESTSend = true;
         public static boolean DESTTrack = true;
+        public static boolean DESTLastdeath = true;
     }
 }
