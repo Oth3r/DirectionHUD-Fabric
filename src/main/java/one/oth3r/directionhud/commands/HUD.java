@@ -1,18 +1,18 @@
 package one.oth3r.directionhud.commands;
 
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.*;
 import one.oth3r.directionhud.DirectionHUD;
 import one.oth3r.directionhud.LoopManager;
 import one.oth3r.directionhud.files.PlayerData;
 import one.oth3r.directionhud.files.config;
 import one.oth3r.directionhud.utils.CUtl;
 import one.oth3r.directionhud.utils.Utl;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.*;
 
 import java.util.*;
-import java.util.List;
 
 public class HUD {
+    public static Text lastBar = Text.literal("");
     private static MutableText lang(String key) {
         return CUtl.lang("hud."+key);
     }
@@ -22,7 +22,6 @@ public class HUD {
     private static MutableText lang(String key, Object... args) {
         return CUtl.lang("hud."+key, args);
     }
-
     public static void build(ServerPlayerEntity player) {
         ArrayList<String> coordinates = new ArrayList<>();
         coordinates.add("pXYZ: ");
@@ -52,8 +51,7 @@ public class HUD {
             time.add("p"+HUD.getAMPM());
         }
         ArrayList<String> weather = new ArrayList<>();
-        weather.add("p"+HUD.getWeatherIcon());
-
+        weather.add("p"+LoopManager.weatherIcon);
         HashMap<String, ArrayList<String>> modules = new HashMap<>();
         modules.put("coordinates", coordinates);
         modules.put("distance", distance);
@@ -86,6 +84,7 @@ public class HUD {
             if (i-1 < order.getEnabled(player).size()) text = Text.literal("").append(text).append(" ");
         }
         if (text.equals(Text.literal(""))) return;
+        if (DirectionHUD.isClient) lastBar = text;
         player.sendMessage(text, true);
     }
     public static String getPlayerDirection(ServerPlayerEntity player) {
@@ -141,23 +140,6 @@ public class HUD {
 
         return ampm;
     }
-    public static String getWeatherIcon() {
-        double time = LoopManager.hour+(LoopManager.minute/100.0);
-        if (DirectionHUD.server.getOverworld().isRaining()) {
-            String str;
-            if (time >= 18 || time < 5.31) {
-                str = "☽";
-            } else {
-                str = "☀";
-            }
-            if (DirectionHUD.server.getOverworld().isThundering()) return str + "⛈";
-            if (DirectionHUD.server.getOverworld().isRaining()) return str + "🌧";
-        }
-        if (time > 18.32 || time < 5.31) {
-            return "☽";
-        }
-        return "☀";
-    }
     public static String getCompass(ServerPlayerEntity player) {
         if (!Destination.checkDestination(player)) return "";
         int x = Integer.parseInt(Destination.get(player, "x")) - player.getBlockX();
@@ -177,7 +159,6 @@ public class HUD {
 //        if (Utl.inBetweenR(rotation, Utl.sub(d, 165, 360), d)) return "⬊";
         return "▼";
     }
-
     public static class order {
         //has to be lowercase
         @SuppressWarnings("BooleanMethodIsAlwaysInverted")
@@ -600,8 +581,8 @@ public class HUD {
         //"red", "dark_red", "gold", "yellow", "green", "dark_green", "aqua", "dark_aqua",
         // "blue", "dark_blue", "pink", "purple", "white", "gray", "dark_gray", "black"
         public static String defaultFormat(int i) {
-            if (i==1) return config.HUDPrimaryColor+"-"+config.HUDPrimaryBold+"-"+config.HUDPrimaryItalics;
-            return config.HUDSecondaryColor+"-"+config.HUDSecondaryBold+"-"+config.HUDSecondaryItalics;
+            if (i==1) return config.HUDPrimaryRainbow?"rainbow":config.HUDPrimaryColor+"-"+config.HUDPrimaryBold+"-"+config.HUDPrimaryItalics;
+            return config.HUDSecondaryRainbow?"rainbow":config.HUDSecondaryColor+"-"+config.HUDSecondaryBold+"-"+config.HUDSecondaryItalics;
         }
         public static String[] getHUDColors(ServerPlayerEntity player) {
             String[] p = PlayerData.get.hud.primary(player).split("-");
