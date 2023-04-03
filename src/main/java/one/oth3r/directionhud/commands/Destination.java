@@ -16,8 +16,8 @@ import java.util.concurrent.CompletableFuture;
 
 public class Destination {
     //todo button to view saved when adding a destination or sm like that
-    // new dest setting "lastdeath" that disables lastdeath, maybe rename social to settings or sm
-    // rebuild config screen, like like no documentation lmao
+    // color coded ui?
+    // and move the hud commad code like the dest one
     private static MutableText lang(String key) {
         return CUtl.lang("dest."+key);
     }
@@ -413,7 +413,7 @@ public class Destination {
             return 1;
         }
         public static int lastdeathCMD(ServerPlayerEntity player, String[] args) {
-            if (!config.lastdeath) return 1;
+            if (!config.deathsaving || !PlayerData.get.dest.setting.lastdeath(player)) return 1;
             if (args.length == 0) {
                 Destination.lastdeath.UI(player, null);
                 return 1;
@@ -824,12 +824,14 @@ public class Destination {
 
             setList(player, all);
             if (send) {
-                player.sendMessage(Text.literal("").append(CUtl.tag())
-                        .append(lang("saved.add", Text.literal("")
+                player.sendMessage(CUtl.tag(lang("saved.add", Text.literal("")
                                         .append(Text.literal(name + " ").setStyle(colorS))
                                                 .append(Text.literal("("+Utl.xyz.PFormat(xyz) + ")").setStyle(CUtl.C('7')))
                                         .styled(style -> style.withItalic(true)),
-                                Text.literal(Utl.dim.PFormat(dimension).toUpperCase()).setStyle(CUtl.sS()))));
+                                Text.literal(Utl.dim.PFormat(dimension).toUpperCase()).setStyle(CUtl.sS()))
+                        .append(" ")
+                        .append(CUtl.button("✎", CUtl.HEX(CUtl.c.edit),1,"/dest saved edit " + name,Text.literal("")
+                                .append(CUtl.TBtn("edit.hover").setStyle(CUtl.HEXS(CUtl.c.edit)))))));
             }
         }
         public static void delete(boolean send, ServerPlayerEntity player, String name) {
@@ -1570,6 +1572,10 @@ public class Destination {
                 PlayerData.set.dest.setting.track(player, state);
                 msg = Text.literal("").append(CUtl.tag()).append(lang("setting.track.set", onoff));
             }
+            if (type.equals("lastdeath")) {
+                PlayerData.set.dest.setting.lastdeath(player, state);
+                msg = Text.literal("").append(CUtl.tag()).append(lang("setting.lastdeath.set", onoff));
+            }
             if (type.equals("particlesdest")) {
                 PlayerData.set.dest.setting.particles.dest(player, state);
                 msg = Text.literal("").append(CUtl.tag()).append(lang("setting.particle.dest.set", onoff));
@@ -1602,14 +1608,14 @@ public class Destination {
             if (PlayerData.get.dest.setting.autoclear(player)) c = 'a'; else c = 'c';
             msg.append(" ")
                     .append(lang("setting.destination").setStyle(CUtl.pS()))
-                    .append("\n  ")
+                    .append(":\n  ")
                     //AUTOCLEAR
                     .append(lang("setting.autoclear").styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("")
                             .append(lang("setting.autoclear.info"))
                             .append("\n")
                             .append(lang("setting.autoclear.info_2")
                                     .styled(style1 -> style1.withItalic(true).withColor(CUtl.TC('7'))))))))
-                    .append(Text.literal(" "))
+                    .append(Text.literal(": "))
                     .append(Text.literal("").append(toggleB(PlayerData.get.dest.setting.autoclear(player))).styled(style -> style
                             .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings autoclear " + !PlayerData.get.dest.setting.autoclear(player)))))
                     .append(Text.literal(" "))
@@ -1623,17 +1629,17 @@ public class Destination {
                             lang("setting.ylevel.info",
                                     lang("setting.ylevel.info_2").setStyle(CUtl.sS()),
                                     lang("setting.ylevel.info_2").setStyle(CUtl.sS()))))))
-                    .append(Text.literal(" "))
+                    .append(Text.literal(": "))
                     .append(Text.literal("").append(toggleB(PlayerData.get.dest.setting.ylevel(player)))
                             .styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings ylevel " + !PlayerData.get.dest.setting.ylevel(player)))))
                     .append(Text.literal("\n "))
                     //PARTICLES
                     .append(lang("setting.particle").setStyle(CUtl.pS()))
-                    .append("\n  ")
+                    .append(":\n  ")
                     //DESTINATION
                     .append(lang("setting.particle.dest").styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                             lang("setting.particle.dest.info")))))
-                    .append(Text.literal(" "))
+                    .append(Text.literal(": "))
                     .append(Text.literal("").append(toggleB(PlayerData.get.dest.setting.particle.dest(player))).styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings particlesdest " + !PlayerData.get.dest.setting.particle.dest(player)))))
                     .append(Text.literal(" "))
                     //COLOR
@@ -1643,29 +1649,36 @@ public class Destination {
                     //LINE
                     .append(lang("setting.particle.line").styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                             lang("setting.particle.line.info")))))
-                    .append(Text.literal(" "))
+                    .append(Text.literal(": "))
                     .append(Text.literal("").append(toggleB(PlayerData.get.dest.setting.particle.line(player))).styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings particlesline " + !PlayerData.get.dest.setting.particle.line(player)))))
                     .append(Text.literal(" "))
                     //COLOR
                     .append(CUtl.button(CUtl.SBtn("particle"),Utl.color.getTC(PlayerData.get.dest.setting.particle.linecolor(player)),2,
                             "/dest settings particleslinec ", CUtl.TBtn("particle.hover")))
                     .append(Text.literal("\n "))
-                    //SOCIAL
-                    .append(lang("setting.social").setStyle(CUtl.pS()))
-                    .append("\n  ")
+                    //FEATURES
+                    .append(lang("setting.features").setStyle(CUtl.pS()))
+                    .append(":\n  ")
                     //SEND
                     .append(lang("setting.send").styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                             lang("setting.send.info")))))
-                    .append(Text.literal(" "))
+                    .append(Text.literal(": "))
                     .append(Text.literal("").append(toggleB(PlayerData.get.dest.setting.send(player))).styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings send " + !PlayerData.get.dest.setting.send(player)))))
                     .append(Text.literal("\n  "))
                     //TRACK
                     .append(lang("setting.track").styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                             lang("setting.track.info")))))
-                    .append(Text.literal(" "))
+                    .append(Text.literal(": "))
                     .append(Text.literal("").append(toggleB(PlayerData.get.dest.setting.track(player))).styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings track " + !PlayerData.get.dest.setting.track(player)))))
-                    .append(Text.literal("\n    "));
-            msg.append(CUtl.button(CUtl.SBtn("dest.settings.reset"),CUtl.TC('c'),1,"/dest settings reset return",
+                    .append(Text.literal("\n  "));
+                    //LASTDEATH
+            if (config.deathsaving) msg
+                    .append(lang("setting.lastdeath").styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                            lang("setting.lastdeath.info")))))
+                    .append(Text.literal(": "))
+                    .append(Text.literal("").append(toggleB(PlayerData.get.dest.setting.lastdeath(player))).styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/dest settings lastdeath " + !PlayerData.get.dest.setting.lastdeath(player)))))
+                    .append(Text.literal("\n"));
+            msg.append("\n    ").append(CUtl.button(CUtl.SBtn("dest.settings.reset"),CUtl.TC('c'),1,"/dest settings reset return",
                     CUtl.TBtn("dest.settings.reset.hover",
                             CUtl.TBtn("all").setStyle(CUtl.C('c'))))).append("  ");
             msg.append(CUtl.CButton.back("/dest")).append("\n");
@@ -1678,33 +1691,49 @@ public class Destination {
         msg
                 .append(lang("ui").setStyle(CUtl.pS()))
                 .append(Text.literal("\n                                  ").styled(style -> style.withStrikethrough(true)))
-                .append(Text.literal("\n "))
-                //SAVED
-                .append(CUtl.CButton.dest.saved())
-                .append(CUtl.CButton.dest.add())
-                .append(Text.literal(" "))
-                //SET
-                .append(CUtl.CButton.dest.set())
-                .append(Text.literal(" "));
-        //CLEAR
-        int clear = 0;
-        TextColor clearC = CUtl.TC('7');
-        if (!get(player, "xyz").equals("f")) {
-            clear = 1;
-            clearC = CUtl.TC('c');
-        }
-        msg.append(CUtl.CButton.dest.clear(clearC,clear)).append("\n\n ");
+                .append(Text.literal("\n "));
+        // lmao this is a mess but is it the best way to do it? dunno
+        boolean line1Free = false;
+        boolean line2Free = !(PlayerData.get.dest.setting.lastdeath(player) && config.deathsaving);
+        //SAVED + ADD
+        if (config.DESTSaving) {
+            msg.append(CUtl.CButton.dest.saved()).append(CUtl.CButton.dest.add());
+            if (!line2Free) msg.append("        ");
+            else msg.append("  ");
+        } else line1Free = true;
+        //SET + CLEAR
+        msg.append(CUtl.CButton.dest.set()).append(CUtl.CButton.dest.clear(player));
+        if (line1Free) msg.append(" ");
+        else msg.append("\n\n ");
         //LASTDEATH
-        msg.append(CUtl.CButton.dest.lastdeath()).append("  ");
+        if (PlayerData.get.dest.setting.lastdeath(player) && config.deathsaving) {
+            msg.append(CUtl.CButton.dest.lastdeath());
+            if (line1Free) {
+                line1Free = false;
+                line2Free = true;
+                msg.append("\n\n ");
+            } else msg.append("  ");
+        }
         //SETTINGS
-        msg.append(CUtl.CButton.dest.settings()).append("\n\n ");
+        msg.append(CUtl.CButton.dest.settings());
+        if (line1Free) {
+            msg.append("\n\n ");
+        } else if (line2Free) msg.append("  ");
+        else msg.append("\n\n ");
         //SEND
         if (PlayerData.get.dest.setting.send(player) && DirectionHUD.server.isRemote()) {
-            msg.append(CUtl.CButton.dest.send()).append("   ");
+            msg.append(CUtl.CButton.dest.send());
+            if (line2Free && !line1Free) {
+                msg.append("\n\n ");
+                line2Free = false;
+            } else msg.append("   ");
         }
         //TRACK
         if (PlayerData.get.dest.setting.track(player) && DirectionHUD.server.isRemote()) {
-            msg.append(CUtl.CButton.dest.track()).append("   ");
+            msg.append(CUtl.CButton.dest.track());
+            if (line2Free && !line1Free) {
+                msg.append("\n\n ");
+            } else msg.append("   ");
         }
         //back
         msg.append(CUtl.CButton.back("/directionhud"));

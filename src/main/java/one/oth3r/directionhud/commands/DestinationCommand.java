@@ -57,12 +57,14 @@ public class DestinationCommand {
         assert player != null;
         String[] args = context.getInput().split(" ");
         if (pos == 1) {
-            if (config.lastdeath) builder.suggest("lastdeath");
-            if (config.DESTSaving) builder.suggest("saved");
+            if (config.deathsaving && PlayerData.get.dest.setting.lastdeath(player)) builder.suggest("lastdeath");
+            if (config.DESTSaving) {
+                builder.suggest("add");
+                builder.suggest("saved");
+            }
             builder.suggest("set");
             builder.suggest("clear");
             builder.suggest("settings");
-            builder.suggest("add");
             if (PlayerData.get.dest.setting.send(player) && DirectionHUD.server.isRemote())
                 builder.suggest("send");
             if (PlayerData.get.dest.setting.track(player) && DirectionHUD.server.isRemote())
