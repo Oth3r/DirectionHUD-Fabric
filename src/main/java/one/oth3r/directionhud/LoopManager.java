@@ -2,11 +2,13 @@ package one.oth3r.directionhud;
 
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 import one.oth3r.directionhud.commands.Destination;
 import one.oth3r.directionhud.commands.HUD;
 import one.oth3r.directionhud.files.PlayerData;
+import one.oth3r.directionhud.files.config;
 import one.oth3r.directionhud.utils.CUtl;
 import one.oth3r.directionhud.utils.Utl;
 import org.joml.Vector3f;
@@ -15,34 +17,45 @@ public class LoopManager {
     public static int hour;
     public static int minute;
     public static long timeTicks;
+    public static String weatherIcon;
     public static int rainbowF;
-
     private static int tickH;
     private static int tickS;
+    private static int HUDRefresh;
     public static void tick() {
-        for (ServerPlayerEntity player : DirectionHUD.playerManager.getPlayerList()) {
-            if (PlayerData.get.hud.state(player)) {
-                HUD.build(player);
-            }
-            if (Destination.getDist(player) <= PlayerData.get.dest.setting.autoclearrad(player)
-                    && PlayerData.get.dest.setting.autoclear(player)
-                    && Destination.checkDestination(player)) Destination.clear(player,
-                    CUtl.lang("dest.cleared_reached").styled(style -> style
-                            .withItalic(true).withColor(CUtl.TC('7'))));
-        }
-        rainbowF += 10;
-        if (rainbowF == 360) rainbowF = 0;
-
         tickH++;
         tickS++;
-
-        if (tickH == 2) {
+        rainbowF += 10;
+        HUDRefresh++;
+        if (HUDRefresh >= config.HUDRefresh) {
+            HUDRefresh = 0;
+            for (ServerPlayerEntity player : DirectionHUD.playerManager.getPlayerList()) {
+                if (PlayerData.get.hud.state(player)) {
+                    HUD.build(player);
+                }
+                if (Destination.getDist(player) <= PlayerData.get.dest.setting.autoclearrad(player)
+                        && PlayerData.get.dest.setting.autoclear(player) && Destination.checkDestination(player))
+                    Destination.clear(player,
+                            CUtl.lang("dest.cleared_reached").styled(style -> style.withItalic(true).withColor(CUtl.TC('7'))));
+            }
+        }
+        if (rainbowF >= 360) rainbowF = 0;
+        if (tickH >= 5) {
+            ServerWorld world = DirectionHUD.server.getOverworld();
             tickH = 0;
-            timeTicks = DirectionHUD.server.getOverworld().getTimeOfDay();
+            timeTicks = world.getTimeOfDay();
             hour = (int) ((timeTicks / 1000 + 6) % 24);
             minute = (int) ((timeTicks % 1000) * 60 / 1000);
+            if (world.isRaining()) {
+                String str;
+                if (world.isNight()) str = "☽";
+                else str = "☀";
+                if (world.isThundering()) weatherIcon = str + "⛈";
+                else weatherIcon = str + "🌧";
+            } else if (world.isNight()) weatherIcon = "☽";
+            else weatherIcon = "☀";
         }
-        if (tickS == 20) {
+        if (tickS >= 20) {
             tickS = 0;
             for (ServerPlayerEntity player : DirectionHUD.playerManager.getPlayerList()) {
                 //PARTICLES
@@ -79,7 +92,6 @@ public class LoopManager {
                         }
                     }
                 }
-
                 //SUSPEND
                 if (Destination.isPlayer(player)) {
                     //maybe in the future auto convert when player and tplayer are in overworld/nether
@@ -102,7 +114,6 @@ public class LoopManager {
                         player.sendMessage(CUtl.tag(CUtl.lang("dest.unsuspended")));
                     }
                 }
-
                 //TRACK TIMER
                 if (PlayerData.get.dest.getTrackingPending(player)) {
                     if (PlayerData.get.dest.track.expire(player) == 0) {
@@ -113,7 +124,6 @@ public class LoopManager {
                     } else if (PlayerData.get.dest.track.expire(player) > 0)
                         PlayerData.set.dest.track.expire(player, PlayerData.get.dest.track.expire(player) - 1);
                 }
-
                 //SUSPEND TIMER
                 if (PlayerData.get.dest.getSuspendedState(player)) {
                     if (PlayerData.get.dest.suspended.expire(player) == 0) {
