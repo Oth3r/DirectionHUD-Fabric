@@ -4,6 +4,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import one.oth3r.directionhud.DirectionHUD;
+import one.oth3r.directionhud.commands.Destination;
 import one.oth3r.directionhud.commands.HUD;
 import one.oth3r.directionhud.files.LangReader;
 
@@ -65,7 +66,7 @@ public class CUtl {
     public static class c {
         public static String convert = "#ffa93f";
         public static String set = "#fff540";
-        public static String save = "#1ee16f";
+        public static String saved = "#1ee16f";
         public static String add = "#36ff89";
         public static String setting = "#e9e9e9";
         public static String lastdeath = "#ac4dff";
@@ -93,14 +94,17 @@ public class CUtl {
             public static Text set(String cmd) {
                 return button(SBtn("dest.set"), HEX(c.set), 1, cmd, TBtn("dest.set.hover").setStyle(HEXS(c.set)));
             }
+            public static Text edit(int t, String cmd) {
+                return button("✎", HEX(c.edit), t, cmd, TBtn("dest.edit.hover").setStyle(HEXS(c.edit)));
+            }
             public static Text settings() {
                 return button(SBtn("dest.settings"), HEX(c.setting),1, "/dest settings", Text.literal("")
                         .append(Text.literal(commandUsage.destSettings()).setStyle(HEXS(c.setting)))
                         .append("\n").append(TBtn("dest.settings.hover")));
             }
             public static Text saved() {
-                return button(SBtn("dest.saved"), HEX(c.save),1, "/dest saved", Text.literal("")
-                        .append(Text.literal(commandUsage.destSaved()).setStyle(HEXS(c.save)))
+                return button(SBtn("dest.saved"), HEX(c.saved),1, "/dest saved", Text.literal("")
+                        .append(Text.literal(commandUsage.destSaved()).setStyle(HEXS(c.saved)))
                         .append("\n").append(TBtn("dest.saved.hover")));
             }
             public static Text add() {
@@ -114,9 +118,10 @@ public class CUtl {
                         .append(Text.literal(commandUsage.destSet()).setStyle(HEXS(c.set)))
                         .append("\n").append(TBtn("dest.set.hover_info")));
             }
-            public static Text clear(TextColor color, int i) {
-                return button(SBtn("dest.clear"), color, i, "/dest clear", Text.literal("")
-                        .append(Text.literal(commandUsage.destClear()).styled(style -> style.withColor(color)))
+            public static Text clear(ServerPlayerEntity player) {
+                boolean o = !Destination.get(player, "xyz").equals("f");
+                return button("✕", TC(o?'c':'7'), o?1:0, "/dest clear", Text.literal("")
+                        .append(Text.literal(commandUsage.destClear()).setStyle(C(o?'c':'7')))
                         .append("\n").append(TBtn("dest.clear.hover")));
             }
             public static Text lastdeath() {
@@ -172,6 +177,11 @@ public class CUtl {
                 return button(SBtn("dirhud.defaults"), HEX(c.defaults), 1, "/dirhud defaults", Text.literal("")
                         .append(Text.literal(commandUsage.defaults()).setStyle(HEXS(c.defaults)))
                         .append("\n").append(TBtn("dirhud.defaults.hover")));
+            }
+            public static Text reload() {
+                return button(SBtn("dirhud.reload"), HEX(c.defaults), 1, "/dirhud reload", Text.literal("")
+                        .append(Text.literal(commandUsage.defaults()).setStyle(HEXS(c.defaults)))
+                        .append("\n").append(TBtn("dirhud.reload.hover")));
             }
         }
     }
@@ -259,7 +269,7 @@ public class CUtl {
         public static String hudEdit() {return "/hud edit";}
         public static String dest() {return "/dest | /destination";}
         public static String destAdd() {return "/dest (saved) add <name> (x) (y) (z) (dimension) (color)";}
-        public static String destSet() {return "/dest set <x> (y) <z> | /dest set saved <name>";}
+        public static String destSet() {return "/dest set <x> (y) <z> (dimension) | /dest set saved <name> (convert)";}
         public static String destLastdeath() {return "/dest lastdeath";}
         public static String destClear() {return "/dest clear";}
         public static String destSaved() {return "/dest saved";}
