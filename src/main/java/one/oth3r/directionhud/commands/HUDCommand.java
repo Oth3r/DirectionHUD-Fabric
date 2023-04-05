@@ -13,7 +13,6 @@ import one.oth3r.directionhud.utils.CUtl;
 
 import java.util.concurrent.CompletableFuture;
 
-
 public class HUDCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(CommandManager.literal("hud")
@@ -64,6 +63,7 @@ public class HUDCommand {
         }
         return builder.buildFuture();
     }
+    //todo optimize this one day
     private static int command(ServerCommandSource source, String arg) {
         ServerPlayerEntity player = source.getPlayer();
         if (!config.HUDEditing) return 1;
@@ -95,19 +95,16 @@ public class HUDCommand {
                 HUD.order.reset(player, true);
                 return 1;
             }
-
             //MOVE UP / DOWN CMD
             if (args[1].equals("move") && args.length == 4) {
                 HUD.order.move(player, args[2], args[3], true);
                 return 1;
             }
-
             //TOGGLE
             if (args[1].equals("state") && args.length == 4) {
                 HUD.order.toggle(player, args[2], Boolean.parseBoolean(args[3]), true);
                 return 1;
             }
-
             //SETTING
             if (args[1].equals("setting") && args.length == 4) {
                 HUD.order.setting(player, args[2], args[3], true);
@@ -115,26 +112,18 @@ public class HUDCommand {
             }
             return 1;
         }
-
         //COLOR
         if (args[0].equalsIgnoreCase("color")) {
             if (args.length == 1) {
                 HUD.color.UI(player, null);
                 return 1;
-
             }
-
             //COLOR
             if (args.length == 3 && args[1].equals("edt")) {
-                if (args[2].equals("pri")) {
-                    HUD.color.changeUI(player, "pri", null);
-                }
-                if (args[2].equals("sec")) {
-                    HUD.color.changeUI(player, "sec", null);
-                }
+                if (args[2].equals("pri")) HUD.color.changeUI(player, "pri", null);
+                if (args[2].equals("sec")) HUD.color.changeUI(player, "sec", null);
                 return 1;
             }
-
             //RESET
             if (args[1].equals("rset")) {
                 if (args.length == 2) {
@@ -146,7 +135,6 @@ public class HUDCommand {
                     return 1;
                 }
             }
-
             //SET COLOR
             if (args[1].equals("set") && args.length == 4) {
                 HUD.color.setColor(player, args[2], args[3], true);
@@ -162,7 +150,6 @@ public class HUDCommand {
             }
             return 1;
         }
-
         //TOGGLE
         if (args[0].equalsIgnoreCase("toggle")) {
             if (args.length == 1) {
@@ -173,7 +160,6 @@ public class HUDCommand {
             HUD.toggle(player, Boolean.parseBoolean(args[1]), true);
             return 1;
         }
-
         player.sendMessage(CUtl.error(CUtl.lang("error.command")));
         return 1;
     }
