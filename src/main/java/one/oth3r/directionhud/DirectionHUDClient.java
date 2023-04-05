@@ -6,12 +6,11 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
-import net.minecraft.text.Text;
-import one.oth3r.directionhud.commands.HUD;
 import org.lwjgl.glfw.GLFW;
 
 public class DirectionHUDClient implements ClientModInitializer {
     public static boolean onSupportedServer = false;
+    public static boolean hudState = false;
     private static KeyBinding keyBinding;
     @Override
     public void onInitializeClient() {
@@ -42,10 +41,10 @@ public class DirectionHUDClient implements ClientModInitializer {
                 sPacket.sendToServer(PacketBuilder.INITIALIZATION_PACKET);
             });
         });
-        ClientPlayNetworking.registerGlobalReceiver(PacketBuilder.LAST_HUD_PACKET, (client, handler, buf, responseSender) -> {
+        ClientPlayNetworking.registerGlobalReceiver(PacketBuilder.HUD_STATE, (client, handler, buf, responseSender) -> {
             PacketBuilder packet = new PacketBuilder(buf);
             assert client.player != null;
-            client.execute(() -> HUD.lastBar = Text.of(packet.getMessage()));
+            client.execute(() -> hudState = Boolean.parseBoolean(packet.getMessage()));
         });
     }
 }

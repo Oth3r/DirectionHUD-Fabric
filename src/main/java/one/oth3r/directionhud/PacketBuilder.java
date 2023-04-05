@@ -11,7 +11,7 @@ import net.minecraft.util.Identifier;
 
 public class PacketBuilder implements Packet<PacketListener> {
     public static final Identifier INITIALIZATION_PACKET = new Identifier(DirectionHUD.MOD_ID, "initialization_packet");
-    public static final Identifier LAST_HUD_PACKET = new Identifier(DirectionHUD.MOD_ID, "last_hud_packet");
+    public static final Identifier HUD_STATE = new Identifier(DirectionHUD.MOD_ID, "hud_state_packet");
     private final String message;
     public PacketBuilder(PacketByteBuf buf) {
         // Read any data sent in the packet

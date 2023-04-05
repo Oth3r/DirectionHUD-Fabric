@@ -66,7 +66,11 @@ public class DirectionHUD {
 		});
 		//PACKETS
 		ServerPlayNetworking.registerGlobalReceiver(PacketBuilder.INITIALIZATION_PACKET,
-				(server, player, handler, buf, responseSender) -> server.execute(() -> DirectionHUD.players.put(player,true)));
+				(server, player, handler, buf, responseSender) -> server.execute(() -> {
+					DirectionHUD.players.put(player,true);
+					PacketBuilder packet = new PacketBuilder(PlayerData.get.hud.state(player)+"");
+					packet.sendToPlayer(PacketBuilder.HUD_STATE,player);
+				}));
 		//COMMANDS
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			DirHUDCommand.register(dispatcher);

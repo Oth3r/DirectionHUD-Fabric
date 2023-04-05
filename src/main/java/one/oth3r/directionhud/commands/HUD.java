@@ -13,7 +13,6 @@ import one.oth3r.directionhud.utils.Utl;
 import java.util.*;
 
 public class HUD {
-    public static Text lastBar = Text.literal("");
     private static MutableText lang(String key) {
         return CUtl.lang("hud."+key);
     }
@@ -82,11 +81,7 @@ public class HUD {
             if (i-1 < order.getEnabled(player).size()) text = Text.literal("").append(text).append(" ");
         }
         if (text.equals(Text.literal(""))) return;
-        if (DirectionHUD.isClient) lastBar = text;
-        else if (DirectionHUD.players.get(player)) {
-            PacketBuilder packet = new PacketBuilder(text.getString());
-            packet.sendToPlayer(PacketBuilder.LAST_HUD_PACKET, player);
-        }
+        text.styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL,"https://modrinth.com/mod/directionhud")));
         player.sendMessage(text, true);
     }
     public static String getPlayerDirection(ServerPlayerEntity player) {
@@ -780,6 +775,10 @@ public class HUD {
         } else {
             if (!state) player.sendMessage(Text.of(""),true);
             PlayerData.set.hud.state(player, state);
+        }
+        if (DirectionHUD.players.get(player)) {
+            PacketBuilder packet = new PacketBuilder(PlayerData.get.hud.state(player)+"");
+            packet.sendToPlayer(PacketBuilder.HUD_STATE, player);
         }
         Text text = Text.literal("").append(CUtl.tag())
                 .append(lang("toggle",
