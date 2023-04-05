@@ -9,6 +9,7 @@ import java.io.*;
 import java.util.Properties;
 
 public class config {
+    public static String lang = defaults.lang;
     public static boolean DESTSaving = defaults.DESTSaving;
     public static int MAXSaved = defaults.MAXSaved;
     public static boolean deathsaving = defaults.deathsaving;
@@ -178,6 +179,7 @@ public class config {
         }
     }
     public static class defaults {
+        public static String lang = "en_us";
         public static boolean DESTSaving = true;
         public static int MAXSaved = 50;
         public static boolean deathsaving = true;
