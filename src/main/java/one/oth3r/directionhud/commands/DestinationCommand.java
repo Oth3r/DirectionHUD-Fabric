@@ -92,7 +92,7 @@ public class DestinationCommand {
             return Destination.commandSuggester.sendCMD(player,builder,pos-2,Utl.trimStart(args,2));
         }
         if (args[1].equalsIgnoreCase("track")) {
-            return Destination.commandSuggester.trackCMD(player,builder,pos-2,Utl.trimStart(args,2));
+            return Destination.commandSuggester.trackCMD(player,builder,pos-2);
         }
         return builder.buildFuture();
     }

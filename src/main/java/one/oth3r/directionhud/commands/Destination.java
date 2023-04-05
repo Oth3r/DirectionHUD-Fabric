@@ -15,9 +15,6 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 public class Destination {
-    //todo button to view saved when adding a destination or sm like that
-    // color coded ui?
-    // and move the hud commad code like the dest one
     private static MutableText lang(String key) {
         return CUtl.lang("dest."+key);
     }
@@ -711,7 +708,7 @@ public class Destination {
             }
             return builder.buildFuture();
         }
-        public static CompletableFuture<Suggestions> trackCMD(ServerPlayerEntity player, SuggestionsBuilder builder, int pos, String[] args) {
+        public static CompletableFuture<Suggestions> trackCMD(ServerPlayerEntity player, SuggestionsBuilder builder, int pos) {
             // track <player>
             if (pos == 0) {
                 for (String p : Utl.player.getList()) {
@@ -789,7 +786,6 @@ public class Destination {
         public static void add(boolean send, ServerPlayerEntity player, String name, String xyz, String dimension, String color) {
             List<String> names = getNames(player);
             List<String> all = getList(player);
-            Style colorS;
             if (getList(player).size() >= config.MAXSaved) {
                 if (send) player.sendMessage(error("dest.saved.max"));
                 return;
@@ -810,12 +806,12 @@ public class Destination {
                 if (send) player.sendMessage(error("dimension"));
                 return;
             }
-            colorS = Style.EMPTY.withColor(Utl.color.getTC(Utl.color.fix(color==null?"yellow":color,false,"yellow")));
-            color = Utl.color.fix(color==null?"white":color,false,"white");
             if (!Utl.xyz.check(xyz)) {
                 player.sendMessage(error("coordinates"));
                 return;
             }
+            color = Utl.color.fix(color==null?"white":color,false,"white");
+            TextColor colorTC = Utl.color.getTC(Utl.color.fix(color,false,"yellow"));
             dimension = Utl.dim.CFormat(dimension);
             xyz = Utl.xyz.fix(xyz);
             xyz = Utl.xyz.DFormat(xyz);
@@ -824,14 +820,22 @@ public class Destination {
 
             setList(player, all);
             if (send) {
-                player.sendMessage(CUtl.tag(lang("saved.add", Text.literal("")
-                                        .append(Text.literal(name + " ").setStyle(colorS))
-                                                .append(Text.literal("("+Utl.xyz.PFormat(xyz) + ")").setStyle(CUtl.C('7')))
-                                        .styled(style -> style.withItalic(true)),
-                                Text.literal(Utl.dim.PFormat(dimension).toUpperCase()).setStyle(CUtl.sS()))
+                String finalXyz = Utl.xyz.PFormat(xyz);
+                MutableText buttons = Text.literal(" ");
+                buttons.append(CUtl.CButton.dest.edit(1,"/dest saved edit " + name))
                         .append(" ")
-                        .append(CUtl.button("✎", CUtl.HEX(CUtl.c.edit),1,"/dest saved edit " + name,Text.literal("")
-                                .append(CUtl.TBtn("edit.hover").setStyle(CUtl.HEXS(CUtl.c.edit)))))));
+                        .append(CUtl.CButton.dest.set("/dest set "+finalXyz));
+                if (Utl.dim.showConvertButton(Utl.player.dim(player),dimension))
+                    buttons.append(" ").append(CUtl.CButton.dest.convert("/dest set "+finalXyz+" convert"));
+                MutableText msg = CUtl.tag(lang("saved.add", Text.literal("")
+                        .append(Text.literal("["))
+                        .append(Text.literal(Utl.dim.getLetter(dimension)).setStyle(CUtl.HEXS(Utl.dim.getHEX(dimension))))
+                        .append(Text.literal("] "))
+                        .append(Text.literal(name).styled(style -> style
+                                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal(finalXyz).setStyle(CUtl.C('7'))))
+                                .withColor(colorTC)))
+                        .append(buttons)));
+                player.sendMessage(msg);
             }
         }
         public static void delete(boolean send, ServerPlayerEntity player, String name) {
@@ -1005,49 +1009,38 @@ public class Destination {
             }
             MutableText msg = Text.literal(" ");
             msg
-                    .append(lang("ui.saved.edit").setStyle(CUtl.pS()))
+                    .append(lang("ui.saved.edit").setStyle(CUtl.HEXS(CUtl.c.saved)))
                     .append(Text.literal("\n                                               \n").styled(style -> style.withStrikethrough(true)));
             int i = names.indexOf(name);
-
             msg
                     .append(" ")
                     //NAME
-                    .append(CUtl.button("✎",CUtl.HEX(CUtl.c.edit),2,"/dest saved edit name " + names.get(i) + " ",
-                            CUtl.TBtn("dest.saved.edit.hover",
-                                    CUtl.TBtn("dest.saved.edit.hover_2").setStyle(Style.EMPTY.withColor(CUtl.HEX(CUtl.c.edit))))))
+                    .append(CUtl.CButton.dest.edit(2,"/dest saved edit name " + names.get(i) + " "))
                     .append(" ")
                     .append(lang("saved.edit.name").setStyle(CUtl.pS()))
                     .append(" "+names.get(i))
                     .append("\n ")
                     //COLOR
-                    .append(CUtl.button("✎",CUtl.HEX(CUtl.c.edit),2,"/dest saved edit color " + names.get(i) + " ",
-                            CUtl.TBtn("dest.saved.edit.hover",
-                                    CUtl.TBtn("dest.saved.edit.hover_2").setStyle(Style.EMPTY.withColor(CUtl.HEX(CUtl.c.edit))))))
+                    .append(CUtl.CButton.dest.edit(2,"/dest saved edit color " + names.get(i) + " "))
                     .append(" ")
                     .append(lang("saved.edit.color").setStyle(CUtl.pS()))
                     .append(" ")
                     .append(Utl.color.set(getColors(player).get(i),Utl.color.formatPlayer(getColors(player).get(i),true)))
                     .append("\n ")
                     //ORDER
-                    .append(CUtl.button("✎",CUtl.HEX(CUtl.c.edit),2,"/dest saved edit order " + names.get(i) + " ",
-                            CUtl.TBtn("dest.saved.edit.hover",
-                                    CUtl.TBtn("dest.saved.edit.hover_2").setStyle(Style.EMPTY.withColor(CUtl.HEX(CUtl.c.edit))))))
+                    .append(CUtl.CButton.dest.edit(2,"/dest saved edit order " + names.get(i) + " "))
                     .append(" ")
                     .append(lang("saved.edit.order").setStyle(CUtl.pS()))
                     .append(" "+(i + 1))
                     .append("\n ")
                     //DIMENSION
-                    .append(CUtl.button("✎",CUtl.HEX(CUtl.c.edit),2,"/dest saved edit dim " + names.get(i) + " ",
-                            CUtl.TBtn("dest.saved.edit.hover",
-                                    CUtl.TBtn("dest.saved.edit.hover_2").setStyle(Style.EMPTY.withColor(CUtl.HEX(CUtl.c.edit))))))
+                    .append(CUtl.CButton.dest.edit(2,"/dest saved edit dim " + names.get(i) + " "))
                     .append(" ")
                     .append(lang("saved.edit.dimension").setStyle(CUtl.pS()))
                     .append(" "+Utl.dim.PFormat(getDimensions(player).get(i)))
                     .append("\n ")
                     //LOCATION
-                    .append(CUtl.button("✎",CUtl.HEX(CUtl.c.edit),2,"/dest saved edit loc " + names.get(i) + " ",
-                            CUtl.TBtn("dest.saved.edit.hover",
-                                    CUtl.TBtn("dest.saved.edit.hover_2").setStyle(Style.EMPTY.withColor(CUtl.HEX(CUtl.c.edit))))))
+                    .append(CUtl.CButton.dest.edit(2,"/dest saved edit loc " + names.get(i) + " "))
                     .append(" ")
                     .append(lang("saved.edit.location").setStyle(CUtl.pS()))
                     .append(" "+getPLocations(player).get(i))
@@ -1065,15 +1058,13 @@ public class Destination {
                 msg.append(CUtl.CButton.dest.convert("/dest set saved " + names.get(i) + " convert"));
             }
             //DELETE
-            msg = Text.literal("").append(msg)
-                    .append("\n\n ")
+            msg.append("\n\n ")
                     .append(CUtl.button("DELETE", CUtl.TC('c'),2,"/dest remove " + names.get(i),Text.literal("")
                             .append(Text.literal("Click to delete this destination").setStyle(CUtl.C('c')))))
                     .append(" ")
                     //BACK
                     .append(CUtl.CButton.back("/dest saved " + getPGOf(player, name)));
-            msg = Text.literal("").append(msg)
-                            .append(Text.literal("\n                                               ").styled(style -> style.withStrikethrough(true)));
+            msg.append(Text.literal("\n                                               ").styled(style -> style.withStrikethrough(true)));
             player.sendMessage(msg);
         }
         public static void UI(ServerPlayerEntity player, int pg) {
@@ -1083,7 +1074,7 @@ public class Destination {
                             CUtl.TBtn("dest.add.hover_2").setStyle(CUtl.HEXS(CUtl.c.add))).setStyle(CUtl.C('f'))));
             Text msg = Text.literal(" ");
             msg = Text.literal("").append(msg)
-                            .append(lang("ui.saved").setStyle(CUtl.pS()))
+                            .append(lang("ui.saved").setStyle(CUtl.HEXS(CUtl.c.saved)))
                             .append(Text.literal("\n                                               \n").styled(style -> style.withStrikethrough(true)));
             List<String> names = getNames(player);
             if (pg > getMaxPage(player)) {
@@ -1107,8 +1098,7 @@ public class Destination {
                                         .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                                                 Text.literal(getPLocations(player).get(realInt)).setStyle(CUtl.C('7'))))))
                                 //EDIT
-                                .append(CUtl.button("✎", CUtl.HEX(CUtl.c.edit),1,"/dest saved edit " + names.get(realInt),Text.literal("")
-                                                .append(CUtl.TBtn("edit.hover").setStyle(CUtl.HEXS(CUtl.c.edit)))))
+                                .append(CUtl.CButton.dest.edit(1,"/dest saved edit " + names.get(realInt)))
                                 .append(" ")
                                 //SET
                                 .append(CUtl.CButton.dest.set("/dest set saved " + names.get(realInt)));
@@ -1125,7 +1115,7 @@ public class Destination {
                 msg = Text.literal("").append(msg)
                         .append(" ").append(lang("saved.none"))
                         .append("\n ").append(lang("saved.none_2", addB))
-                        .append("\n");
+                        .append("\n\n");
                 msg = Text.literal("").append(msg)
                         .append(CUtl.button("<<", CUtl.TC('7')))
                         .append(" ")
@@ -1243,7 +1233,7 @@ public class Destination {
             Text msg = Text.literal(" ");
             if (abovemsg != null) msg = Text.literal("").append(abovemsg).append("\n");
             msg = Text.literal("").append(msg)
-                    .append(lang("ui.lastdeath").setStyle(CUtl.pS()))
+                    .append(lang("ui.lastdeath").setStyle(CUtl.HEXS(CUtl.c.lastdeath)))
                     .append(Text.literal("\n                                     \n").styled(style -> style.withStrikethrough(true)));
             String pDIM = Utl.player.dim(player);
             //OVERWORLD
@@ -1602,7 +1592,7 @@ public class Destination {
             MutableText msg = Text.literal("");
             if (abovemsg != null) msg.append(abovemsg).append("\n");
             msg.append(" ")
-                    .append(lang("ui.settings").setStyle(CUtl.pS()))
+                    .append(lang("ui.settings").setStyle(CUtl.HEXS(CUtl.c.setting)))
                     .append(Text.literal("\n                              \n").styled(style -> style.withStrikethrough(true)));
             char c;
             if (PlayerData.get.dest.setting.autoclear(player)) c = 'a'; else c = 'c';
@@ -1689,7 +1679,7 @@ public class Destination {
     public static void UI(ServerPlayerEntity player) {
         MutableText msg = Text.literal(" ");
         msg
-                .append(lang("ui").setStyle(CUtl.pS()))
+                .append(lang("ui").setStyle(CUtl.HEXS(CUtl.c.dest)))
                 .append(Text.literal("\n                                  ").styled(style -> style.withStrikethrough(true)))
                 .append(Text.literal("\n "));
         // lmao this is a mess but is it the best way to do it? dunno
