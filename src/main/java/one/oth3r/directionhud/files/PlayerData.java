@@ -300,7 +300,7 @@ public class PlayerData {
             destSetting.put("ylevel", config.DESTYLevel);
             destSetting.put("send", config.DESTSend);
             destSetting.put("track", config.DESTTrack);
-            destSetting.put("lastdeath", destParticles());
+            destSetting.put("lastdeath", config.DESTLastdeath);
             destSetting.put("particles", destParticles());
             return destSetting;
         }
