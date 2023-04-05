@@ -5,6 +5,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import one.oth3r.directionhud.DirectionHUD;
+import one.oth3r.directionhud.files.LangReader;
 import one.oth3r.directionhud.files.PlayerData;
 import one.oth3r.directionhud.files.config;
 import one.oth3r.directionhud.utils.CUtl;
@@ -65,6 +66,7 @@ public class DirHUD {
         if (player == null) {
             if (DirectionHUD.config == null) DirectionHUD.config = FabricLoader.getInstance().getConfigDir().toFile()+"/";
             config.load();
+            LangReader.loadLanguageFile();
             DirectionHUD.LOGGER.info(CUtl.lang("dirhud.reload", CUtl.lang("dirhud.reload_2")).getString());
             return;
         }
@@ -72,12 +74,11 @@ public class DirHUD {
         MutableText msg = CUtl.tag(CUtl.lang("dirhud.reload",
                 CUtl.lang("dirhud.reload_2").setStyle(CUtl.C('a'))));
         if (DirectionHUD.config == null) DirectionHUD.config = FabricLoader.getInstance().getConfigDir().toFile()+"/";
+        LangReader.loadLanguageFile();
         config.load();
         player.sendMessage(msg);
     }
     public static void UI(ServerPlayerEntity player) {
-        //todo
-        // if a reload command is needed, add one
         MutableText msg = Text.literal("")
                 .append(Text.literal(" DirectionHUD ").setStyle(CUtl.pS()))
                 .append(Text.literal("v"+DirectionHUD.VERSION).setStyle(CUtl.sS()))
