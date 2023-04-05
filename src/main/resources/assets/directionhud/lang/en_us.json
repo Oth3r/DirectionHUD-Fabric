@@ -268,5 +268,7 @@
   "key.directionhud.config.max_saved": "MAX Saved",
   "key.directionhud.config.max_saved.info": "Sets the max amount of destinations that can be saved.",
   "key.directionhud.config.dest_saving": "Destination Saving",
-  "key.directionhud.config.dest_saving.info": "Toggles the saving destination feature."
+  "key.directionhud.config.dest_saving.info": "Toggles the saving destination feature.",
+  "key.directionhud.config.online_mode": "Online Mode",
+  "key.directionhud.config.online_mode.info": "When off, PlayerData uses a name based file system."
 }
