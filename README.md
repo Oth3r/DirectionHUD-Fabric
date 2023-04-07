@@ -1,4 +1,7 @@
 # DirectionHUD (FABRIC)
+<img src="https://img.shields.io/github/v/release/oth3r/DirectionHUD-F?color=blueviolet&logo=github" alt="image">
+<img src="https://img.shields.io/modrinth/dt/directionhud?label=Modrinth&logo=modrinth" alt="image">
+<img src="https://cf.way2muchnoise.eu/843483.svg", alt="Image">
 DirectionHUD is a fully customizable Minecraft Fabric mod 
 that enhances the vanilla experience. 
 With the mod, you can save coordinates, track other players, see death locations, all with full customization to the HUD and Destination commands.
