@@ -1,7 +1,5 @@
 # DirectionHUD (FABRIC)
-<img src="https://img.shields.io/github/v/release/oth3r/DirectionHUD-F?color=blueviolet&logo=github" alt="image">
-<img src="https://img.shields.io/modrinth/dt/directionhud?label=Modrinth&logo=modrinth" alt="image">
-<img src="https://cf.way2muchnoise.eu/843483.svg", alt="Image">
+<img src="https://img.shields.io/github/v/release/oth3r/DirectionHUD-F?color=blueviolet&logo=github" alt="image"> <img src="https://img.shields.io/modrinth/dt/directionhud?label=Modrinth&logo=modrinth" alt="image"> <img src="https://cf.way2muchnoise.eu/843483.svg" alt="image">
 <br>
 DirectionHUD is a fully customizable Minecraft Fabric mod 
 that enhances the vanilla experience. 
