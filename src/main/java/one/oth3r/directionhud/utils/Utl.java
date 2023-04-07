@@ -2,6 +2,7 @@ package one.oth3r.directionhud.utils;
 
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
@@ -49,6 +50,22 @@ public class Utl {
         String[] result = new String[arr.length - numToRemove];
         System.arraycopy(arr, numToRemove, result, 0, result.length);
         return result;
+    }
+    public static SuggestionsBuilder xyzSuggester(ServerPlayerEntity player, SuggestionsBuilder builders, String type) {
+        SuggestionsBuilder builder = new SuggestionsBuilder(builders.getInput(),builders.getStart());
+        if (type.equalsIgnoreCase("x")) {
+            builder.suggest(player.getBlockX());
+            builder.suggest(player.getBlockX()+" "+player.getBlockZ());
+            builder.suggest(player.getBlockX()+" "+player.getBlockY()+" "+player.getBlockZ());
+            return builder;
+        }
+        if (type.equalsIgnoreCase("y")) {
+            builder.suggest(player.getBlockY());
+            builder.suggest(player.getBlockY()+" "+player.getBlockZ());
+            return builder;
+        }
+        if (type.equalsIgnoreCase("z")) return builder.suggest(player.getBlockZ());
+        return builder;
     }
     public static class xyz {
         public static String fix(String loc) {
@@ -133,6 +150,13 @@ public class Utl {
         }
     }
     public static class player {
+        public static List<String> getList() {
+            ArrayList<String> array = new ArrayList<>(List.of());
+            for (ServerPlayerEntity p : DirectionHUD.server.getPlayerManager().getPlayerList()) {
+                array.add(p.getName().getString());
+            }
+            return array;
+        }
         public static String name(ServerPlayerEntity player) {
             return player.getName().getString();
         }
@@ -284,12 +308,12 @@ public class Utl {
         public static String fix(String s,boolean enableRainbow, String Default) {
             if (checkValid(s)) return s.toLowerCase();
             if (s.equals("rainbow") && enableRainbow) return s;
+            if (s.equalsIgnoreCase("light_purple")) return "pink";
             if (s.equalsIgnoreCase("dark_purple")) return "purple";
             if (s.length() == 6) return "#"+s;
             return Default;
         }
         public static String formatPlayer(String s, boolean caps) {
-            if (s.equalsIgnoreCase("dark_purple")) s="purple";
             if (caps) s=s.toUpperCase();
             else s=s.toLowerCase();
             if (checkValid(s.toLowerCase())) return s.replace('_', ' ');
@@ -314,6 +338,26 @@ public class Utl {
                 hue = ((hue % 360f)+step)%360f;
             }
             return text;
+        }
+        public static Color toColor(String string) {
+            if (string.equals("red")) return Color.decode("#FF5555");
+            if (string.equals("dark_red")) return Color.decode("#AA0000");
+            if (string.equals("gold")) return Color.decode("#FFAA00");
+            if (string.equals("yellow")) return Color.decode("#FFFF55");
+            if (string.equals("green")) return Color.decode("#55FF55");
+            if (string.equals("dark_green")) return Color.decode("#00AA00");
+            if (string.equals("aqua")) return Color.decode("#55FFFF");
+            if (string.equals("dark_aqua")) return Color.decode("#00AAAA");
+            if (string.equals("blue")) return Color.decode("#5555FF");
+            if (string.equals("dark_blue")) return Color.decode("#0000AA");
+            if (string.equals("pink")) return Color.decode("#FF55FF");
+            if (string.equals("purple")) return Color.decode("#AA00AA");
+            if (string.equals("white")) return Color.decode("#FFFFFF");
+            if (string.equals("gray")) return Color.decode("#AAAAAA");
+            if (string.equals("dark_gray")) return Color.decode("#555555");
+            if (string.equals("black")) return Color.decode("#000000");
+            if (string.charAt(0)=='#') return Color.decode(string);
+            return Color.WHITE;
         }
     }
 }

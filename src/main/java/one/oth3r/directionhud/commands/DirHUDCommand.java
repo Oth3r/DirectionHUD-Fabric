@@ -50,14 +50,14 @@ public class DirHUDCommand {
     public static CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder, int pos) {
         ServerPlayerEntity player = context.getSource().getPlayer();
         assert player != null;
-        if (pos == 1 && !DirectionHUD.server.isRemote()) {
-            return builder.suggest("defaults").buildFuture();
+        if (pos == 1) {
+            if (!DirectionHUD.server.isRemote()) return builder.suggest("defaults").buildFuture();
+            else if (player.hasPermissionLevel(2)) return builder.suggest("reload").buildFuture();
         }
         return builder.buildFuture();
     }
     private static int command(ServerCommandSource source, String arg) {
         ServerPlayerEntity player = source.getPlayer();
-        if (player == null) return 1;
         String[] args;
 
         //trim all the arguments before the command
@@ -74,6 +74,12 @@ public class DirHUDCommand {
         if (args[0].equals("dirhud") || args[0].equals("directionhud"))
             args = arg.replaceFirst("(?i)dir(ection)?hud ", "").split(" ");
 
+        if (player == null) {
+            if (args[0].equalsIgnoreCase("reload") && DirectionHUD.server.isRemote()) {
+                DirHUD.reload(null);
+            }
+            return 1;
+        }
 
         if (args[0].equalsIgnoreCase("dirhud") || args[0].equalsIgnoreCase("directionhud")) {
             DirHUD.UI(player);
@@ -92,6 +98,9 @@ public class DirHUDCommand {
             if (args[1].equalsIgnoreCase("reset")) {
                 DirHUD.resetDefaults(player);
             }
+        }
+        if (args[0].equalsIgnoreCase("reload") && DirectionHUD.server.isRemote() && player.hasPermissionLevel(2)) {
+            DirHUD.reload(player);
         }
         return 1;
     }

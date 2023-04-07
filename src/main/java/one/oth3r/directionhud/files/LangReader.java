@@ -64,13 +64,14 @@ public class LangReader {
         return new LangReader(translationKey, placeholders);
     }
 
-    public static void loadLanguageFile(String langFile) {
-        //todo add this to the /reload command on the server side
-//        String fileContent = new String(Files.readAllBytes(Paths.get(filePath)));
+    public static void loadLanguageFile() {
         try {
             ClassLoader classLoader = DirectionHUDServer.class.getClassLoader();
-            InputStream inputStream = classLoader.getResourceAsStream("assets/directionhud/lang/"+langFile+".json");
-            if (inputStream == null) inputStream = classLoader.getResourceAsStream("assets/directionhud/lang/en_us.json");
+            InputStream inputStream = classLoader.getResourceAsStream("assets/directionhud/lang/"+config.lang+".json");
+            if (inputStream == null) {
+                inputStream = classLoader.getResourceAsStream("assets/directionhud/lang/"+config.defaults.lang+".json");
+                config.lang = config.defaults.lang;
+            }
             if (inputStream == null) throw new IllegalArgumentException("CANT LOAD THE LANGUAGE FILE. DIRECTIONHUD WILL BREAK.");
             Scanner scanner = new Scanner(inputStream);
             String currentLine;

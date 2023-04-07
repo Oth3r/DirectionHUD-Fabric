@@ -9,6 +9,13 @@ import java.io.*;
 import java.util.Properties;
 
 public class config {
+    public static String lang = defaults.lang;
+    public static boolean DESTSaving = defaults.DESTSaving;
+    public static int MAXSaved = defaults.MAXSaved;
+    public static boolean deathsaving = defaults.deathsaving;
+    public static boolean HUDEditing = defaults.HUDEditing;
+    public static int HUDRefresh = defaults.HUDRefresh;
+    public static boolean online = defaults.online;
     public static boolean HUDEnabled = defaults.HUDEnabled;
     public static String HUDOrder = defaults.HUDOrder;
     public static boolean HUDCoordinates = defaults.HUDCoordinates;
@@ -22,9 +29,11 @@ public class config {
     public static String HUDPrimaryColor = defaults.HUDPrimaryColor;
     public static boolean HUDPrimaryBold = defaults.HUDPrimaryBold;
     public static boolean HUDPrimaryItalics = defaults.HUDPrimaryItalics;
+    public static boolean HUDPrimaryRainbow = defaults.HUDPrimaryRainbow;
     public static String HUDSecondaryColor = defaults.HUDSecondaryColor;
     public static boolean HUDSecondaryBold = defaults.HUDSecondaryBold;
     public static boolean HUDSecondaryItalics = defaults.HUDSecondaryItalics;
+    public static boolean HUDSecondaryRainbow = defaults.HUDSecondaryRainbow;
     public static boolean DESTAutoClear = defaults.DESTAutoClear;
     public static int DESTAutoClearRad = defaults.DESTAutoClearRad;
     public static boolean DESTYLevel = defaults.DESTYLevel;
@@ -34,6 +43,7 @@ public class config {
     public static String DESTDestParticleColor = defaults.DESTDestParticleColor;
     public static boolean DESTSend = defaults.DESTSend;
     public static boolean DESTTrack = defaults.DESTTrack;
+    public static boolean DESTLastdeath = defaults.DESTLastdeath;
     public static void resetDefaults() {
         HUDEnabled = defaults.HUDEnabled;
         HUDOrder = defaults.HUDOrder;
@@ -72,6 +82,13 @@ public class config {
             var properties = new Properties();
             properties.load(fileStream);
             fileStream.close();
+            //CONFIG
+            DESTSaving = Boolean.parseBoolean((String) properties.computeIfAbsent("destination-saving", a -> defaults.DESTSaving+""));
+            MAXSaved = Integer.parseInt((String) properties.computeIfAbsent("destination-max-saved", a -> defaults.MAXSaved+""));
+            deathsaving = Boolean.parseBoolean((String) properties.computeIfAbsent("death-saving", a -> defaults.deathsaving +""));
+            HUDEditing = Boolean.parseBoolean((String) properties.computeIfAbsent("hud-editing", a -> defaults.HUDEditing +""));
+            HUDRefresh = Math.min(20, Math.max(1, Integer.parseInt((String) properties.computeIfAbsent("hud-refresh", a -> defaults.HUDRefresh+""))));
+            online = Boolean.parseBoolean((String) properties.computeIfAbsent("online-mode", a -> defaults.online +""));
             //HUD
             HUDEnabled = Boolean.parseBoolean((String) properties.computeIfAbsent("enabled", a -> defaults.HUDEnabled+""));
             HUDOrder = HUD.order.fixOrder((String) properties.computeIfAbsent("order", a -> defaults.HUDOrder));
@@ -79,9 +96,11 @@ public class config {
             HUDPrimaryColor = Utl.color.fix((String) properties.computeIfAbsent("primary-color", a -> defaults.HUDPrimaryColor),true,defaults.HUDPrimaryColor);
             HUDPrimaryBold = Boolean.parseBoolean((String) properties.computeIfAbsent("primary-bold", a -> defaults.HUDPrimaryBold+""));
             HUDPrimaryItalics = Boolean.parseBoolean((String) properties.computeIfAbsent("primary-italics", a -> defaults.HUDPrimaryItalics+""));
+            HUDPrimaryRainbow = Boolean.parseBoolean((String) properties.computeIfAbsent("primary-rainbow", a -> defaults.HUDPrimaryRainbow+""));
             HUDSecondaryColor = Utl.color.fix((String) properties.computeIfAbsent("secondary-color", a -> defaults.HUDSecondaryColor),true,defaults.HUDSecondaryColor);
             HUDSecondaryBold = Boolean.parseBoolean((String) properties.computeIfAbsent("secondary-bold", a -> defaults.HUDSecondaryBold+""));
             HUDSecondaryItalics = Boolean.parseBoolean((String) properties.computeIfAbsent("secondary-italics", a -> defaults.HUDSecondaryItalics+""));
+            HUDSecondaryRainbow = Boolean.parseBoolean((String) properties.computeIfAbsent("secondary-rainbow", a -> defaults.HUDSecondaryRainbow+""));
             //MODULES
             HUDCoordinates = Boolean.parseBoolean((String) properties.computeIfAbsent("coordinates", a -> defaults.HUDCoordinates+""));
             HUDDistance = Boolean.parseBoolean((String) properties.computeIfAbsent("distance", a -> defaults.HUDDistance+""));
@@ -92,7 +111,7 @@ public class config {
             HUDWeather = Boolean.parseBoolean((String) properties.computeIfAbsent("weather", a -> defaults.HUDWeather+""));
             //DEST
             DESTAutoClear = Boolean.parseBoolean((String) properties.computeIfAbsent("autoclear", a -> defaults.DESTAutoClear+""));
-            DESTAutoClearRad = Integer.parseInt((String) properties.computeIfAbsent("autoclear-radius", a -> defaults.DESTAutoClearRad+""));
+            DESTAutoClearRad = Math.min(15, Math.max(1, Integer.parseInt((String) properties.computeIfAbsent("autoclear-radius", a -> defaults.DESTAutoClearRad+""))));
             DESTYLevel = Boolean.parseBoolean((String) properties.computeIfAbsent("y-level", a -> defaults.DESTYLevel+""));
             DESTLineParticles = Boolean.parseBoolean((String) properties.computeIfAbsent("line-particles", a -> defaults.DESTLineParticles+""));
             DESTLineParticleColor = Utl.color.fix((String) properties.computeIfAbsent("line-particle-color", a -> defaults.DESTLineParticleColor),false,defaults.DESTLineParticleColor);
@@ -100,7 +119,6 @@ public class config {
             DESTDestParticleColor = Utl.color.fix((String) properties.computeIfAbsent("dest-particle-color", a -> defaults.DESTDestParticleColor),false,defaults.DESTDestParticleColor);
             DESTSend = Boolean.parseBoolean((String) properties.computeIfAbsent("send", a -> defaults.DESTSend+""));
             DESTTrack = Boolean.parseBoolean((String) properties.computeIfAbsent("track", a -> defaults.DESTTrack+""));
-
             save();
         } catch (Exception f) {
             //read fail
@@ -110,21 +128,30 @@ public class config {
     }
     public static void save() {
         try (var file = new FileOutputStream(configFile(), false)) {
-            file.write("# DirectionHUD Defaults".getBytes());
-            file.write("\n\n# HUD".getBytes());
+            file.write("# DirectionHUD Config v1.0\n".getBytes());
+            file.write(("\ndestination-saving=" + DESTSaving).getBytes());
+            file.write(("\ndestination-max-saved=" + MAXSaved).getBytes());
+            file.write(("\ndeath-saving=" + deathsaving).getBytes());
+            file.write(("\nhud-editing=" + HUDEditing).getBytes());
+            file.write(("\n# HUD refresh time in ticks:").getBytes());
+            file.write(("\nhud-refresh=" + HUDRefresh).getBytes());
+            file.write(("\n# Turn off for offline mode servers, uses a name based file system:").getBytes());
+            file.write(("\nonline-mode=" + online).getBytes());
+            file.write(("\n\n# DirectionHUD Player Defaults\n").getBytes());
+            file.write("\n# HUD".getBytes());
             file.write(("\nenabled=" + HUDEnabled).getBytes());
+            file.write(("\n# HUD Module order, all modules don't have to be listed:").getBytes());
             file.write(("\norder=" + HUDOrder).getBytes());
-            file.write(("\n# " + CUtl.lang("config.hud.order.hover_file").getString()).getBytes());
-            file.write(("\n# " + CUtl.lang("config.hud.order.hover_2").getString() + " " + CUtl.lang("config.hud.order.hover_3").getString()).getBytes());
-            file.write("\n# All modules DO NOT have to be written".getBytes());
             file.write(("\ntime24hr=" + HUD24HR).getBytes());
             file.write(("\nprimary-color=" + HUDPrimaryColor).getBytes());
             file.write(("\nprimary-bold=" + HUDPrimaryBold).getBytes());
             file.write(("\nprimary-italics=" + HUDPrimaryItalics).getBytes());
+            file.write(("\nprimary-rainbow=" + HUDPrimaryRainbow).getBytes());
             file.write(("\nsecondary-color=" + HUDSecondaryColor).getBytes());
             file.write(("\nsecondary-bold=" + HUDSecondaryBold).getBytes());
             file.write(("\nsecondary-italics=" + HUDSecondaryItalics).getBytes());
-            file.write(("\n# " + CUtl.lang("config.colors").getString() + " " + CUtl.lang("config.colors_2")).getBytes());
+            file.write(("\nsecondary-rainbow=" + HUDSecondaryRainbow).getBytes());
+            file.write(("\n# VALID HUD COLORS: rainbow, hex colors, & all default minecraft colors. (light_purple -> pink & dark_purple -> purple)").getBytes());
 
             file.write("\n\n# Module State".getBytes());
             file.write(("\ncoordinates=" + HUDCoordinates).getBytes());
@@ -145,11 +172,20 @@ public class config {
             file.write(("\ndest-particle-color=" + DESTDestParticleColor).getBytes());
             file.write(("\nsend=" + HUDDirection).getBytes());
             file.write(("\ntrack=" + HUDTime).getBytes());
+            file.write(("\nlastdeath=" + DESTLastdeath).getBytes());
+            file.write(("\n# VALID DEST COLORS: hex colors, & all default minecraft colors. (light_purple -> pink & dark_purple -> purple)").getBytes());
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
     public static class defaults {
+        public static String lang = "en_us";
+        public static boolean DESTSaving = true;
+        public static int MAXSaved = 50;
+        public static boolean deathsaving = true;
+        public static boolean HUDEditing = true;
+        public static int HUDRefresh = 1;
+        public static boolean online = true;
         public static boolean HUDEnabled = true;
         public static String HUDOrder = HUD.order.allModules();
         public static boolean HUDCoordinates = true;
@@ -163,9 +199,11 @@ public class config {
         public static String HUDPrimaryColor = CUtl.c.pri;
         public static boolean HUDPrimaryBold = false;
         public static boolean HUDPrimaryItalics = false;
+        public static boolean HUDPrimaryRainbow = false;
         public static String HUDSecondaryColor = "white";
         public static boolean HUDSecondaryBold = false;
         public static boolean HUDSecondaryItalics = false;
+        public static boolean HUDSecondaryRainbow = false;
         public static boolean DESTAutoClear = true;
         public static int DESTAutoClearRad = 2;
         public static boolean DESTYLevel = false;
@@ -175,5 +213,6 @@ public class config {
         public static String DESTDestParticleColor = CUtl.c.pri;
         public static boolean DESTSend = true;
         public static boolean DESTTrack = true;
+        public static boolean DESTLastdeath = true;
     }
 }

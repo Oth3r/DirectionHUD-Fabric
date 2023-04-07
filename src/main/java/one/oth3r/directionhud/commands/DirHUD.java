@@ -1,9 +1,11 @@
 package one.oth3r.directionhud.commands;
 
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import one.oth3r.directionhud.DirectionHUD;
+import one.oth3r.directionhud.files.LangReader;
 import one.oth3r.directionhud.files.PlayerData;
 import one.oth3r.directionhud.files.config;
 import one.oth3r.directionhud.utils.CUtl;
@@ -60,20 +62,36 @@ public class DirHUD {
                 .append(Text.literal("\n                                 ").styled(style -> style.withStrikethrough(true)));
         player.sendMessage(msg);
     }
+    public static void reload(ServerPlayerEntity player) {
+        if (player == null) {
+            if (DirectionHUD.config == null) DirectionHUD.config = FabricLoader.getInstance().getConfigDir().toFile()+"/";
+            config.load();
+            LangReader.loadLanguageFile();
+            DirectionHUD.LOGGER.info(CUtl.lang("dirhud.reload", CUtl.lang("dirhud.reload_2")).getString());
+            return;
+        }
+        if (!player.hasPermissionLevel(2)) return;
+        MutableText msg = CUtl.tag(CUtl.lang("dirhud.reload",
+                CUtl.lang("dirhud.reload_2").setStyle(CUtl.C('a'))));
+        if (DirectionHUD.config == null) DirectionHUD.config = FabricLoader.getInstance().getConfigDir().toFile()+"/";
+        LangReader.loadLanguageFile();
+        config.load();
+        player.sendMessage(msg);
+    }
     public static void UI(ServerPlayerEntity player) {
-        //todo
-        // if a reload command is needed, add one
         MutableText msg = Text.literal("")
                 .append(Text.literal(" DirectionHUD ").setStyle(CUtl.pS()))
                 .append(Text.literal("v"+DirectionHUD.VERSION).setStyle(CUtl.sS()))
                 .append(Text.literal("\n                                 \n").styled(style -> style.withStrikethrough(true)))
                 .append(Text.literal(" "));
         //hud
-        msg.append(CUtl.CButton.dirHUD.hud()).append("  ");
+        if (config.HUDEditing) msg.append(CUtl.CButton.dirHUD.hud()).append("  ");
         //dest
         msg.append(CUtl.CButton.dirHUD.dest());
         if (!DirectionHUD.server.isRemote()) {
             msg.append("\n\n ").append(CUtl.CButton.dirHUD.defaults());
+        } else if (player.hasPermissionLevel(2)) {
+            msg.append("\n\n ").append(CUtl.CButton.dirHUD.reload());
         }
         msg.append(Text.literal("\n                                 ").styled(style -> style.withStrikethrough(true)));
         player.sendMessage(msg);

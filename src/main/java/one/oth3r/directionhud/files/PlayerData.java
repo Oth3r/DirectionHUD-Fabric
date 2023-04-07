@@ -11,7 +11,8 @@ import java.util.*;
 public class PlayerData {
     public static Map<ServerPlayerEntity,Map<String,Object>> playerMap = new HashMap<>();
     public static File getFile(ServerPlayerEntity player) {
-        return new File(DirectionHUD.playerData+player.getUuidAsString()+".json");
+        if (config.online) return new File(DirectionHUD.playerData+player.getUuidAsString()+".json");
+        else return new File(DirectionHUD.playerData+player.getName().getString()+".json");
     }
     private static Map<String, Object> parseObject(String jsonString) {
         Map<String, Object> map = new HashMap<>();
@@ -201,10 +202,23 @@ public class PlayerData {
         }
     }
     public static void addPlayer(ServerPlayerEntity player) {
-        Map<String, Object> map = getMap(player);
-        map.put("name",Utl.player.name(player));
+        Map<String, Object> map = updater(player, getMap(player));
         writeMap(player, map);
         playerMap.put(player,removeUnnecessary(map));
+    }
+    @SuppressWarnings("unchecked")
+    public static Map<String, Object> updater(ServerPlayerEntity player, Map<String,Object> map) {
+        map.put("name",Utl.player.name(player));
+        if (map.get("version").equals(1.0)) {
+            map.put("version",1.1);
+            Map<String,Object> dest = (Map<String, Object>) map.get("destination");
+            Map<String,Object> dSet = (Map<String, Object>) dest.get("setting");
+            dSet.put("lastdeath",config.DESTLastdeath);
+            dest.put("setting",dSet);
+            map.put("destination",dest);
+            return map;
+        }
+        return map;
     }
     @SuppressWarnings("unchecked")
     public static Map<String,Object> removeUnnecessary(Map<String,Object> map) {
@@ -213,7 +227,8 @@ public class PlayerData {
         dSet.remove("send");
         dest.remove("saved");
         dest.remove("lastdeath");
-        map.put("destination", dest);
+        dest.put("setting",dSet);
+        map.put("destination",dest);
         map.remove("name");
         //removes map.name, map.destination.saved, map.destination.setting.send, map.destination.lastdeath
         return map;
@@ -255,7 +270,7 @@ public class PlayerData {
         destination.put("track", null);
         destination.put("suspended", null);
         //base
-        map.put("version", 1.0);
+        map.put("version", 1.1);
         map.put("name", Utl.player.name(player));
         map.put("hud", hud);
         map.put("destination", destination);
@@ -285,6 +300,7 @@ public class PlayerData {
             destSetting.put("ylevel", config.DESTYLevel);
             destSetting.put("send", config.DESTSend);
             destSetting.put("track", config.DESTTrack);
+            destSetting.put("lastdeath", config.DESTLastdeath);
             destSetting.put("particles", destParticles());
             return destSetting;
         }
@@ -403,6 +419,9 @@ public class PlayerData {
                 }
                 public static boolean track(ServerPlayerEntity player) {
                     return (boolean) getSetting(player, true).get("track");
+                }
+                public static boolean lastdeath(ServerPlayerEntity player) {
+                    return (boolean) getSetting(player, true).get("lastdeath");
                 }
                 public static class particle {
                     public static boolean line(ServerPlayerEntity player) {
@@ -574,6 +593,11 @@ public class PlayerData {
                 public static void track(ServerPlayerEntity player, boolean b) {
                     Map<String,Object> data = get.dest.getSetting(player,false);
                     data.put("track", b);
+                    setSetting(player, data);
+                }
+                public static void lastdeath(ServerPlayerEntity player, boolean b) {
+                    Map<String,Object> data = get.dest.getSetting(player,false);
+                    data.put("lastdeath", b);
                     setSetting(player, data);
                 }
                 public static class particles {

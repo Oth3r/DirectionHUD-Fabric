@@ -10,6 +10,7 @@
   ],
   "contact": {
     "homepage": "https://modrinth.com/mod/directionhud",
+    "issues": "https://github.com/Oth3r/DirectionHUD-F/issues",
     "sources": "https://github.com/Oth3r/DirectionHUD-F"
   },
 
@@ -40,6 +41,6 @@
   },
   "suggests": {
     "modmenu": ">=6.0.1",
-    "cloth-config": ">=10"
+    "yet-another-config-lib": ">=2.3.1"
   }
 }
