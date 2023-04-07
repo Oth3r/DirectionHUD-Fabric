@@ -55,7 +55,7 @@ public class HUDCommand {
             builder.suggest("toggle");
             return builder.buildFuture();
         }
-        if (pos != args.length) {
+        if (pos > args.length) {
             return builder.buildFuture();
         }
         if (pos == 4 && args[2].equals("set")) {
