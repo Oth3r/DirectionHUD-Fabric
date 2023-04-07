@@ -49,5 +49,6 @@ or use **[ModMenu](https://modrinth.com/mod/modmenu)** & **[YetAnotherConfigLib]
 ## Future Goals
 
 * Spigot port (Soon)
+* Custom dimension support
 * Client UI
   * Straying away from the plugin feel for client users.
