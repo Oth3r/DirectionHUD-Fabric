@@ -22,9 +22,9 @@ public class ActionBarMixin {
         if (click == null || !click.getValue().equals("https://modrinth.com/mod/directionhud")) {
             if (client.player != null) {
                 if (client.isInSingleplayer() && PlayerData.get.hud.state(DirectionHUD.server.getPlayerManager().getPlayer(client.player.getUuid()))) {
-                    client.player.sendMessage(CUtl.tag(message));
+                    client.player.sendMessage(CUtl.tag().append(message).b());
                 } else if (DirectionHUDClient.onSupportedServer && DirectionHUDClient.hudState) {
-                    client.player.sendMessage(CUtl.tag(message));
+                    client.player.sendMessage(CUtl.tag().append(message).b());
                 }
             }
         }

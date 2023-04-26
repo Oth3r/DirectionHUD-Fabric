@@ -4,6 +4,7 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextContent;
 import one.oth3r.directionhud.DirectionHUDServer;
+import one.oth3r.directionhud.utils.CTxT;
 
 import java.io.InputStream;
 import java.util.Arrays;
@@ -21,7 +22,7 @@ public class LangReader {
         this.placeholders = placeholders;
     }
 
-    public MutableText getMutableText() {
+    public CTxT getTxT() {
         String translated = getLanguageValue(translationKey);
         if (placeholders != null && placeholders.length > 0) {
             //removed all double \\ and replaces with \
@@ -38,26 +39,28 @@ public class LangReader {
             }
             //if there are placeholders specified, and the split is more than 1, it will replace %(dfs) with the placeholder objects
             if (parts.length > 1) {
-                MutableText mutableText = MutableText.of(TextContent.EMPTY);
+                CTxT txT = CTxT.of("");
                 int i = 0;
                 for (Object placeholder : placeholders) {
                     // if it keeps looping after the max, stop the loop
                     if (i == max) break;
-                    if (parts.length != i) mutableText.append(parts[i]);
+                    if (parts.length != i) txT.append(parts[i]);
                     //if the placeholder object is a text, it will append the text
                     //otherwise it will try to turn the object into a string and append that
-                    if (placeholder instanceof Text) {
-                        mutableText.append((Text) placeholder);
+                    if (placeholder instanceof CTxT) {
+                        txT.append(((CTxT) placeholder).b());
+                    } else if (placeholder instanceof Text) {
+                        txT.append((Text) placeholder);
                     } else {
-                        mutableText.append(String.valueOf(placeholder));
+                        txT.append(String.valueOf(placeholder));
                     }
                     i++;
                 }
-                if (parts.length != i) mutableText.append(parts[i]);
-                return mutableText;
+                if (parts.length != i) txT.append(parts[i]);
+                return txT;
             }
         }
-        return MutableText.of(TextContent.EMPTY).append(translated);
+        return CTxT.of(translated);
     }
 
     public static LangReader of(String translationKey, Object... placeholders) {

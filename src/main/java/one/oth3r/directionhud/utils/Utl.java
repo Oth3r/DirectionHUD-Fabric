@@ -236,13 +236,7 @@ public class Utl {
                     "red", "dark_red", "gold", "yellow", "green", "dark_green", "aqua", "dark_aqua",
                     "blue", "dark_blue", "pink", "purple", "white", "gray", "dark_gray", "black","ffffff"));
         }
-        public static MutableText set(String color, String text) {
-            return set(color,Text.literal(text));
-        }
-        public static MutableText set(String color, Text text) {
-            //ASSUME THAT THERES NO RAINBOW
-            return Text.literal("").append(text).styled(style -> style.withColor(getTC(color)));
-        }
+        //todo maybe change this
         public static TextColor getTC(String color) {
             if (color.equals("red")) return CUtl.TC('c');
             if (color.equals("dark_red")) return CUtl.TC('4');
@@ -321,7 +315,7 @@ public class Utl {
             if (s.equalsIgnoreCase("rainbow")) return s;
             return caps? "WHITE":"white";
         }
-        public static Text rainbow(String string, float start, float step) {
+        public static MutableText rainbow(String string, float start, float step) {
             float hue = start % 360f;
             MutableText text = Text.literal("");
             for (int i = 0; i < string.codePointCount(0, string.length()); i++) {
@@ -334,7 +328,7 @@ public class Utl {
                 int green = color.getGreen();
                 int blue = color.getBlue();
                 String hexColor = String.format("#%02x%02x%02x", red, green, blue);
-                text.append(Text.literal(Character.toString(string.codePointAt(i))).styled(style -> style.withColor(TextColor.parse(hexColor))));
+                text.append(Text.literal(Character.toString(string.codePointAt(i))).styled(style -> style.withColor(CUtl.HEX(hexColor))));
                 hue = ((hue % 360f)+step)%360f;
             }
             return text;

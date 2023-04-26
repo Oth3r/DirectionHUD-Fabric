@@ -7,19 +7,17 @@ import one.oth3r.directionhud.LoopManager;
 import one.oth3r.directionhud.PacketBuilder;
 import one.oth3r.directionhud.files.PlayerData;
 import one.oth3r.directionhud.files.config;
+import one.oth3r.directionhud.utils.CTxT;
 import one.oth3r.directionhud.utils.CUtl;
 import one.oth3r.directionhud.utils.Utl;
 
 import java.util.*;
 
 public class HUD {
-    private static MutableText lang(String key) {
+    private static CTxT lang(String key) {
         return CUtl.lang("hud."+key);
     }
-    private static String langS(String key) {
-        return CUtl.lang("hud."+key).getString();
-    }
-    private static MutableText lang(String key, Object... args) {
+    private static CTxT lang(String key, Object... args) {
         return CUtl.lang("hud."+key, args);
     }
     public static void build(ServerPlayerEntity player) {
@@ -59,7 +57,7 @@ public class HUD {
         modules.put("weather", weather);
         modules.put("compass", compass);
         int start = 1;
-        MutableText text = Text.literal("");
+        CTxT msg = CTxT.of("");
         for (int i=0; i < order.getEnabled(player).size(); i++) {
             if (!Destination.checkDestination(player)) {
                 if (modules.get(order.getEnabled(player).get(i)).equals(destination) ||
@@ -69,20 +67,20 @@ public class HUD {
             for (String str : modules.get(order.getEnabled(player).get(i))) {
                 String string = str.substring(1);
                 if (str.charAt(0) == 'p') {
-                    text.append(color.addColor(player,string,1,LoopManager.rainbowF+start,5));
+                    msg.append(color.addColor(player,string,1,LoopManager.rainbowF+start,5));
                     if (color.getHUDColors(player)[0].equals("rainbow"))
                         start = start + (string.replaceAll("\\s", "").length()*5);
                 } else if (str.charAt(0) == 's') {
-                    text.append(color.addColor(player,string,2,LoopManager.rainbowF+start,5));
+                    msg.append(color.addColor(player,string,2,LoopManager.rainbowF+start,5));
                     if (color.getHUDColors(player)[1].equals("rainbow"))
                         start = start + (string.replaceAll("\\s", "").length()*5);
                 }
             }
-            if (i-1 < order.getEnabled(player).size()) text = Text.literal("").append(text).append(" ");
+            if (i-1 < order.getEnabled(player).size()) msg.append(" ");
         }
-        if (text.equals(Text.literal(""))) return;
-        text.styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL,"https://modrinth.com/mod/directionhud")));
-        player.sendMessage(text, true);
+        if (msg.equals(CTxT.of(""))) return;
+        msg.cEvent(3,"https://modrinth.com/mod/directionhud");
+        player.sendMessage(msg.b(), true);
     }
     public static String getPlayerDirection(ServerPlayerEntity player) {
         double rotation = (player.getYaw() - 180) % 360;
@@ -172,21 +170,15 @@ public class HUD {
             PlayerData.set.hud.order(player, config.HUDOrder);
             PlayerData.set.hud.setting.time24h(player, config.HUD24HR);
             PlayerData.set.hud.setModule(player, PlayerData.defaults.hudModule());
-            Text msg = Text.literal("").append(CUtl.tag())
-                    .append(lang("module.reset",
-                            lang("module.reset_2").setStyle(CUtl.C('c'))));
+            CTxT msg = CUtl.tag().append(lang("module.reset", lang("module.reset_2").color('c')));
             if (Return) UI(player, msg, null);
-            else player.sendMessage(msg);
+            else player.sendMessage(msg.b());
         }
         public static void move(ServerPlayerEntity player, String module, String direction, boolean Return) {
             ArrayList<String> order = getEnabled(player);
             int pos = order.indexOf(module.toLowerCase());
             if (!validCheck(module)) return;
-            Text text = Text.literal("")
-                    .append(CUtl.tag())
-                    .append(lang("module.move",
-                            Text.literal(langName(module)).setStyle(CUtl.sS()),
-                            lang("module.move_"+direction)));
+            CTxT msg = CUtl.tag().append(lang("module.move",CTxT.of(langName(module)).color(CUtl.sTC()),lang("module.move_"+direction)));
             if (direction.equals("down")) {
                 if (pos == order.size() - 1) return;
                 order.remove(pos);
@@ -200,33 +192,27 @@ public class HUD {
                 order.addAll(HUD.order.getDisabled(player));
                 HUD.order.setOrderC(player, order);
             } else return;
-            if (Return) UI(player, text, module);
-            else player.sendMessage(text);
+            if (Return) UI(player, msg, module);
+            else player.sendMessage(msg.b());
         }
         public static void toggle(ServerPlayerEntity player, String module, boolean toggle, boolean Return) {
             if (!HUD.order.validCheck(module)) return;
-            Text text = Text.literal("").append(CUtl.tag())
-                    .append(lang("module.toggle",
-                            CUtl.SBtn(toggle ? "on" : "off"),
-                            Text.literal(langName(module)).setStyle(CUtl.sS())));
+            CTxT msg = CUtl.tag().append(lang("module.toggle",CUtl.TBtn(toggle ? "on" : "off"),CTxT.of(langName(module)).color(CUtl.sTC())));
             //OFF
             if (!toggle && HUD.order.moduleState(player, module)) HUD.order.removeModule(player, module);
             //ON
             else if (toggle && !HUD.order.moduleState(player, module)) HUD.order.addModule(player, module);
-
-            if (Return) UI(player, text, module);
-            else player.sendMessage(text);
+            if (Return) UI(player, msg, module);
+            else player.sendMessage(msg.b());
         }
         public static void setting(ServerPlayerEntity player, String setting, String option, boolean Return) {
             if (setting.equals("time")) {
                 if (!PlayerData.get.hud.module.time(player)) return;
                 if (!(option.equals("12hr") || option.equals("24hr"))) return;
                 PlayerData.set.hud.setting.time24h(player, option.equals("24hr"));
-                Text text = Text.literal("").append(CUtl.tag())
-                        .append(lang("module.time.change",
-                                CUtl.lang("button.time."+option).setStyle(CUtl.sS())));
-                if (Return) UI(player, text, "time");
-                else player.sendMessage(text);
+                CTxT msg = CUtl.tag().append(lang("module.time.change",CUtl.lang("button.time."+option).color(CUtl.sTC())));
+                if (Return) UI(player, msg, "time");
+                else player.sendMessage(msg.b());
             }
         }
         public static boolean moduleState(ServerPlayerEntity player, String s) {
@@ -311,195 +297,140 @@ public class HUD {
             order.addAll(orderD);
             setOrderC(player, order);
         }
-        public static Text arrow(boolean up, boolean gray, String name) {
+        public static CTxT arrow(boolean up, boolean gray, String name) {
             if (up) {
-                if (gray) {
-                    return Text.literal("").append(CUtl.button("▲", CUtl.TC('7')));
-                }
-                return Text.literal("").append(CUtl.button("▲",CUtl.pTC(),1,"/hud edit move " +name+ " up"));
+                if (gray) return CTxT.of("▲").btn(true).color('7');
+                return CTxT.of("▲").btn(true).color(CUtl.pTC()).cEvent(1,"/hud edit move "+name+" up");
             }
-            if (gray) {
-                return Text.literal("").append(CUtl.button("▼", CUtl.TC('7')));
-            }
-            return Text.literal("").append(CUtl.button("▼",CUtl.pTC(),1,"/hud edit move " +name+ " down"));
+            if (gray) return CTxT.of("▼").btn(true).color('7');
+            return CTxT.of("▼").btn(true).color(CUtl.pTC()).cEvent(1,"/hud edit move "+name+" down");
         }
-        public static Text xButton(String name) {
-            return CUtl.button("✕", CUtl.TC('c'),1,"/hud edit state " + name + " false",
-                    CUtl.lang("button.module.disable.hover").setStyle(CUtl.C('c')));
+        public static CTxT xButton(String name) {
+            return CTxT.of("✕").btn(true).color('c').cEvent(1,"/hud edit state"+name+" false")
+                    .hEvent(CUtl.TBtn("module.disable.hover").color('c'));
         }
         public static String langName(String s) {
-            if (s.equalsIgnoreCase("coordinates")) return langS("module.coordinates");
-            if (s.equalsIgnoreCase("distance")) return langS("module.distance");
-            if (s.equalsIgnoreCase("destination")) return langS("module.destination");
-            if (s.equalsIgnoreCase("direction")) return langS("module.direction");
-            if (s.equalsIgnoreCase("compass")) return langS("module.compass");
-            if (s.equalsIgnoreCase("time")) return langS("module.time");
-            if (s.equalsIgnoreCase("weather")) return langS("module.weather");
+            if (s.equalsIgnoreCase("coordinates")) return lang("module.coordinates").getString();
+            if (s.equalsIgnoreCase("distance")) return lang("module.distance").getString();
+            if (s.equalsIgnoreCase("destination")) return lang("module.destination").getString();
+            if (s.equalsIgnoreCase("direction")) return lang("module.direction").getString();
+            if (s.equalsIgnoreCase("compass")) return lang("module.compass").getString();
+            if (s.equalsIgnoreCase("time")) return lang("module.time").getString();
+            if (s.equalsIgnoreCase("weather")) return lang("module.weather").getString();
             return "";
         }
-        public static Text moduleName(ServerPlayerEntity player, String s, Text addStart) {
-            Text hoverT = Text.literal("");
+        public static CTxT moduleName(ServerPlayerEntity player, String s, CTxT addStart) {
+            CTxT hoverT = CTxT.of("");
             if (s.equalsIgnoreCase("coordinates")) {
-                hoverT = Text.literal("")
-                        .append(lang("module.coordinates.info")).append("\n")
+                hoverT.append(lang("module.coordinates.info")).append("\n")
                         .append(color.addColor(player,"XYZ: ",1,15,20))
                         .append(color.addColor(player,"0 0 0",2,95,20));
             }
             if (s.equalsIgnoreCase("distance")) {
-                hoverT = Text.literal("")
-                        .append(lang("module.distance.info")).append("\n")
+                hoverT.append(lang("module.distance.info")).append("\n")
                         .append(color.addColor(player,"[",1,15,20))
                         .append(color.addColor(player,"0",2,35,20))
                         .append(color.addColor(player,"]",1,55,20));
             }
             if (s.equalsIgnoreCase("destination")) {
-                hoverT = Text.literal("")
-                        .append(lang("module.destination.info")).append("\n")
+                hoverT.append(lang("module.destination.info")).append("\n")
                         .append(color.addColor(player,"DEST: ",1,15,20))
                         .append(color.addColor(player,"0 0 0",2,115,20));
             }
             if (s.equalsIgnoreCase("direction")) {
-                hoverT = Text.literal("")
-                        .append(lang("module.direction.info")).append("\n")
+                hoverT.append(lang("module.direction.info")).append("\n")
                         .append(color.addColor(player,"N",1,15,20));
             }
             if (s.equalsIgnoreCase("compass")) {
-                hoverT = Text.literal("")
-                        .append(lang("module.compass.info")).append("\n")
+                hoverT.append(lang("module.compass.info")).append("\n")
                         .append(color.addColor(player,"[",1,15,20))
                         .append(color.addColor(player,"▲",2,35,20))
                         .append(color.addColor(player,"]",1,55,20));
             }
             if (s.equalsIgnoreCase("time")) {
                 if (PlayerData.get.hud.setting.time24h(player)) {
-                    hoverT = Text.literal("")
-                            .append(lang("module.time.info")).append("\n")
+                    hoverT.append(lang("module.time.info")).append("\n")
                             .append(color.addColor(player,"22:22",1,15,20));
                 } else {
-                    hoverT = Text.literal("")
-                            .append(lang("module.time.info")).append("\n")
+                    hoverT.append(lang("module.time.info")).append("\n")
                             .append(color.addColor(player,"11:11 ",2,15,20))
                             .append(color.addColor(player,"AM",1,115,20));
                 }
             }
             if (s.equalsIgnoreCase("weather")) {
-                hoverT = Text.literal("")
-                        .append(lang("module.weather.info")).append("\n")
+                hoverT.append(lang("module.weather.info")).append("\n")
                         .append(color.addColor(player,"☀",1,15,20));
             }
-            final Text hoverTF = hoverT;
-            if (addStart == null) return Text.literal(langName(s)).styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverTF)));
-            return Text.literal(langName(s)).styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("")
-                    .append(addStart)
-                    .append("\n")
-                    .append(hoverTF))));
+            if (addStart == null) return CTxT.of(langName(s)).hEvent(hoverT);
+            return CTxT.of(langName(s)).hEvent(addStart.append("\n").append(hoverT));
         }
-        public static void UI(ServerPlayerEntity player, Text abovemsg, String highlight) {
+        public static void UI(ServerPlayerEntity player, CTxT abovemsg, String highlight) {
             if (highlight == null) highlight = "";
             //MODULES
-            Text coordinates = Text.literal(" ");
-            Text distance = Text.literal(" ");
-            Text destination = Text.literal(" ");
-            Text compass = Text.literal(" ");
-            Text direction = Text.literal(" ");
-            Text time = Text.literal(" ");
-            Text weather = Text.literal(" ");
-
-            HashMap<String, Text> modules = new HashMap<>();
-            modules.put("coordinates", coordinates);
-            modules.put("distance", distance);
-            modules.put("destination", destination);
-            modules.put("compass", compass);
-            modules.put("direction", direction);
-            modules.put("time", time);
-            modules.put("weather", weather);
+            HashMap<String, CTxT> modules = new HashMap<>();
+            modules.put("coordinates", CTxT.of(" "));
+            modules.put("distance", CTxT.of(" "));
+            modules.put("destination", CTxT.of(" "));
+            modules.put("compass", CTxT.of(" "));
+            modules.put("direction", CTxT.of(" "));
+            modules.put("time", CTxT.of(" "));
+            modules.put("weather", CTxT.of(" "));
 
             //MAKE THE TEXT
             if (getEnabled(player).size() > 0) {
                 for (int i = 0; i < getEnabled(player).size(); i++) {
                     String moduleName = getEnabled(player).get(i);
-                    Text moduleNameText = moduleName(player, moduleName, null);
-                    if (highlight.equals(moduleName)) moduleNameText = Text.literal("").append(moduleNameText).setStyle(CUtl.sS());
+                    CTxT moduleNameText = moduleName(player, moduleName, null);
+                    if (highlight.equals(moduleName)) moduleNameText.color(CUtl.sTC());
                     if (i == 0) {
-                        modules.put(moduleName, Text.literal("").append(modules.get(moduleName)).append(arrow(true, true, moduleName)).append(" "));
-                        modules.put(moduleName, Text.literal("").append(modules.get(moduleName)).append(xButton(moduleName)).append(" "));
+                        modules.put(moduleName, modules.get(moduleName).append(arrow(true, true, moduleName)).append(" "));
+                        modules.put(moduleName, modules.get(moduleName).append(xButton(moduleName)).append(" "));
                         //IF ONLY 1
-                        if (getEnabled(player).size() == 1) {
-                            modules.put(moduleName, Text.literal("").append(modules.get(moduleName)).append(arrow(false, true, moduleName)).append(" "));
-                        } else {
-                            modules.put(moduleName, Text.literal("").append(modules.get(moduleName)).append(arrow(false, false, moduleName)).append(" "));
-                        }
-                        modules.put(moduleName, Text.literal("").append(modules.get(moduleName)).append(moduleNameText).append(" "));
+                        if (getEnabled(player).size() == 1) modules.put(moduleName, modules.get(moduleName).append(arrow(false, true, moduleName)).append(" "));
+                        else modules.put(moduleName, modules.get(moduleName).append(arrow(false, false, moduleName)).append(" "));
                     } else if (i == getEnabled(player).size() - 1) {
-                        modules.put(moduleName, Text.literal("").append(modules.get(moduleName))
-                                .append(arrow(true, false, moduleName)).append(" ")
-                                .append(xButton(moduleName)).append(" ")
-                                .append(arrow(false, true, moduleName)).append(" ")
-                                .append(moduleNameText).append(" "));
+                        modules.put(moduleName, modules.get(moduleName).append(arrow(true, false, moduleName)).append(" ")
+                                .append(xButton(moduleName)).append(" ").append(arrow(false, true, moduleName)).append(" "));
                     } else {
-                        modules.put(moduleName, Text.literal("").append(modules.get(moduleName))
-                                .append(arrow(true, false, moduleName)).append(" ")
-                                .append(xButton(moduleName)).append(" ")
-                                .append(arrow(false, false, moduleName)).append(" ")
-                                .append(moduleNameText).append(" "));
+                        modules.put(moduleName, modules.get(moduleName).append(arrow(true, false, moduleName)).append(" ")
+                                .append(xButton(moduleName)).append(" ").append(arrow(false, false, moduleName)).append(" "));
                     }
+                    modules.put(moduleName,modules.get(moduleName).append(moduleNameText).append(" "));
                     //ADDING 12HR / 24HR
                     if (moduleName.equals("time")) {
-                        if (PlayerData.get.hud.setting.time24h(player)) {
-                            modules.put(moduleName, Text.literal("").append(modules.get(moduleName))
-                                    .append(CUtl.button(CUtl.SBtn("time.24hr"), CUtl.sTC(), 1, "/hud edit setting time 12hr",
-                                            CUtl.lang("button.time.hover",
-                                                    CUtl.lang("button.time.12hr").setStyle(CUtl.sS())))));
-                        } else {
-                            modules.put(moduleName, Text.literal("").append(modules.get(moduleName))
-                                    .append(CUtl.button(CUtl.SBtn("time.12hr"), CUtl.sTC(),1,"/hud edit setting time 24hr",
-                                            CUtl.lang("button.time.hover",
-                                                    CUtl.lang("button.time.24hr").setStyle(CUtl.sS())))));
-                        }
+                        boolean hr = PlayerData.get.hud.setting.time24h(player);
+                        modules.put(moduleName, modules.get(moduleName)
+                                .append(CUtl.TBtn("time."+(hr?"24hr":"12hr")).btn(true).color(CUtl.sTC())
+                                        .cEvent(1,"/hud edit setting time "+(hr?"12hr":"24hr"))
+                                        .hEvent(CUtl.TBtn("time.hover",CUtl.TBtn("time."+(hr?"12hr":"24hr")).color(CUtl.sTC())))));
                     }
                 }
             }
             if (getDisabled(player).size() > 0) {
                 for (int i = 0; i < getDisabled(player).size(); i++) {
                     String moduleName = getDisabled(player).get(i);
-                    modules.put(moduleName, Text.literal("").append(Text.literal("").append(moduleName(player, moduleName,
-                            CUtl.lang("button.module.enable.hover").setStyle(CUtl.C('a')))).setStyle(CUtl.C('7'))).styled(style -> style
-                            .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/hud edit state " + moduleName + " true"))));
+                    modules.put(moduleName, moduleName(player,moduleName,CUtl.lang("button.module.enable.hover").color('a')).color('7').cEvent(1,"/hud edit state "+moduleName+" true"));
                 }
             }
-            MutableText msg = Text.literal("");
+            CTxT msg = CTxT.of("");
             if (abovemsg != null) msg.append(abovemsg).append("\n");
-
-            msg.append(" ").append(lang("ui.edit").setStyle(CUtl.HEXS(CUtl.c.edit)))
-                    .append(Text.literal("\n                                               \n").styled(style -> style.withStrikethrough(true)));
-            if (!getEnabled(player).isEmpty()) {
-                for (String s: getEnabled(player)) {
-                    msg.append(modules.get(s)).append(Text.literal("\n"));
-                }
-            } else {
-                msg.append(" ")
-                        .append(lang("module.none").setStyle(CUtl.C('c'))).append(Text.literal("\n "))
-                        .append(lang("module.none_2").setStyle(CUtl.C('c'))).append(Text.literal("\n"));
-            }
+            msg.append(" ").append(lang("ui.edit").color(CUtl.c.edit)).append(CTxT.of("\n                                               \n").strikethrough(true));
+            if (!getEnabled(player).isEmpty()) for (String s: getEnabled(player)) msg.append(modules.get(s)).append("\n");
+            else msg.append(" ").append(lang("module.none").color('c')).append("\n ").append(lang("module.none_2").color('c')).append("\n");
             if (!getDisabled(player).isEmpty()) {
-                msg.append(Text.literal("                                               ").styled(style -> style.withStrikethrough(true)))
-                        .append(Text.literal("\n"))
-                        .append(lang("ui.edit.disabled").setStyle(CUtl.HEXS(CUtl.c.edit)))
-                        .append(Text.literal("\n"));
-                Text disabled = Text.literal("");
+                msg.append(CTxT.of("                                               ").strikethrough(true)).append("\n")
+                        .append(lang("ui.edit.disabled").color(CUtl.c.edit)).append("\n");
+                CTxT disabled = CTxT.of("");
                 for (int i = 0; i < getDisabled(player).size(); i++) {
-                    if (i==3) disabled = Text.literal("").append(disabled).append("\n");
-                    disabled = Text.literal("").append(disabled).append(" ").append(modules.get(getDisabled(player).get(i)));
+                    if (i==3) disabled.append("\n");
+                    disabled.append(" ").append(modules.get(getDisabled(player).get(i)));
                 }
-                msg.append(disabled).append(Text.literal("\n"));
+                msg.append(disabled).append("\n");
             }
-            msg.append(Text.literal("          "))
-                    .append(CUtl.button(CUtl.SBtn("reset"), CUtl.TC('c'),1,"/hud edit reset",
-                            CUtl.lang("button.reset.hover_edit").setStyle(CUtl.C('c'))))
-                    .append(Text.literal("  "))
-                    .append(CUtl.CButton.back("/hud"))
-                    .append(Text.literal("\n                                               ").styled(style -> style.withStrikethrough(true)));
-            player.sendMessage(msg);
+            msg.append("          ").append(CUtl.TBtn("reset").btn(true).color('c').cEvent(1,"/hud edit reset")
+                            .hEvent(CUtl.TBtn("reset.hover_edit").color('c')))
+                    .append("  ").append(CUtl.CButton.back("/hud")).append(CTxT.of("\n                                               ").strikethrough(true));
+            player.sendMessage(msg.b());
         }
     }
     public static class color {
@@ -516,12 +447,9 @@ public class HUD {
                 PlayerData.set.hud.secondary(player, defaultFormat(2));
                 langType = "secondary";
             } else return;
-            Text text = Text.literal("").append(CUtl.tag())
-                    .append(lang("color.reset",
-                            lang("color.reset_2").setStyle(CUtl.C('c')),
-                            lang("color."+langType)));
-            if (Return) UI(player, text);
-            else player.sendMessage(text);
+            CTxT msg = CUtl.tag().append(lang("color.reset",lang("color.reset_2").color('c'),lang("color."+langType)));
+            if (Return) UI(player, msg);
+            else player.sendMessage(msg.b());
         }
         public static void setColor(ServerPlayerEntity player, String type, String color, boolean Return) {
             if (type.equals("primary")) {
@@ -533,13 +461,10 @@ public class HUD {
                 if (getHUDColors(player)[1].equals(color)) return;
                 PlayerData.set.hud.secondary(player, color+"-"+getHUDBold(player,2)+"-"+getHUDItalics(player,2));
             } else return;
-            Text text = Text.literal("").append(CUtl.tag())
-                    .append(lang("color.set",
-                            lang("color."+type),
-                            Text.literal("").append(addColor(player,Utl.color.formatPlayer(color,true),
-                                    type.equals("primary")?1:2,15,20))));
-            if (Return) changeUI(player, type.substring(0,3),text);
-            else player.sendMessage(text);
+            CTxT msg = CUtl.tag().append(lang("color.set",lang("color."+type),
+                    addColor(player,Utl.color.formatPlayer(color,true),type.equals("primary")?1:2,15f,20f)));
+            if (Return) changeUI(player, type.substring(0,3),msg);
+            else player.sendMessage(msg.b());
         }
         public static void setBold(ServerPlayerEntity player, String type, boolean state, boolean Return) {
             if (type.equals("primary")) {
@@ -549,12 +474,10 @@ public class HUD {
                 if (getHUDBold(player, 2)==state) return;
                 PlayerData.set.hud.secondary(player, getHUDColors(player)[1]+"-"+state+"-"+getHUDItalics(player,2));
             } else return;
-            Text text = Text.literal("").append(CUtl.tag())
-                    .append(lang("color.set.bold",
-                            CUtl.lang("button."+ (state ? "on" : "off")).setStyle(CUtl.C(state ? 'a':'c')),
-                            lang("color."+type)));
-            if (Return) changeUI(player, type.substring(0,3),text);
-            else player.sendMessage(text);
+            CTxT msg = CUtl.tag().append(lang("color.set.bold",
+                    CUtl.lang("button."+(state?"on":"off")).color(state?'a':'c'),lang("color."+type)));
+            if (Return) changeUI(player, type.substring(0,3),msg);
+            else player.sendMessage(msg.b());
         }
         public static void setItalics(ServerPlayerEntity player, String type, boolean state, boolean Return) {
             if (type.equals("primary")) {
@@ -564,12 +487,10 @@ public class HUD {
                 if (getHUDItalics(player, 2)==state) return;
                 PlayerData.set.hud.secondary(player, getHUDColors(player)[1]+"-"+getHUDBold(player,2)+"-"+state);
             } else return;
-            Text text = Text.literal("").append(CUtl.tag())
-                    .append(lang("color.set.italics",
-                            CUtl.lang("button."+ (state ? "on" : "off")).setStyle(CUtl.C(state ? 'a':'c')),
-                            lang("color."+type)));
-            if (Return) changeUI(player, type.substring(0,3),text);
-            else player.sendMessage(text);
+            CTxT msg = CUtl.tag().append(lang("color.set.italics",
+                            CUtl.lang("button."+(state?"on":"off")).color(state?'a':'c'),lang("color."+type)));
+            if (Return) changeUI(player, type.substring(0,3),msg);
+            else player.sendMessage(msg.b());
         }
         //"red", "dark_red", "gold", "yellow", "green", "dark_green", "aqua", "dark_aqua",
         // "blue", "dark_blue", "pink", "purple", "white", "gray", "dark_gray", "black"
@@ -599,173 +520,103 @@ public class HUD {
             if (str.charAt(0) == '#') return TextColor.parse(str);
             return Utl.color.getTC(getHUDColors(player)[i-1]);
         }
-        public static Text addColor(ServerPlayerEntity player, MutableText txt, int i, int start, int step) {
-            if (getHUDColors(player)[i-1].equals("rainbow")) return Text.literal("").append(Utl.color.rainbow(txt.getString(),start,step))
-                    .styled(style -> style.withItalic(getHUDItalics(player,i)).withBold(getHUDBold(player,i)));
-            return txt.styled(style -> style.withColor(getColorHUD(player,i))
-                    .withItalic(getHUDItalics(player,i)).withBold(getHUDBold(player,i)));
+        public static CTxT addColor(ServerPlayerEntity player, String txt, int i, float start, float step) {
+            if (getHUDColors(player)[i-1].equals("rainbow")) return CTxT.of(txt).rainbow(true,start,step).italic(getHUDItalics(player,i)).bold(getHUDBold(player,i));
+            return CTxT.of(txt).color(getColorHUD(player,i)).italic(getHUDItalics(player,i)).bold(getHUDBold(player,i));
         }
-        public static Text addColor(ServerPlayerEntity player, String txt, int i, int start, int step) {
-            if (getHUDColors(player)[i-1].equals("rainbow")) return Text.literal("").append(Utl.color.rainbow(txt,start,step))
-                    .styled(style -> style.withItalic(getHUDItalics(player,i)).withBold(getHUDBold(player,i)));
-            return Text.literal(txt).styled(style -> style.withColor(getColorHUD(player,i))
-                    .withItalic(getHUDItalics(player,i)).withBold(getHUDBold(player,i)));
-        }
-        public static MutableText colorButton(String text, TextColor color) {
-            return Text.literal("[").append(Text.literal(text).styled(style -> style.withColor(color))).append(Text.literal("]"));
-        }
-        public static void changeUI(ServerPlayerEntity player, String type, Text abovemsg) {
-            MutableText msg = Text.literal("");
+        public static void changeUI(ServerPlayerEntity player, String type, CTxT abovemsg) {
+            CTxT msg = CTxT.of("");
             if (abovemsg != null) msg.append(abovemsg).append("\n");
             ArrayList<String> allStr = new ArrayList<>(Arrays.asList(
                     "red", "dark_red", "gold", "yellow", "green", "dark_green", "aqua", "dark_aqua",
                     "blue", "dark_blue", "pink", "purple", "white", "gray", "dark_gray", "black"));
-            MutableText red = colorButton("RED", CUtl.TC('c'));
-            MutableText dark_red = colorButton("D", CUtl.TC('4'));
-            MutableText gold = colorButton("G", CUtl.TC('6'));
-            MutableText yellow =  colorButton("YELLOW", CUtl.TC('e'));
-            MutableText green = colorButton("GREEN", CUtl.TC('a'));
-            MutableText dark_green = colorButton("D", CUtl.TC('2'));
-            MutableText aqua = colorButton("AQUA", CUtl.TC('b'));
-            MutableText dark_aqua = colorButton("D", CUtl.TC('3'));
-            MutableText blue = colorButton("BLUE", CUtl.TC('9'));
-            MutableText dark_blue = colorButton("D", CUtl.TC('1'));
-            MutableText pink = colorButton("PINK", CUtl.TC('d'));
-            MutableText purple = colorButton("P", CUtl.TC('5'));
-            MutableText white = colorButton("WHITE", CUtl.TC('f'));
-            MutableText gray = colorButton("GRAY", CUtl.TC('7'));
-            MutableText dark_gray = colorButton("D", CUtl.TC('8'));
-            MutableText black = colorButton("B", CUtl.TC('0'));
+            CTxT red = CTxT.of("RED").btn(true).color('c');
+            CTxT dark_red = CTxT.of("D").btn(true).color('4');
+            CTxT gold = CTxT.of("G").btn(true).color('6');
+            CTxT yellow =  CTxT.of("YELLOW").btn(true).color('e');
+            CTxT green = CTxT.of("GREEN").btn(true).color('a');
+            CTxT dark_green = CTxT.of("D").btn(true).color('2');
+            CTxT aqua = CTxT.of("AQUA").btn(true).color('b');
+            CTxT dark_aqua = CTxT.of("D").btn(true).color('3');
+            CTxT blue = CTxT.of("BLUE").btn(true).color('9');
+            CTxT dark_blue = CTxT.of("D").btn(true).color('1');
+            CTxT pink = CTxT.of("PINK").btn(true).color('d');
+            CTxT purple = CTxT.of("P").btn(true).color('5');
+            CTxT white = CTxT.of("WHITE").btn(true).color('f');
+            CTxT gray = CTxT.of("GRAY").btn(true).color('7');
+            CTxT dark_gray = CTxT.of("D").btn(true).color('8');
+            CTxT black = CTxT.of("B").btn(true).color('0');
 
-            MutableText reset = colorButton(CUtl.SBtn("reset"), CUtl.TC('c'));
-            Text back = CUtl.CButton.back("/hud color");
+            CTxT reset = CUtl.TBtn("reset").btn(true).color('c');
+            CTxT back = CUtl.CButton.back("/hud color");
 
-            ArrayList<MutableText> allObj = new ArrayList<>(Arrays.asList(
+            ArrayList<CTxT> allObj = new ArrayList<>(Arrays.asList(
                     red, dark_red, gold, yellow, green, dark_green, aqua, dark_aqua, blue, dark_blue, pink, purple, white, gray, dark_gray, black));
-            for (int i = 0; i < allObj.size(); i++) {
-                int finalI = i;
-                allObj.set(i, Text.literal("").append(allObj.get(i)).styled(style -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                        CUtl.lang("button.color.hover",
-                                Utl.color.set(allStr.get(finalI),Utl.color.formatPlayer(allStr.get(finalI),true)))))));
-            }
+            for (int i = 0; i < allObj.size(); i++)
+                allObj.set(i, allObj.get(i).hEvent(CUtl.lang("button.color.hover",CTxT.of(Utl.color.formatPlayer(allStr.get(i),true)).color(allStr.get(i)))));
             int typ;
             if (type.equalsIgnoreCase("pri")) {
                 typ = 1;
-                msg.append(" ").append(addColor(player,lang("ui.color.primary"),typ,15,20))
-                        .append(Text.literal("\n                           \n").styled(style -> style.withStrikethrough(true)));
-                reset.styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/hud color rset pri"))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                CUtl.lang("button.reset.hover_color", addColor(player,lang("color.primary"),typ,15,20)))));
-                for (int i = 0; i < allObj.size(); i++) {
-                    int finalI = i;
-                    allObj.set(i, allObj.get(i).styled(style -> style
-                            .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/hud color set primary " + allStr.get(finalI)))));
-                }
+                msg.append(" ").append(addColor(player,lang("ui.color.primary").getString(),typ,15,20))
+                        .append(CTxT.of("\n                           \n").strikethrough(true));
+                reset.cEvent(1, "/hud color rset pri").hEvent(CUtl.lang("button.reset.hover_color",addColor(player,lang("color.primary").getString(),typ,15,20)));
+                for (int i = 0; i < allObj.size(); i++)
+                    allObj.set(i, allObj.get(i).cEvent(1,"/hud color set primary "+allStr.get(i)));
             } else if (type.equalsIgnoreCase("sec")) {
                 typ = 2;
-                msg.append(" ").append(addColor(player,lang("ui.color.secondary"),typ,15,20))
-                        .append(Text.literal("\n                           \n").styled(style -> style.withStrikethrough(true)));
-                reset = Text.literal("").append(reset).styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/hud color rset sec"))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                CUtl.lang("button.reset.hover_color",
-                                        addColor(player,lang("color.secondary"),typ,15,20)))));
-                for (int i = 0; i < allObj.size(); i++) {
-                    int finalI = i;
-                    allObj.set(i, Text.literal("").append(allObj.get(i)).styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/hud color set secondary " + allStr.get(finalI)))));
-                }
+                msg.append(" ").append(addColor(player,lang("ui.color.secondary").getString(),typ,15,20))
+                        .append(CTxT.of("\n                           \n").strikethrough(true));
+                reset.cEvent(1,"/hud color rset sec").hEvent(CUtl.lang("button.reset.hover_color",addColor(player,lang("color.secondary").getString(),typ,15,20)));
+                for (int i = 0; i < allObj.size(); i++)
+                    allObj.set(i, allObj.get(i).cEvent(1,"/hud color set secondary "+allStr.get(i)));
             } else return;
-            Text rgbButton = Text.literal("")
-                    .append("[").append(Utl.color.rainbow(CUtl.SBtn("color.rgb"),15,95)).append("]")
-                    .styled(style -> style
-                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, CUtl.lang("button.color.rgb.hover",
-                                    Utl.color.rainbow(CUtl.lang("button.color.rgb.hover_2").getString(),15,20))))
-                            .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
-                                    "/hud color set "+(typ == 1 ? "primary" : "secondary")+" rainbow")));
-            Text customButton = CUtl.button(CUtl.SBtn("color.custom"),
-                    CUtl.HEX(getHUDColors(player)[typ-1].contains("#")? getHUDColors(player)[typ-1]: "#ff97e0"), 2,
-                    "/hud color set "+(typ == 1 ? "primary" : "secondary")+" ",
-                    CUtl.lang("button.color.custom.hover",
-                            CUtl.lang("button.color.custom.hover_2").setStyle(
-                                    CUtl.HEXS(getHUDColors(player)[typ-1].contains("#")? getHUDColors(player)[typ-1]: "#ff97e0"))));
-            Text boldButton = CUtl.button(CUtl.SBtn("color.bold"),CUtl.TC(getHUDBold(player, typ) ? 'a' : 'c'), 1,
-                    "/hud color bold "+(typ == 1 ? "primary" : "secondary")+" "+(getHUDBold(player, typ) ? "false" : "true"),
-                    CUtl.lang("button.color.bold.hover",
-                            CUtl.lang("button."+(getHUDBold(player,typ)?"off":"on")).setStyle(CUtl.C(getHUDBold(player,typ)?'c':'a')),
+            CTxT rgbButton = CTxT.of(Utl.color.rainbow(CUtl.TBtn("color.rgb").getString(),15,95)).btn(true)
+                    .cEvent(1,"/hud color set "+(typ==1?"primary":"secondary")+" rainbow")
+                    .hEvent(CUtl.lang("button.color.rgb.hover",Utl.color.rainbow(CUtl.lang("button.color.rgb.hover_2").getString(),15,20)));
+            String customColor = getHUDColors(player)[typ-1].contains("#")?getHUDColors(player)[typ-1]:"#ff97e0";
+            CTxT customButton = CUtl.TBtn("color.custom").btn(true).color(customColor)
+                    .cEvent(2,"/hud color set "+(typ==1?"primary":"secondary")+" ")
+                    .hEvent(CUtl.TBtn("color.custom.hover",CUtl.TBtn("color.custom.hover_2").color(customColor)));
+            CTxT boldButton = CUtl.TBtn("color.bold").btn(true).color(getHUDBold(player, typ)?'a':'c')
+                    .cEvent(1,"/hud color bold "+(typ==1?"primary":"secondary")+" "+(getHUDBold(player,typ)?"false":"true"))
+                    .hEvent(CUtl.TBtn("color.bold.hover",CUtl.TBtn(getHUDBold(player,typ)?"off":"on").color(getHUDBold(player,typ)?'c':'a'),
                             lang("color."+(typ==1?"primary":"secondary"))));
-            Text italicsButton = CUtl.button(CUtl.SBtn("color.italics"),CUtl.TC(getHUDItalics(player, typ) ? 'a' : 'c'), 1,
-                    "/hud color italics "+(typ == 1 ? "primary" : "secondary")+" "+(getHUDItalics(player, typ) ? "false" : "true"),
-                    CUtl.lang("button.color.italics.hover",
-                            CUtl.lang("button."+(getHUDItalics(player,typ)?"off":"on")).setStyle(CUtl.C(getHUDItalics(player,typ)?'c':'a')),
+            CTxT italicsButton = CUtl.TBtn("color.italics").btn(true).color(getHUDItalics(player, typ)?'a':'c')
+                    .cEvent(1,"/hud color italics "+(typ==1?"primary":"secondary")+" "+(getHUDItalics(player,typ)?"false":"true"))
+                    .hEvent(CUtl.TBtn("color.italics.hover",CUtl.TBtn(getHUDItalics(player,typ)?"off":"on").color(getHUDItalics(player,typ)?'c':'a'),
                             lang("color."+(typ==1?"primary":"secondary"))));
-            msg
-                    .append(" ")
-                    .append(allObj.get(0))
-                    .append(Text.literal(" "))
-                    .append(allObj.get(1))
-                    .append("\n ")
-                    .append(allObj.get(3))
-                    .append(Text.literal(" "))
-                    .append(allObj.get(2))
-                    .append("\n ")
-                    .append(allObj.get(4))
-                    .append(Text.literal(" "))
-                    .append(allObj.get(5))
-                    .append("\n ")
-                    .append(allObj.get(6))
-                    .append(Text.literal(" "))
-                    .append(allObj.get(7))
-                    .append("\n ")
-                    .append(allObj.get(8))
-                    .append(Text.literal(" "))
-                    .append(allObj.get(9))
-                    .append("\n ")
-                    .append(allObj.get(10))
-                    .append(Text.literal(" "))
-                    .append(allObj.get(11))
-                    .append("\n ")
-                    .append(allObj.get(13))
-                    .append(Text.literal(" "))
-                    .append(allObj.get(14))
-                    .append("\n ")
-                    .append(allObj.get(12))
-                    .append(Text.literal(" "))
-                    .append(allObj.get(15))
-                    .append(Text.literal("\n\n "))
-                    .append(rgbButton)
-                    .append(Text.literal(" "))
-                    .append(customButton)
-                    .append(Text.literal("\n\n "))
-                    .append(boldButton)
-                    .append(Text.literal(" "))
-                    .append(italicsButton)
-                    .append(Text.literal("\n\n "))
-                    .append(reset)
-                    .append(Text.literal(" "))
-                    .append(back);
-            msg.append(Text.literal("\n                           ").styled(style -> style.withStrikethrough(true)));
-            player.sendMessage(msg);
+            msg.append(" ")
+                    .append(allObj.get(0)).append(" ").append(allObj.get(1)).append("\n ")
+                    .append(allObj.get(3)).append(" ").append(allObj.get(2)).append("\n ")
+                    .append(allObj.get(4)).append(" ").append(allObj.get(5)).append("\n ")
+                    .append(allObj.get(6)).append(" ").append(allObj.get(7)).append("\n ")
+                    .append(allObj.get(8)).append(" ").append(allObj.get(9)).append("\n ")
+                    .append(allObj.get(10)).append(" ").append(allObj.get(11)).append("\n ")
+                    .append(allObj.get(13)).append(" ").append(allObj.get(14)).append("\n ")
+                    .append(allObj.get(12)).append(" ").append(allObj.get(15)).append("\n\n ")
+                    .append(rgbButton).append(" ").append(customButton).append("\n\n ")
+                    .append(boldButton).append(" ").append(italicsButton).append("\n\n ")
+                    .append(reset).append(" ").append(back)
+                    .append(CTxT.of("\n                           ").strikethrough(true));
+            player.sendMessage(msg.b());
         }
-        public static void UI(ServerPlayerEntity player, Text abovemsg) {
-            MutableText msg = Text.literal("");
+        public static void UI(ServerPlayerEntity player, CTxT abovemsg) {
+            CTxT msg = CTxT.of("");
             if (abovemsg != null) msg.append(abovemsg).append("\n");
             msg.append(" ").append(Utl.color.rainbow(lang("ui.color").getString(),15f,45f))
-                    .append(Text.literal("\n                                \n").styled(style -> style.withStrikethrough(true)))
-                    .append(" ");
+                    .append(CTxT.of("\n                                \n").strikethrough(true)).append(" ");
             //PRIMARY
-            msg.append(CUtl.button(player,CUtl.SBtn("color.primary"), 1,15, 20, 1, "/hud color edt pri",
-                            CUtl.lang("button.color.edit.hover", addColor(player,CUtl.lang("button.color.primary"),1,15,20))))
-                    .append(Text.literal(" "));
+            msg.append(CTxT.of(addColor(player,CUtl.TBtn("color.primary").getString(),1,15,20)).btn(true).cEvent(1,"/hud color edt pri")
+                    .hEvent(CUtl.TBtn("color.edit.hover",addColor(player,CUtl.TBtn("color.primary").getString(),1,15,20)))).append(" ");
             //SECONDARY
-            msg.append(CUtl.button(player,CUtl.SBtn("color.secondary"), 2,15,20, 1, "/hud color edt sec",
-                            CUtl.lang("button.color.edit.hover", addColor(player,CUtl.lang("button.color.secondary"),2,15,20))))
-                    .append(Text.literal("\n\n      "));
+            msg.append(CTxT.of(addColor(player,CUtl.TBtn("color.secondary").getString(),2,15,20)).btn(true).cEvent(1,"/hud color edt sec")
+                    .hEvent(CUtl.TBtn("color.edit.hover",addColor(player,CUtl.TBtn("color.secondary").getString(),2,15,20)))).append("\n\n      ");
             //RESET
-            msg.append(CUtl.button(CUtl.SBtn("reset"), CUtl.TC('c'), 1, "/hud color rset",
-                            CUtl.lang("button.reset.hover_color", CUtl.lang("button.all").setStyle(CUtl.C('c')))))
-                    .append(Text.literal("  "))
-                    .append(CUtl.CButton.back("/hud"));
-            msg.append(Text.literal("\n                                ").styled(style -> style.withStrikethrough(true)));
-            player.sendMessage(msg);
+            msg.append(CUtl.TBtn("reset").btn(true).color('c').cEvent(1,"/hud color rset")
+                    .hEvent(CUtl.TBtn("reset.hover_color",CUtl.TBtn("all").color('c'))))
+                    .append("  ").append(CUtl.CButton.back("/hud"))
+                    .append(CTxT.of("\n                                ").strikethrough(true));
+            player.sendMessage(msg.b());
         }
     }
     public static void toggle(ServerPlayerEntity player, Boolean state, boolean Return) {
@@ -780,19 +631,14 @@ public class HUD {
             PacketBuilder packet = new PacketBuilder(PlayerData.get.hud.state(player)+"");
             packet.sendToPlayer(PacketBuilder.HUD_STATE, player);
         }
-        Text text = Text.literal("").append(CUtl.tag())
-                .append(lang("toggle",
-                        CUtl.lang("button."+(PlayerData.get.hud.state(player)?"on":"off")).setStyle(CUtl.C(PlayerData.get.hud.state(player)?'a':'c'))));
-        if (Return) UI(player, text);
-        else player.sendMessage(text);
+        CTxT msg = CUtl.tag().append(lang("toggle",CUtl.TBtn((PlayerData.get.hud.state(player)?"on":"off")).color(PlayerData.get.hud.state(player)?'a':'c')));
+        if (Return) UI(player, msg);
+        else player.sendMessage(msg.b());
     }
-    public static void UI(ServerPlayerEntity player, Text abovemsg) {
-        MutableText msg = Text.literal("");
+    public static void UI(ServerPlayerEntity player, CTxT abovemsg) {
+        CTxT msg = CTxT.of("");
         if (abovemsg != null) msg.append(abovemsg).append("\n");
-        msg.append(" ")
-                .append(lang("ui").setStyle(CUtl.pS()))
-                .append(Text.literal("\n                                 \n").styled(style -> style.withStrikethrough(true)))
-                .append(Text.literal(" "));
+        msg.append(" ").append(lang("ui").color(CUtl.pTC())).append(CTxT.of("\n                                 \n").strikethrough(true)).append(" ");
         //COLOR
         msg.append(CUtl.CButton.hud.color()).append(" ");
         //EDIT
@@ -804,8 +650,8 @@ public class HUD {
         msg.append(CUtl.CButton.hud.toggle(color, type)).append("\n\n ");
         //BACK
         msg.append(CUtl.CButton.back("/directionhud"));
-        msg.append(Text.literal("\n                                 ").styled(style -> style.withStrikethrough(true)));
-        player.sendMessage(msg);
+        msg.append(CTxT.of("\n                                 ").strikethrough(true));
+        player.sendMessage(msg.b());
     }
     //782
 }

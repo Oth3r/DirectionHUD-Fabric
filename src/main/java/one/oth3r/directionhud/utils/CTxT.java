@@ -30,11 +30,6 @@ public class CTxT {
         instance.name = of;
         return instance;
     }
-    public static CTxT of(Text of) {
-        CTxT instance = new CTxT();
-        instance.name = (MutableText) of;
-        return instance;
-    }
     public static CTxT of(CTxT of) {
         CTxT instance = new CTxT();
         instance.name = of.b();
@@ -60,10 +55,6 @@ public class CTxT {
         this.clickEvent = CUtl.cEvent(typ, arg);
         return this;
     }
-    public CTxT hEvent(Text hEvent) {
-        this.hoverEvent = CUtl.hEvent(hEvent);
-        return this;
-    }
     public CTxT hEvent(CTxT hEvent) {
         this.hoverEvent = CUtl.hEvent(hEvent);
         return this;
@@ -72,7 +63,7 @@ public class CTxT {
         this.bold = bold;
         return this;
     }
-    public CTxT italics(Boolean italics) {
+    public CTxT italic(Boolean italics) {
         this.italics = italics;
         return this;
     }

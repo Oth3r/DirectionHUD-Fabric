@@ -21,6 +21,6 @@ public class OnPlayerDeathMixin {
         Destination.lastdeath.set(player, Utl.dim.getInt(Utl.player.dim(player)), Utl.player.XYZ(player));
         player.sendMessage(CUtl.tag().append(CUtl.lang("dest.lastdeath.save"))
                 .append(" ")
-                .append(CUtl.CButton.dest.set("/dest set "+Utl.player.XYZ(player))));
+                .append(CUtl.CButton.dest.set("/dest set "+Utl.player.XYZ(player))).b());
     }
 }
