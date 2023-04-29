@@ -9,6 +9,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
+import net.minecraft.util.Identifier;
 import one.oth3r.directionhud.DirectionHUD;
 import one.oth3r.directionhud.files.config;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -142,7 +143,7 @@ public class Utl {
             return player.getName().getString();
         }
         public static String dim(ServerPlayerEntity player) {
-            return player.getWorld().getRegistryKey().getValue().toString().replace(":",".");
+            return dim.format(player.getWorld().getRegistryKey().getValue());
         }
         public static String XYZ(ServerPlayerEntity player) {
             return player.getBlockX()+" "+player.getBlockY()+" "+player.getBlockZ();
@@ -158,6 +159,9 @@ public class Utl {
         }
     }
     public static class dim {
+        public static String format(Identifier identifier) {
+            return identifier.toString().replace(":",".");
+        }
         public static String convertXYZ(ServerPlayerEntity player, String xyz, String toDimension) {
             String fromDimension = Utl.player.dim(player);
             if (fromDimension.equalsIgnoreCase(toDimension)) return xyz;
@@ -182,7 +186,6 @@ public class Utl {
             z = (int) (Double.parseDouble(coords[2]) * ratio);
             return x+" "+coords[1]+" "+z;
         }
-        @SuppressWarnings("BooleanMethodIsAlwaysInverted")
         public static boolean checkValid(String s) {
             return dims.containsKey(s);
         }
