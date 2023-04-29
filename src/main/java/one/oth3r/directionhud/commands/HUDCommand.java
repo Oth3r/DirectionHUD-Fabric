@@ -148,6 +148,10 @@ public class HUDCommand {
                 HUD.color.setItalics(player, args[2], Boolean.parseBoolean(args[3]), true);
                 return 1;
             }
+            if (args[1].equals("rgb") && args.length == 4) {
+                HUD.color.setRGB(player, args[2], Boolean.parseBoolean(args[3]), true);
+                return 1;
+            }
             return 1;
         }
         //TOGGLE

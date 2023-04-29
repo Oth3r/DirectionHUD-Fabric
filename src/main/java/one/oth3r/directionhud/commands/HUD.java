@@ -455,11 +455,11 @@ public class HUD {
             if (type.equals("primary")) {
                 color = Utl.color.fix(color,true,config.defaults.HUDPrimaryColor);
                 if (getHUDColors(player)[0].equals(color)) return;
-                PlayerData.set.hud.primary(player, color+"-"+getHUDBold(player,1)+"-"+getHUDItalics(player,1));
-            } else if (type.equals("secondary")){
+                PlayerData.set.hud.primary(player, color+"-"+getHUDBold(player,1)+"-"+getHUDItalics(player,1)+"-"+getHUDRGB(player,1));
+            } else if (type.equals("secondary")) {
                 color = Utl.color.fix(color,true,config.defaults.HUDSecondaryColor);
                 if (getHUDColors(player)[1].equals(color)) return;
-                PlayerData.set.hud.secondary(player, color+"-"+getHUDBold(player,2)+"-"+getHUDItalics(player,2));
+                PlayerData.set.hud.secondary(player, color+"-"+getHUDBold(player,2)+"-"+getHUDItalics(player,2)+"-"+getHUDRGB(player,2));
             } else return;
             CTxT msg = CUtl.tag().append(lang("color.set",lang("color."+type),
                     addColor(player,Utl.color.formatPlayer(color,true),type.equals("primary")?1:2,15f,20f)));
@@ -469,10 +469,10 @@ public class HUD {
         public static void setBold(ServerPlayerEntity player, String type, boolean state, boolean Return) {
             if (type.equals("primary")) {
                 if (getHUDBold(player, 1)==state) return;
-                PlayerData.set.hud.primary(player, getHUDColors(player)[0]+"-"+state+"-"+getHUDItalics(player,1));
+                PlayerData.set.hud.primary(player, getHUDColors(player)[0]+"-"+state+"-"+getHUDItalics(player,1)+"-"+getHUDRGB(player,1));
             } else if (type.equals("secondary")){
                 if (getHUDBold(player, 2)==state) return;
-                PlayerData.set.hud.secondary(player, getHUDColors(player)[1]+"-"+state+"-"+getHUDItalics(player,2));
+                PlayerData.set.hud.secondary(player, getHUDColors(player)[1]+"-"+state+"-"+getHUDItalics(player,2)+"-"+getHUDRGB(player,2));
             } else return;
             CTxT msg = CUtl.tag().append(lang("color.set.bold",
                     CUtl.lang("button."+(state?"on":"off")).color(state?'a':'c'),lang("color."+type)));
@@ -482,21 +482,34 @@ public class HUD {
         public static void setItalics(ServerPlayerEntity player, String type, boolean state, boolean Return) {
             if (type.equals("primary")) {
                 if (getHUDItalics(player, 1)==state) return;
-                PlayerData.set.hud.primary(player, getHUDColors(player)[0]+"-"+getHUDBold(player,1)+"-"+state);
+                PlayerData.set.hud.primary(player, getHUDColors(player)[0]+"-"+getHUDBold(player,1)+"-"+state+"-"+getHUDRGB(player,1));
             } else if (type.equals("secondary")){
                 if (getHUDItalics(player, 2)==state) return;
-                PlayerData.set.hud.secondary(player, getHUDColors(player)[1]+"-"+getHUDBold(player,2)+"-"+state);
+                PlayerData.set.hud.secondary(player, getHUDColors(player)[1]+"-"+getHUDBold(player,2)+"-"+state+"-"+getHUDRGB(player,2));
             } else return;
             CTxT msg = CUtl.tag().append(lang("color.set.italics",
                             CUtl.lang("button."+(state?"on":"off")).color(state?'a':'c'),lang("color."+type)));
             if (Return) changeUI(player, type.substring(0,3),msg);
             else player.sendMessage(msg.b());
         }
+        public static void setRGB(ServerPlayerEntity player, String type, boolean state, boolean Return) {
+            if (type.equals("primary")) {
+                if (getHUDRGB(player, 1)==state) return;
+                PlayerData.set.hud.primary(player, getHUDColors(player)[0]+"-"+getHUDBold(player,1)+"-"+getHUDItalics(player,1)+"-"+state);
+            } else if (type.equals("secondary")){
+                if (getHUDRGB(player, 2)==state) return;
+                PlayerData.set.hud.secondary(player, getHUDColors(player)[1]+"-"+getHUDBold(player,2)+"-"+getHUDItalics(player,1)+"-"+state);
+            } else return;
+            CTxT msg = CUtl.tag().append(lang("color.set.rgb",
+                    CUtl.lang("button."+(state?"on":"off")).color(state?'a':'c'),lang("color."+type)));
+            if (Return) changeUI(player, type.substring(0,3),msg);
+            else player.sendMessage(msg.b());
+        }
         //"red", "dark_red", "gold", "yellow", "green", "dark_green", "aqua", "dark_aqua",
         // "blue", "dark_blue", "pink", "purple", "white", "gray", "dark_gray", "black"
         public static String defaultFormat(int i) {
-            if (i==1) return config.HUDPrimaryRainbow?"rainbow":config.HUDPrimaryColor+"-"+config.HUDPrimaryBold+"-"+config.HUDPrimaryItalics;
-            return config.HUDSecondaryRainbow?"rainbow":config.HUDSecondaryColor+"-"+config.HUDSecondaryBold+"-"+config.HUDSecondaryItalics;
+            if (i==1) return config.HUDPrimaryColor+"-"+config.HUDPrimaryBold+"-"+config.HUDPrimaryItalics+"-"+config.HUDPrimaryRainbow;
+            return config.HUDSecondaryColor+"-"+config.HUDSecondaryBold+"-"+config.HUDSecondaryItalics+"-"+config.HUDSecondaryRainbow;
         }
         public static String[] getHUDColors(ServerPlayerEntity player) {
             String[] p = PlayerData.get.hud.primary(player).split("-");
@@ -515,13 +528,19 @@ public class HUD {
             if (i==1) return Boolean.parseBoolean(p[2]);
             return Boolean.parseBoolean(s[2]);
         }
+        public static Boolean getHUDRGB(ServerPlayerEntity player, int i) {
+            String[] p = PlayerData.get.hud.primary(player).split("-");
+            String[] s = PlayerData.get.hud.secondary(player).split("-");
+            if (i==1) return Boolean.parseBoolean(p[3]);
+            return Boolean.parseBoolean(s[3]);
+        }
         public static TextColor getColorHUD(ServerPlayerEntity player, Integer i) {
             String str = getHUDColors(player)[i-1];
             if (str.charAt(0) == '#') return TextColor.parse(str);
             return Utl.color.getTC(getHUDColors(player)[i-1]);
         }
         public static CTxT addColor(ServerPlayerEntity player, String txt, int i, float start, float step) {
-            if (getHUDColors(player)[i-1].equals("rainbow")) return CTxT.of(txt).rainbow(true,start,step).italic(getHUDItalics(player,i)).bold(getHUDBold(player,i));
+            if (getHUDRGB(player,i)) return CTxT.of(txt).rainbow(true,start,step).italic(getHUDItalics(player,i)).bold(getHUDBold(player,i));
             return CTxT.of(txt).color(getColorHUD(player,i)).italic(getHUDItalics(player,i)).bold(getHUDBold(player,i));
         }
         public static void changeUI(ServerPlayerEntity player, String type, CTxT abovemsg) {
@@ -570,9 +589,10 @@ public class HUD {
                 for (int i = 0; i < allObj.size(); i++)
                     allObj.set(i, allObj.get(i).cEvent(1,"/hud color set secondary "+allStr.get(i)));
             } else return;
-            CTxT rgbButton = CTxT.of(Utl.color.rainbow(CUtl.TBtn("color.rgb").getString(),15,95)).btn(true)
-                    .cEvent(1,"/hud color set "+(typ==1?"primary":"secondary")+" rainbow")
-                    .hEvent(CUtl.lang("button.color.rgb.hover",Utl.color.rainbow(CUtl.lang("button.color.rgb.hover_2").getString(),15,20)));
+            CTxT rgbButton = CTxT.of(Utl.color.rainbow(CUtl.TBtn("color.rgb").getString(),15,95)).btn(true).bold(getHUDRGB(player,typ))
+                    .cEvent(1,"/hud color rgb "+(typ==1?"primary":"secondary")+" "+(getHUDRGB(player,typ)?"false":"true"))
+                    .hEvent(CUtl.TBtn("color.rgb.hover",CUtl.TBtn(getHUDRGB(player,typ)?"off":"on").color(getHUDBold(player,typ)?'c':'a'),
+                            lang("color."+(typ==1?"primary":"secondary"))));
             String customColor = getHUDColors(player)[typ-1].contains("#")?getHUDColors(player)[typ-1]:"#ff97e0";
             CTxT customButton = CUtl.TBtn("color.custom").btn(true).color(customColor)
                     .cEvent(2,"/hud color set "+(typ==1?"primary":"secondary")+" ")
