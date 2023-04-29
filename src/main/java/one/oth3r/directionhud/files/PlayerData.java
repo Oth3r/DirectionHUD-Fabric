@@ -216,6 +216,34 @@ public class PlayerData {
             dSet.put("lastdeath",config.DESTLastdeath);
             dest.put("setting",dSet);
             map.put("destination",dest);
+        }
+        if (map.get("version").equals(1.1)) {
+            map.put("version",1.2);
+            Map<String,Object> hud = (Map<String, Object>) map.get("hud");
+            Map<String,Object> dest = (Map<String, Object>) map.get("destination");
+            String death = (String) dest.get("lastdeath");
+            String[] deaths = death.split(" ");
+            ArrayList<String> newDeaths = new ArrayList<>();
+            for (int i = 0;i<deaths.length;i++) {
+                if (deaths[i].equals("f")) continue;
+                String xyz = deaths[i].replace("_"," ");
+                if (i == 0) newDeaths.add("overworld|"+xyz);
+                if (i == 2) newDeaths.add("the_nether|"+xyz);
+                if (i == 3) newDeaths.add("the_end|"+xyz);
+            }
+            String pri = (String) hud.get("primary");
+            String sec = (String) hud.get("secondary");
+            String[] priS = pri.split("-");
+            String[] secS = sec.split("-");
+            if (priS[0].equals("rainbow")) pri = "white-"+priS[1]+"-"+priS[2]+"-true";
+            else pri = pri+"-false";
+            if (secS[0].equals("rainbow")) sec = "white-"+secS[1]+"-"+secS[2]+"-true";
+            else sec = sec+"-false";
+            hud.put("primary",pri);
+            hud.put("secondary",sec);
+            dest.put("lastdeath",newDeaths);
+            map.put("destination",dest);
+            map.put("hud",hud);
             return map;
         }
         return map;
@@ -266,11 +294,10 @@ public class PlayerData {
         Map<String,Object> destination = new HashMap<>();
         destination.put("xyz", "f");
         destination.put("setting", defaults.destSetting());
-        destination.put("lastdeath", "f f f");
         destination.put("track", null);
         destination.put("suspended", null);
         //base
-        map.put("version", 1.1);
+        map.put("version", 1.2);
         map.put("name", Utl.player.name(player));
         map.put("hud", hud);
         map.put("destination", destination);
@@ -388,8 +415,9 @@ public class PlayerData {
                 if (get(player,true).get("suspended") == null) return new HashMap<>();
                 return (Map<String,Object>) get(player,true).get("suspended");
             }
-            public static String getLastdeath(ServerPlayerEntity player) {
-                return get(player,false).get("lastdeath").toString();
+            public static ArrayList<String> getLastdeaths(ServerPlayerEntity player) {
+                if (get(player,false).get("lastdeath") == null) return new ArrayList<>();
+                return (ArrayList<String>) get(player,false).get("lastdeath");
             }
             public static boolean getTrackingPending(ServerPlayerEntity player) {
                 return get(player,true).get("track") != null;
@@ -549,11 +577,6 @@ public class PlayerData {
                 data.put("xyz", xyz);
                 set(player, data);
             }
-            public static void setLastdeath(ServerPlayerEntity player, String lastdeath) {
-                Map<String,Object> data = get.dest.get(player,false);
-                data.put("lastdeath", lastdeath);
-                set(player, data);
-            }
             public static void setTrackNull(ServerPlayerEntity player) {
                 Map<String,Object> data = get.dest.get(player,true);
                 data.put("track", null);
@@ -563,6 +586,11 @@ public class PlayerData {
                 Map<String,Object> data = get.dest.get(player,true);
                 data.put("suspended", null);
                 setM(player, data);
+            }
+            public static void setLastdeaths(ServerPlayerEntity player, ArrayList<String> lastdeath) {
+                Map<String,Object> data = get.dest.get(player,false);
+                data.put("lastdeath", lastdeath);
+                set(player, data);
             }
             public static void setSaved(ServerPlayerEntity player, ArrayList<String> saved) {
                 Map<String,Object> data = get.dest.get(player,false);
