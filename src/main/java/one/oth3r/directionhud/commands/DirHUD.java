@@ -8,6 +8,7 @@ import one.oth3r.directionhud.files.PlayerData;
 import one.oth3r.directionhud.files.config;
 import one.oth3r.directionhud.utils.CTxT;
 import one.oth3r.directionhud.utils.CUtl;
+import one.oth3r.directionhud.utils.Utl;
 
 public class DirHUD {
     public static void setDefaults(ServerPlayerEntity player) {
@@ -64,14 +65,15 @@ public class DirHUD {
     }
     public static void reload(ServerPlayerEntity player) {
         if (player == null) {
-            if (DirectionHUD.config == null) DirectionHUD.config = FabricLoader.getInstance().getConfigDir().toFile()+"/";
+            if (DirectionHUD.configFile == null) DirectionHUD.configFile = FabricLoader.getInstance().getConfigDir().toFile()+"/";
             config.load();
+            Utl.dim.dimsToMap();
             LangReader.loadLanguageFile();
             DirectionHUD.LOGGER.info(CUtl.lang("dirhud.reload", CUtl.lang("dirhud.reload_2")).getString());
             return;
         }
         if (!player.hasPermissionLevel(2)) return;
-        if (DirectionHUD.config == null) DirectionHUD.config = FabricLoader.getInstance().getConfigDir().toFile()+"/";
+        if (DirectionHUD.configFile == null) DirectionHUD.configFile = FabricLoader.getInstance().getConfigDir().toFile()+"/";
         LangReader.loadLanguageFile();
         config.load();
         player.sendMessage(CUtl.tag().append(CUtl.lang("dirhud.reload",CUtl.lang("dirhud.reload_2").color('a'))).b());
@@ -90,7 +92,6 @@ public class DirHUD {
         } else if (player.hasPermissionLevel(2)) {
             msg.append("\n\n ").append(CUtl.CButton.dirHUD.reload());
         }
-        msg.append(CTxT.of("rjuggbiwsfjsada").rainbow(true,12f,32f).bold(true));
         msg.append(CTxT.of("\n                                 ").strikethrough(true));
         player.sendMessage(msg.b());
     }
