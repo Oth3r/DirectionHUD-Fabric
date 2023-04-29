@@ -16,6 +16,8 @@ import one.oth3r.directionhud.commands.DestinationCommand;
 import one.oth3r.directionhud.commands.DirHUDCommand;
 import one.oth3r.directionhud.commands.HUDCommand;
 import one.oth3r.directionhud.files.PlayerData;
+import one.oth3r.directionhud.files.config;
+import one.oth3r.directionhud.utils.Utl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -33,19 +35,20 @@ public class DirectionHUD {
 	public static final Version VERSION = FabricLoader.getInstance().getModContainer(MOD_ID).orElseThrow().getMetadata().getVersion();
 	public static boolean isClient;
 	public static String playerData;
-	public static String config;
+	public static String configFile;
 	public static PlayerManager playerManager;
 	public static MinecraftServer server;
 	public static CommandManager commandManager;
 	public static void initializeCommon() {
-		config = FabricLoader.getInstance().getConfigDir().toFile()+"/";
-		one.oth3r.directionhud.files.config.load();
+		configFile = FabricLoader.getInstance().getConfigDir().toFile()+"/";
+		config.load();
 		ServerLifecycleEvents.SERVER_STARTED.register(s -> {
 			DirectionHUD.playerManager = s.getPlayerManager();
 			DirectionHUD.server = s;
 			DirectionHUD.commandManager = s.getCommandManager();
 			if (isClient) playerData = DirectionHUD.server.getSavePath(WorldSavePath.ROOT).normalize()+"/directionhud/playerdata/";
 			else playerData = FabricLoader.getInstance().getConfigDir().toFile()+"/directionhud/playerdata/";
+			Utl.dim.dimsToMap();
 			Path dirPath = Paths.get(DirectionHUD.playerData);
 			try {
 				Files.createDirectories(dirPath);

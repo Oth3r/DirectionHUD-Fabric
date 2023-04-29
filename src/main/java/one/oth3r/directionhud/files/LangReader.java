@@ -4,6 +4,7 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextContent;
 import one.oth3r.directionhud.DirectionHUDServer;
+import one.oth3r.directionhud.utils.CTxT;
 
 import java.io.InputStream;
 import java.util.Arrays;
@@ -21,7 +22,7 @@ public class LangReader {
         this.placeholders = placeholders;
     }
 
-    public MutableText getMutableText() {
+    public CTxT getTxT() {
         String translated = getLanguageValue(translationKey);
         if (placeholders != null && placeholders.length > 0) {
             //removed all double \\ and replaces with \
@@ -46,7 +47,9 @@ public class LangReader {
                     if (parts.length != i) mutableText.append(parts[i]);
                     //if the placeholder object is a text, it will append the text
                     //otherwise it will try to turn the object into a string and append that
-                    if (placeholder instanceof Text) {
+                    if (placeholder instanceof CTxT) {
+                        mutableText.append(((CTxT) placeholder).b());
+                    } else if (placeholder instanceof Text) {
                         mutableText.append((Text) placeholder);
                     } else {
                         mutableText.append(String.valueOf(placeholder));
@@ -54,10 +57,10 @@ public class LangReader {
                     i++;
                 }
                 if (parts.length != i) mutableText.append(parts[i]);
-                return mutableText;
+                return CTxT.of(mutableText);
             }
         }
-        return MutableText.of(TextContent.EMPTY).append(translated);
+        return CTxT.of(translated);
     }
 
     public static LangReader of(String translationKey, Object... placeholders) {

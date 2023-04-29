@@ -35,8 +35,7 @@ public class LoopManager {
                 }
                 if (Destination.getDist(player) <= PlayerData.get.dest.setting.autoclearrad(player)
                         && PlayerData.get.dest.setting.autoclear(player) && Destination.checkDestination(player))
-                    Destination.clear(player,
-                            CUtl.lang("dest.cleared_reached").styled(style -> style.withItalic(true).withColor(CUtl.TC('7'))));
+                    Destination.clear(player, CUtl.lang("dest.cleared_reached").color('7').italic(true));
             }
         }
         if (rainbowF >= 360) rainbowF = 0;
@@ -111,13 +110,13 @@ public class LoopManager {
                     if (!(tplayer == null || player.getWorld() != tplayer.getWorld())) {
                         Destination.silentSetPlayer(player, tplayer);
                         PlayerData.set.dest.setSuspendedNull(player);
-                        player.sendMessage(CUtl.tag(CUtl.lang("dest.unsuspended")));
+                        player.sendMessage(CUtl.tag().append(CUtl.lang("dest.unsuspended")).b());
                     }
                 }
                 //TRACK TIMER
                 if (PlayerData.get.dest.getTrackingPending(player)) {
                     if (PlayerData.get.dest.track.expire(player) == 0) {
-                        player.sendMessage(CUtl.tag(CUtl.lang("dest.track.expired")));
+                        player.sendMessage(CUtl.tag().append(CUtl.lang("dest.track.expired")).b());
 //                        Player pl = Bukkit.getPlayer(playerdata.getString(player, "destination.track.target"));
 //                        if (pl != null) pl.sendMessage(CUtl.tag("&fThe tracking request has expired!"));
                         PlayerData.set.dest.setTrackNull(player);
@@ -127,7 +126,7 @@ public class LoopManager {
                 //SUSPEND TIMER
                 if (PlayerData.get.dest.getSuspendedState(player)) {
                     if (PlayerData.get.dest.suspended.expire(player) == 0) {
-                        player.sendMessage(CUtl.tag(CUtl.lang("dest.suspended.expired")));
+                        player.sendMessage(CUtl.tag().append(CUtl.lang("dest.suspended.expired")).b());
                         PlayerData.set.dest.setSuspendedNull(player);
                     } else if (PlayerData.get.dest.suspended.expire(player) > 0)
                         PlayerData.set.dest.suspended.expire(player, (PlayerData.get.dest.suspended.expire(player) - 1));

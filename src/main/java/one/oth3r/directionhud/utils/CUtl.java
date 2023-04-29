@@ -5,17 +5,11 @@ import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import one.oth3r.directionhud.DirectionHUD;
 import one.oth3r.directionhud.commands.Destination;
-import one.oth3r.directionhud.commands.HUD;
 import one.oth3r.directionhud.files.LangReader;
 
 public class CUtl {
-    public static MutableText tag() {
-        return Text.literal("").append(Text.literal("["))
-                .append(Text.literal("DirectionHUD").setStyle(pS()))
-                .append(Text.literal("] "));
-    }
-    public static MutableText tag(Text t) {
-        return tag().append(t);
+    public static CTxT tag() {
+        return CTxT.of("").append(CTxT.of("DirectionHUD").btn(true).color(pTC())).append(" ");
     }
     public static Style pS() {
         return Style.EMPTY.withColor(HEX(c.pri));
@@ -35,33 +29,64 @@ public class CUtl {
     public static TextColor TC(Character code) {
         return TextColor.fromFormatting(Formatting.byCode(code));
     }
-    public static Text error(Text s) {
-        return tag().append(lang("error").setStyle(HEXS("FF4646"))).append(" ").append(s);
+    public static ClickEvent cEvent(int typ, String arg) {
+        if (typ == 1) return new ClickEvent(ClickEvent.Action.RUN_COMMAND,arg);
+        if (typ == 2) return new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND,arg);
+        if (typ == 3) return new ClickEvent(ClickEvent.Action.OPEN_URL,arg);
+        return null;
+    }
+    public static HoverEvent hEvent(Text text) {
+        return new HoverEvent(HoverEvent.Action.SHOW_TEXT, text);
+    }
+    public static HoverEvent hEvent(CTxT text) {
+        return new HoverEvent(HoverEvent.Action.SHOW_TEXT, text.b());
+    }
+    public static Text error(CTxT s) {
+        return tag().append(lang("error").color("#FF4646")).append(" ").append(s).b();
     }
     public static Text usage(String s) {
-        return tag().append(lang("usage").setStyle(HEXS("FF4646"))).append(" ").append(s);
+        return tag().append(lang("usage").color("#FF4646")).append(" ").append(s).b();
     }
     public static TextColor HEX(String s) {
         if (s.contains("#")) return TextColor.parse(s);
         return TextColor.parse("#"+s);
     }
-    public static Style HEXS(String s) {
-        if (s.contains("#")) return Style.EMPTY.withColor(TextColor.parse(s));
-        return Style.EMPTY.withColor(TextColor.parse("#"+s));
+    public static CTxT lang(String key) {
+        if (DirectionHUD.isClient) {
+            return CTxT.of(Text.translatable("key.directionhud."+key));
+        } else {
+            return LangReader.of("key.directionhud."+key).getTxT();
+        }
     }
-    public static MutableText lang(String key) {
+    public static MutableText tLang(String key) {
         if (DirectionHUD.isClient) {
             return Text.translatable("key.directionhud."+key);
         } else {
-            return LangReader.of("key.directionhud."+key).getMutableText();
+            return LangReader.of("key.directionhud."+key).getTxT().b();
         }
     }
-    public static MutableText lang(String key, Object... args) {
+    public static CTxT lang(String key, Object... args) {
         if (DirectionHUD.isClient) {
-            return Text.translatable("key.directionhud."+key, args);
+            Object[] fixedArgs = new Object[args.length];
+            for (var i = 0;i < args.length;i++) {
+                if (args[i] instanceof CTxT) fixedArgs[i] = ((CTxT) args[i]).b();
+                else fixedArgs[i] = args[i];
+            }
+            return CTxT.of(Text.translatable("key.directionhud."+key, fixedArgs));
         } else {
-            return LangReader.of("key.directionhud."+key, args).getMutableText();
+            return LangReader.of("key.directionhud."+key, args).getTxT();
         }
+    }
+    public static CTxT TBtn(String TBtn) {
+        return lang("button."+TBtn);
+    }
+    public static CTxT TBtn(String TBtn, Object... args) {
+        return lang("button."+TBtn,args);
+    }
+    public static CTxT xyzBadge(String xyz, String DIM, String color, CTxT hover) {
+        if (color == null) color = "white";
+        if (hover == null) hover = CTxT.of("");
+        return CTxT.of("").append(Utl.dim.getLetterButton(DIM)).append(" ").append(CTxT.of(xyz).color(color).hEvent(hover));
     }
     public static class c {
         public static String convert = "#ffa93f";
@@ -81,186 +106,91 @@ public class CUtl {
         public static String pri = "#2993ff";
     }
     public static class CButton {
-        public static Text back(String cmd) {
-            return button(SBtn("back"), HEX(c.back),1, cmd, Text.literal("")
-                    .append(Text.literal(cmd).setStyle(HEXS(c.back)))
-                    .append("\n")
-                    .append(TBtn("back.hover")));
+        public static CTxT back(String cmd) {
+            return TBtn("back").btn(true).color(c.back).cEvent(1,cmd).hEvent(CTxT.of(cmd).color(c.back).append("\n").append(TBtn("back.hover")));
         }
         public static class dest {
-            public static Text convert(String cmd) {
-                return button(SBtn("dest.convert"), HEX(c.convert), 1, cmd, TBtn("dest.convert.hover").setStyle(HEXS(c.convert)));
+            public static CTxT convert(String cmd) {
+                return TBtn("dest.convert").btn(true).color(c.convert).cEvent(1,cmd).hEvent(
+                        CTxT.of(cmd).color(c.convert).append("\n").append(TBtn("dest.convert.hover")));
             }
-            public static Text set(String cmd) {
-                return button(SBtn("dest.set"), HEX(c.set), 1, cmd, TBtn("dest.set.hover").setStyle(HEXS(c.set)));
+            public static CTxT set(String cmd) {
+                return TBtn("dest.set").btn(true).color(c.set).cEvent(1,cmd).hEvent(
+                        CTxT.of(cmd).color(c.set).append("\n").append(TBtn("dest.set.hover")));
             }
-            public static Text edit(int t, String cmd) {
-                return button("✎", HEX(c.edit), t, cmd, TBtn("dest.edit.hover").setStyle(HEXS(c.edit)));
+            public static CTxT edit(int t, String cmd) {
+                return CTxT.of("✎").btn(true).color(c.edit).cEvent(t,cmd).hEvent(TBtn("dest.edit.hover").color(c.edit)).color(c.edit);
             }
-            public static Text settings() {
-                return button(SBtn("dest.settings"), HEX(c.setting),1, "/dest settings", Text.literal("")
-                        .append(Text.literal(commandUsage.destSettings()).setStyle(HEXS(c.setting)))
-                        .append("\n").append(TBtn("dest.settings.hover")));
+            public static CTxT settings() {
+                return TBtn("dest.settings").btn(true).color(c.setting).cEvent(1,"/dest settings")
+                        .hEvent(CTxT.of(commandUsage.destSettings()).color(c.setting).append("\n").append(TBtn("dest.settings.hover")));
             }
-            public static Text saved() {
-                return button(SBtn("dest.saved"), HEX(c.saved),1, "/dest saved", Text.literal("")
-                        .append(Text.literal(commandUsage.destSaved()).setStyle(HEXS(c.saved)))
-                        .append("\n").append(TBtn("dest.saved.hover")));
+            public static CTxT saved() {
+                return TBtn("dest.saved").btn(true).color(c.saved).cEvent(1,"/dest saved").hEvent(
+                        CTxT.of(commandUsage.destSaved()).color(c.saved).append("\n").append(TBtn("dest.saved.hover")));
             }
-            public static Text add() {
-                return button("+", HEX(c.add),2, "/dest add ", Text.literal("")
-                        .append(Text.literal(commandUsage.destAdd()).setStyle(HEXS(c.add)))
-                        .append("\n").append(TBtn("dest.add.hover",
-                                TBtn("dest.add.hover_2").setStyle(HEXS(c.add)))));
+            public static CTxT add() {
+                return CTxT.of("+").btn(true).color(c.add).cEvent(2,"/dest add ").hEvent(
+                        CTxT.of(commandUsage.destAdd()).color(c.add).append("\n").append(TBtn("dest.add.hover",TBtn("dest.add.hover_2").color(c.add))));
             }
-            public static Text set() {
-                return button(SBtn("dest.set"), HEX(c.set),2, "/dest set ", Text.literal("")
-                        .append(Text.literal(commandUsage.destSet()).setStyle(HEXS(c.set)))
-                        .append("\n").append(TBtn("dest.set.hover_info")));
+            public static CTxT add(String cmd) {
+                return CUtl.TBtn("dest.add").btn(true).color(c.add).cEvent(2,cmd).hEvent(
+                        CTxT.of(commandUsage.destAdd()).color(c.add).append("\n").append(TBtn("dest.add.hover",TBtn("dest.add.hover_2").color(c.add))));
             }
-            public static Text clear(ServerPlayerEntity player) {
+            public static CTxT set() {
+                return TBtn("dest.set").btn(true).color(c.set).cEvent(2,"/dest set ").hEvent(
+                        CTxT.of(commandUsage.destSet()).color(c.set).append("\n").append(TBtn("dest.set.hover_info")));
+            }
+            public static CTxT clear(ServerPlayerEntity player) {
                 boolean o = !Destination.get(player, "xyz").equals("f");
-                return button("✕", TC(o?'c':'7'), o?1:0, "/dest clear", Text.literal("")
-                        .append(Text.literal(commandUsage.destClear()).setStyle(C(o?'c':'7')))
-                        .append("\n").append(TBtn("dest.clear.hover")));
+                return CTxT.of("✕").btn(true).color(o?'c':'7').cEvent(o?1:0,"/dest clear").hEvent(
+                        CTxT.of(commandUsage.destClear()).color(o?'c':'7').append("\n").append(TBtn("dest.clear.hover")));
             }
-            public static Text lastdeath() {
-                return button(SBtn("dest.lastdeath"), HEX(c.lastdeath),1, "/dest lastdeath", Text.literal("")
-                        .append(Text.literal(commandUsage.destLastdeath()).setStyle(HEXS(c.lastdeath)))
-                        .append("\n").append(TBtn("dest.lastdeath.hover")));
+            public static CTxT lastdeath() {
+                return TBtn("dest.lastdeath").btn(true).color(c.lastdeath).cEvent(1,"/dest lastdeath").hEvent(
+                        CTxT.of(commandUsage.destLastdeath()).color(c.lastdeath).append("\n").append(TBtn("dest.lastdeath.hover")));
             }
-            public static Text send() {
-                return button(SBtn("dest.send"), HEX(c.send), 2, "/dest send ", Text.literal("")
-                        .append(Text.literal(commandUsage.destSend()).setStyle(HEXS(c.send)))
-                        .append("\n").append(TBtn("dest.send.hover")));
+            public static CTxT send() {
+                return TBtn("dest.send").btn(true).color(c.send).cEvent(2,"dest send ").hEvent(
+                        CTxT.of(commandUsage.destSend()).color(c.send).append("\n").append(TBtn("dest.send.hover")));
             }
-            public static Text track() {
-                return button(SBtn("dest.track"), HEX(c.track), 2, "/dest track ", Text.literal("")
-                        .append(Text.literal(commandUsage.destTrack()).setStyle(HEXS(c.track)))
-                        .append("\n").append(TBtn("dest.track.hover")));
+            public static CTxT track() {
+                return TBtn("dest.send").btn(true).color(c.track).cEvent(2,"dest track ").hEvent(
+                        CTxT.of(commandUsage.destTrack()).color(c.track).append("\n").append(TBtn("dest.track.hover")));
             }
         }
         public static class hud {
-            public static Text color() {
-                return Text.literal("").append(Text.literal("")
-                        .append("[")
-                        .append(Utl.color.rainbow(SBtn("hud.color"),15f,45f))
-                        .append("]")).styled(style -> style
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/hud color"))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("")
-                                .append(Utl.color.rainbow(commandUsage.hudColor(),10f,23f))
-                                .append("\n").append(TBtn("hud.color.hover")))));
+            public static CTxT color() {
+                return CTxT.of(Utl.color.rainbow(TBtn("hud.color").getString(),15,45)).btn(true).cEvent(1,"/hud color")
+                        .hEvent(CTxT.of(Utl.color.rainbow(commandUsage.hudColor(),10f,23f)).append("\n").append(TBtn("hud.color.hover")));
             }
-            public static Text edit() {
-                return button(SBtn("hud.edit"), HEX(c.edit), 1, "/hud edit", Text.literal("")
-                        .append(Text.literal(commandUsage.hudEdit()).setStyle(HEXS(c.edit)))
-                        .append("\n").append(TBtn("hud.edit.hover")));
+            public static CTxT edit() {
+                return TBtn("hud.edit").btn(true).color(c.edit).cEvent(1,"/hud edit").hEvent(
+                        CTxT.of(commandUsage.hudEdit()).color(c.edit).append("\n").append(TBtn("hud.edit.hover")));
             }
-            public static Text toggle(Character color, String type) {
-                return button(SBtn("hud.toggle"), TC(color), 1, "/hud toggle "+ type, Text.literal("")
-                        .append(Text.literal(commandUsage.hudToggle()).setStyle(C(color)))
-                        .append("\n").append(TBtn("hud.toggle.hover")));
+            public static CTxT toggle(Character color, String type) {
+                return TBtn("hud.toggle").btn(true).color(color).cEvent(1,"/hud toggle "+type).hEvent(
+                        CTxT.of(commandUsage.hudToggle()).color(color).append("\n").append(TBtn("hud.toggle.hover")));
             }
         }
         public static class dirHUD {
-            public static Text hud() {
-                return button(SBtn("dirhud.hud"), HEX(c.hud), 1, "/hud", Text.literal("")
-                        .append(Text.literal(commandUsage.hud()).setStyle(HEXS(c.hud)))
-                        .append("\n").append(TBtn("dirhud.hud.hover")));
+            public static CTxT hud() {
+                return TBtn("dirhud.hud").btn(true).color(c.hud).cEvent(1,"/hud").hEvent(
+                        CTxT.of(commandUsage.hud()).color(c.hud).append("\n").append(TBtn("dirhud.hud.hover")));
             }
-            public static Text dest() {
-                return button(SBtn("dirhud.dest"), HEX(c.dest), 1, "/dest", Text.literal("")
-                        .append(Text.literal(commandUsage.dest()).setStyle(HEXS(c.dest)))
-                        .append("\n").append(TBtn("dirhud.dest.hover")));
+            public static CTxT dest() {
+                return TBtn("dirhud.dest").btn(true).color(c.dest).cEvent(1,"/dest").hEvent(
+                        CTxT.of(commandUsage.dest()).color(c.dest).append("\n").append(TBtn("dirhud.dest.hover")));
             }
-            public static Text defaults() {
-                return button(SBtn("dirhud.defaults"), HEX(c.defaults), 1, "/dirhud defaults", Text.literal("")
-                        .append(Text.literal(commandUsage.defaults()).setStyle(HEXS(c.defaults)))
-                        .append("\n").append(TBtn("dirhud.defaults.hover")));
+            public static CTxT defaults() {
+                return TBtn("dirhud.defaults").btn(true).color(c.defaults).cEvent(1,"/dirhud defaults").hEvent(
+                        CTxT.of(commandUsage.defaults()).color(c.defaults).append("\n").append(TBtn("dirhud.defaults.hover")));
             }
-            public static Text reload() {
-                return button(SBtn("dirhud.reload"), HEX(c.defaults), 1, "/dirhud reload", Text.literal("")
-                        .append(Text.literal(commandUsage.defaults()).setStyle(HEXS(c.defaults)))
-                        .append("\n").append(TBtn("dirhud.reload.hover")));
+            public static CTxT reload() {
+                return TBtn("dirhud.reload").btn(true).color(c.defaults).cEvent(1,"/dirhud reload").hEvent(
+                        CTxT.of(commandUsage.defaults()).color(c.defaults).append("\n").append(TBtn("dirhud.reload.hover")));
             }
         }
-    }
-    public static Text button(String bText, TextColor color, int t, String cmd, Text hoverText) {
-        if (t == 0) return Text.literal("").append(Text.literal("")
-                .append(Text.literal("[").setStyle(C('f')))
-                .append(Text.literal(bText).styled(style -> style.withColor(color)))
-                .append(Text.literal("]").setStyle(C('f'))).styled(style -> style
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText))));
-        if (t == 1) return Text.literal("").append(Text.literal("")
-                .append(Text.literal("[").setStyle(C('f')))
-                .append(Text.literal(bText).styled(style -> style.withColor(color)))
-                .append(Text.literal("]").setStyle(C('f'))).styled(style -> style
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, cmd))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText))));
-        if (t == 2) return Text.literal("").append(Text.literal("")
-                .append(Text.literal("[").setStyle(C('f')))
-                .append(Text.literal(bText).styled(style -> style.withColor(color)))
-                .append(Text.literal("]").setStyle(C('f'))).styled(style -> style
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, cmd))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText))));
-        return Text.literal("");
-    }
-    //button matching player color
-    public static Text button(ServerPlayerEntity player, String bText, int typ, int start, int step , int t, String cmd, Text hoverText) {
-        Text button = HUD.color.addColor(player,bText,typ,start,step);
-        if (t == 0) return Text.literal("").append(Text.literal("")
-                .append(Text.literal("[").setStyle(C('f')))
-                .append(button)
-                .append(Text.literal("]").setStyle(C('f'))).styled(style -> style
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText))));
-        if (t == 1) return Text.literal("").append(Text.literal("")
-                .append(Text.literal("[").setStyle(C('f')))
-                .append(button)
-                .append(Text.literal("]").setStyle(C('f'))).styled(style -> style
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, cmd))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText))));
-        if (t == 2) return Text.literal("").append(Text.literal("")
-                .append(Text.literal("[").setStyle(C('f')))
-                .append(button)
-                .append(Text.literal("]").setStyle(C('f'))).styled(style -> style
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, cmd))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText))));
-        return Text.literal("");
-    }
-    public static Text button(String bText, TextColor color, int t, String cmd) {
-        if (t == 1) return Text.literal("").append(Text.literal("")
-                .append(Text.literal("[").setStyle(C('f')))
-                .append(Text.literal(bText).styled(style -> style.withColor(color)))
-                .append(Text.literal("]").setStyle(C('f'))).styled(style -> style
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, cmd))));
-        if (t == 2) return Text.literal("").append(Text.literal("")
-                .append(Text.literal("[").setStyle(C('f')))
-                .append(Text.literal(bText).styled(style -> style.withColor(color)))
-                .append(Text.literal("]").setStyle(C('f'))).styled(style -> style
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, cmd))));
-        return Text.literal("");
-    }
-    public static Text button(String bText, TextColor color, Text hoverText) {
-        return Text.literal("").append(Text.literal("")
-                .append(Text.literal("[").setStyle(C('f')))
-                .append(Text.literal(bText).styled(style -> style.withColor(color)))
-                .append(Text.literal("]").setStyle(C('f'))).styled(style -> style
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText))));
-    }
-    public static Text button(String bText, TextColor color) {
-        return Text.literal("").append(Text.literal("")
-                .append(Text.literal("["))
-                .append(Text.literal(bText).styled(style -> style.withColor(color)))
-                .append(Text.literal("]")));
-    }
-    public static String SBtn(String key) {
-        return TBtn(key).getString();
-    }
-    public static MutableText TBtn(String key) {
-        return lang("button."+key);
-    }
-    public static MutableText TBtn(String key, Object... args) {
-        return lang("button."+key,args);
     }
     public static class commandUsage {
         public static String hud() {return "/hud";}

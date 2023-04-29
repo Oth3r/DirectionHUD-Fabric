@@ -3,6 +3,7 @@ package one.oth3r.directionhud.mixin;
 import one.oth3r.directionhud.commands.Destination;
 import one.oth3r.directionhud.files.PlayerData;
 import one.oth3r.directionhud.files.config;
+import one.oth3r.directionhud.utils.CTxT;
 import one.oth3r.directionhud.utils.CUtl;
 import one.oth3r.directionhud.utils.Utl;
 import net.minecraft.entity.damage.DamageSource;
@@ -18,9 +19,12 @@ public class OnPlayerDeathMixin {
     public void onDeathCallback(DamageSource source, CallbackInfo onDeathCallbackInfoReturnable) {
         ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
         if (!config.deathsaving || !PlayerData.get.dest.setting.lastdeath(player)) return;
-        Destination.lastdeath.set(player, Utl.dim.getInt(Utl.player.dim(player)), Utl.player.XYZ(player));
-        player.sendMessage(CUtl.tag().append(CUtl.lang("dest.lastdeath.save"))
-                .append(" ")
-                .append(CUtl.CButton.dest.set("/dest set "+Utl.player.XYZ(player))));
+        Destination.lastdeath.add(player, Utl.player.dim(player), Utl.player.XYZ(player));
+        CTxT msg = CUtl.tag().append(CUtl.lang("dest.lastdeath.save"))
+                .append(" ").append(CUtl.xyzBadge(Utl.player.XYZ(player),Utl.player.dim(player),null,null))
+                .append(" ").append(CUtl.CButton.dest.set("/dest set "+Utl.player.XYZ(player)));
+        if (Utl.dim.showConvertButton(Utl.dim.format(player.getSpawnPointDimension().getValue()),Utl.player.dim(player)))
+            msg.append(" ").append(CUtl.CButton.dest.convert("/dest set "+Utl.player.XYZ(player)+" "+Utl.player.dim(player)));
+        player.sendMessage(msg.b());
     }
 }
