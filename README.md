@@ -1,5 +1,5 @@
 # DirectionHUD (FABRIC)
-<img src="https://img.shields.io/github/v/release/oth3r/DirectionHUD-F?color=blueviolet&logo=github" alt="image"> <img src="https://img.shields.io/modrinth/dt/directionhud?label=Modrinth&logo=modrinth" alt="image"> <img src="https://cf.way2muchnoise.eu/843483.svg" alt="image">
+[<img src="https://img.shields.io/github/v/release/oth3r/DirectionHUD-F?color=blueviolet&logo=github" alt="image">](https://github.com/Oth3r/DirectionHUD-F/releases) [<img src="https://img.shields.io/modrinth/dt/directionhud?label=Modrinth&logo=modrinth" alt="image">](https://modrinth.com/mod/directionhud) [<img src="https://cf.way2muchnoise.eu/843483.svg" alt="image">](https://www.curseforge.com/minecraft/mc-mods/directionhud-fabric)
 <br>
 DirectionHUD is a fully customizable Minecraft Fabric mod 
 that enhances the vanilla experience. 
@@ -49,5 +49,6 @@ or use **[ModMenu](https://modrinth.com/mod/modmenu)** & **[YetAnotherConfigLib]
 ## Future Goals
 
 * Spigot port (Soon)
+* Custom dimension support
 * Client UI
   * Straying away from the plugin feel for client users.

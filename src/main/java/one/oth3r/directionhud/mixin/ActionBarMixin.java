@@ -20,6 +20,7 @@ public class ActionBarMixin {
         MinecraftClient client = MinecraftClient.getInstance();
         ClickEvent click = message.getStyle().getClickEvent();
         if (click == null || !click.getValue().equals("https://modrinth.com/mod/directionhud")) {
+            if (message.getString().equals("")) return;
             if (client.player != null) {
                 if (client.isInSingleplayer() && PlayerData.get.hud.state(DirectionHUD.server.getPlayerManager().getPlayer(client.player.getUuid()))) {
                     client.player.sendMessage(CUtl.tag().append(message).b());
