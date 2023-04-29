@@ -5,15 +5,18 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import one.oth3r.directionhud.DirectionHUD;
+import one.oth3r.directionhud.files.config;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
 
 public class Utl {
@@ -93,28 +96,6 @@ public class Utl {
             if (s > 30000000) return 30000000;
             return Math.max(s, -30000000);
         }
-        public static String divide(String xyz) {
-            String[] split = xyz.split(" ");
-            if (split.length == 2) {
-                int x = Integer.parseInt(split[0]) / 8;
-                int z = Integer.parseInt(split[1]) / 8;
-                return Utl.xyz.fix(x + " " + z);
-            }
-            int x = Integer.parseInt(split[0]) / 8;
-            int z = Integer.parseInt(split[2]) / 8;
-            return Utl.xyz.fix(x + " " + split[1] + " " + z);
-        }
-        public static String multiply(String xyz) {
-            String[] split = xyz.split(" ");
-            if (split.length == 2) {
-                int x = Integer.parseInt(split[0]) * 8;
-                int z = Integer.parseInt(split[1]) * 8;
-                return Utl.xyz.fix(x + " " + z);
-            }
-            int x = Integer.parseInt(split[0]) * 8;
-            int z = Integer.parseInt(split[2]) * 8;
-            return Utl.xyz.fix(x + " " + split[1] + " " + z);
-        }
         @SuppressWarnings("BooleanMethodIsAlwaysInverted")
         public static boolean check(String xyz) {
             String[] split = xyz.split(" ");
@@ -177,55 +158,115 @@ public class Utl {
         }
     }
     public static class dim {
-        public static String convertXYZ(ServerPlayerEntity player, String xyz, String DIM) {
-            String playerDIM = CFormat(Utl.player.dim(player));
-            DIM = CFormat(DIM);
-            if (playerDIM.equalsIgnoreCase("the_end") || DIM.equalsIgnoreCase("the_end")) return xyz;
-            if (playerDIM.equals(DIM)) return xyz;
-            if (playerDIM.equalsIgnoreCase("overworld") && DIM.equalsIgnoreCase("the_nether")) return Utl.xyz.multiply(xyz);
-            if (playerDIM.equalsIgnoreCase("the_nether") && DIM.equalsIgnoreCase("overworld")) return Utl.xyz.divide(xyz);
-            return xyz;
+        public static String convertXYZ(ServerPlayerEntity player, String xyz, String toDimension) {
+            String fromDimension = Utl.player.dim(player);
+            if (fromDimension.equalsIgnoreCase(toDimension)) return xyz;
+
+            Pair<String, String> dimensionPair = new ImmutablePair<>(fromDimension, toDimension);
+            Double ratio;
+            if (conversionRatios.containsKey(dimensionPair)) ratio = conversionRatios.get(dimensionPair);
+            else {
+                dimensionPair = new ImmutablePair<>(toDimension,fromDimension);
+                if (conversionRatios.containsKey(dimensionPair)) ratio = 1/conversionRatios.get(dimensionPair);
+                else return xyz;
+            }
+            String[] coords = xyz.split(" ");
+            int x;
+            int z;
+            if (coords.length == 2) {
+                x = (int) (Double.parseDouble(coords[0]) * ratio);
+                z = (int) (Double.parseDouble(coords[1]) * ratio);
+                return x+" "+z;
+            } else if (coords.length != 3) return xyz;
+            x = (int) (Double.parseDouble(coords[0]) * ratio);
+            z = (int) (Double.parseDouble(coords[2]) * ratio);
+            return x+" "+coords[1]+" "+z;
         }
         @SuppressWarnings("BooleanMethodIsAlwaysInverted")
         public static boolean checkValid(String s) {
-            return s.equalsIgnoreCase("overworld") || s.equalsIgnoreCase("nether") || s.equalsIgnoreCase("end") ||
-                    s.equalsIgnoreCase("the_nether") || s.equalsIgnoreCase("the_end");
-        }
-        public static String CFormat(String dim) {
-            if (dim.equalsIgnoreCase("nether") || dim.equalsIgnoreCase("the_nether")) return "the_nether";
-            if (dim.equalsIgnoreCase("end") || dim.equalsIgnoreCase("the_end")) return "the_end";
-            return "overworld";
+            return dims.containsKey(s);
         }
         public static String PFormat(String dim) {
-            if (dim.equalsIgnoreCase("nether") || dim.equalsIgnoreCase("the_nether")) return "nether";
-            if (dim.equalsIgnoreCase("end") || dim.equalsIgnoreCase("the_end")) return "end";
-            return "overworld";
+            if (!dims.containsKey(dim)) return "unknown";
+            HashMap<String,String> map = dims.get(dim);
+            return map.get("name");
         }
         public static boolean showConvertButton(String playerDIM, String DIM) {
-            playerDIM = CFormat(playerDIM);
-            DIM = CFormat(DIM);
-            return !playerDIM.equalsIgnoreCase(DIM) && !playerDIM.equalsIgnoreCase("THE_END") && !DIM.equalsIgnoreCase("THE_END");
-        }
-        public static int getInt(String dim) {
-            if (dim.equalsIgnoreCase("nether") || dim.equalsIgnoreCase("the_nether")) return 2;
-            if (dim.equalsIgnoreCase("end") || dim.equalsIgnoreCase("the_end")) return 3;
-            return 1;
+            // both in same dim, cant convert
+            if (playerDIM.equalsIgnoreCase(DIM)) return false;
+            Pair<String, String> key = new ImmutablePair<>(playerDIM, DIM);
+            Pair<String, String> flippedKey = new ImmutablePair<>(DIM, playerDIM);
+            // if the ratio exists, show the button
+            return conversionRatios.containsKey(key) || conversionRatios.containsKey(flippedKey);
         }
         public static List<String> getList() {
-            return new ArrayList<>(Arrays.asList(
-                    "overworld", "nether", "end"));
+            return new ArrayList<>(dims.keySet());
         }
         public static String getHEX(String dim) {
-            dim = CFormat(dim);
-            if (dim.equals("the_nether")) return "#e8342e";
-            if (dim.equals("the_end")) return "#edffb0";
-            return "#55FF55";
+            if (!dims.containsKey(dim)) return "#FF0000";
+            HashMap<String,String> map = dims.get(dim);
+            return map.get("color");
         }
-        public static String getLetter(String dim) {
-            dim = CFormat(dim);
-            if (dim.equals("the_nether")) return "N";
-            if (dim.equals("the_end")) return "E";
-            return "O";
+        public static CTxT getLetterButton(String dim) {
+            if (!dims.containsKey(dim)) return CTxT.of("X").btn(true).hEvent(CTxT.of("???"));
+            HashMap<String,String> map = dims.get(dim);
+            return CTxT.of(map.get("name").charAt(0)+"".toUpperCase()).btn(true).color(map.get("color"))
+                    .hEvent(CTxT.of(map.get("name").toUpperCase()).color(map.get("color")));
+        }
+        public static HashMap<Pair<String, String>, Double> conversionRatios = new HashMap<>();
+        public static void loadRatios() {
+            HashMap<Pair<String, String>, Double> output = new HashMap<>();
+            for (String s : config.dimensionRatios) {
+                String[] split = s.split("\\|");
+                if (split.length != 2) continue;
+                double ratio = Double.parseDouble(split[0].split("=")[1])/Double.parseDouble(split[1].split("=")[1]);
+                output.put(new ImmutablePair<>(split[0].split("=")[0], split[1].split("=")[0]), ratio);
+            }
+            conversionRatios = output;
+        }
+        public static HashMap<String,HashMap<String,String>> dims = new HashMap<>();
+        public static void configToMap() {
+            HashMap<String,HashMap<String,String>> output = new HashMap<>();
+            for (String s : config.dimensions) {
+                String[] split = s.split("\\|");
+                if (split.length != 3) continue;
+                HashMap<String,String> data = new HashMap<>();
+                data.put("name",split[1]);
+                data.put("color",split[2]);
+                output.put(split[0],data);
+            }
+            dims = output;
+        }
+        public static void mapToConfig() {
+            List<String> output = new ArrayList<>();
+            for (Map.Entry<String, HashMap<String, String>> entry : dims.entrySet()) {
+                String key = entry.getKey();
+                HashMap<String, String> data = entry.getValue();
+                output.add(key+"|"+data.get("name")+"|"+data.get("color"));
+            }
+            config.dimensions = output;
+            config.save();
+        }
+        public static void dimsToMap() {
+            for (ServerWorld world : DirectionHUD.server.getWorlds()) {
+                String currentDIM = world.getRegistryKey().getValue().getPath();
+                if (!dims.containsKey(currentDIM)) {
+                    HashMap<String,String> map = new HashMap<>();
+                    // try to make it look better, remove all "_" and "the" and capitalizes the first word.
+                    String formatted = currentDIM.replaceAll("_"," ");
+                    formatted = formatted.replaceFirst("the ","");
+                    formatted = formatted.substring(0,1).toUpperCase()+formatted.substring(1);
+                    //make random color to spice things up
+                    Random random = new Random();
+                    int red = random.nextInt(256);
+                    int green = random.nextInt(256);
+                    int blue = random.nextInt(256);
+                    map.put("name",formatted);
+                    map.put("color",String.format("#%02x%02x%02x", red, green, blue));
+                    dims.put(currentDIM,map);
+                }
+            }
+            mapToConfig();
         }
     }
 

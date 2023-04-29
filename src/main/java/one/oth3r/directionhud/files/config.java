@@ -6,6 +6,8 @@ import one.oth3r.directionhud.utils.CUtl;
 import one.oth3r.directionhud.utils.Utl;
 
 import java.io.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 public class config {
@@ -44,6 +46,8 @@ public class config {
     public static boolean DESTSend = defaults.DESTSend;
     public static boolean DESTTrack = defaults.DESTTrack;
     public static boolean DESTLastdeath = defaults.DESTLastdeath;
+    public static List<String> dimensions = defaults.dimensions;
+    public static List<String> dimensionRatios = defaults.dimensionRatios;
     public static void resetDefaults() {
         HUDEnabled = defaults.HUDEnabled;
         HUDOrder = defaults.HUDOrder;
@@ -70,10 +74,12 @@ public class config {
         DESTDestParticleColor = defaults.DESTDestParticleColor;
         DESTSend = defaults.DESTSend;
         DESTTrack = defaults.DESTTrack;
+        dimensions = defaults.dimensions;
+        dimensionRatios = defaults.dimensionRatios;
         save();
     }
     public static File configFile() {
-        return new File(DirectionHUD.config+"DirectionHUD.properties");
+        return new File(DirectionHUD.configFile +"DirectionHUD.properties");
     }
     public static void load() {
         try {
@@ -119,6 +125,13 @@ public class config {
             DESTDestParticleColor = Utl.color.fix((String) properties.computeIfAbsent("dest-particle-color", a -> defaults.DESTDestParticleColor),false,defaults.DESTDestParticleColor);
             DESTSend = Boolean.parseBoolean((String) properties.computeIfAbsent("send", a -> defaults.DESTSend+""));
             DESTTrack = Boolean.parseBoolean((String) properties.computeIfAbsent("track", a -> defaults.DESTTrack+""));
+            //DIM
+            String dims = (String) properties.computeIfAbsent("dimensions", a -> defaults.dimensions+"");
+            dimensions = Arrays.asList(dims.substring(1, dims.length()-1).split(", "));
+            String dimRatios = (String) properties.computeIfAbsent("dimension-ratios", a -> defaults.dimensionRatios+"");
+            dimensionRatios = Arrays.asList(dimRatios.substring(1, dimRatios.length()-1).split(", "));
+            Utl.dim.loadRatios();
+            Utl.dim.configToMap();
             save();
         } catch (Exception f) {
             //read fail
@@ -128,7 +141,9 @@ public class config {
     }
     public static void save() {
         try (var file = new FileOutputStream(configFile(), false)) {
-            file.write("# DirectionHUD Config v1.0\n".getBytes());
+            file.write("# DirectionHUD Config\n".getBytes());
+            file.write(("version="+defaults.version).getBytes());
+            file.write("\n".getBytes());
             file.write(("\ndestination-saving=" + DESTSaving).getBytes());
             file.write(("\ndestination-max-saved=" + MAXSaved).getBytes());
             file.write(("\ndeath-saving=" + deathsaving).getBytes());
@@ -174,11 +189,16 @@ public class config {
             file.write(("\ntrack=" + HUDTime).getBytes());
             file.write(("\nlastdeath=" + DESTLastdeath).getBytes());
             file.write(("\n# VALID DEST COLORS: hex colors, & all default minecraft colors. (light_purple -> pink & dark_purple -> purple)").getBytes());
+            file.write("\n\n# Dimension".getBytes());
+            file.write("\n# Add/edit custom dimensions and conversion ratios".getBytes());
+            file.write(("\ndimensions="+dimensions).getBytes());
+            file.write(("\ndimension-ratios="+dimensionRatios).getBytes());
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
     public static class defaults {
+        public static String version = "v1.1";
         public static String lang = "en_us";
         public static boolean DESTSaving = true;
         public static int MAXSaved = 50;
@@ -214,5 +234,7 @@ public class config {
         public static boolean DESTSend = true;
         public static boolean DESTTrack = true;
         public static boolean DESTLastdeath = true;
+        public static List<String> dimensions = List.of("overworld|Overworld|#55FF55","the_nether|Nether|#e8342e","the_end|End|#edffb0");
+        public static List<String> dimensionRatios = List.of("overworld=1|the_nether=8");
     }
 }
