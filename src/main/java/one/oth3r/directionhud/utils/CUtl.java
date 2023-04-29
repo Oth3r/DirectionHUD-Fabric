@@ -5,12 +5,11 @@ import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import one.oth3r.directionhud.DirectionHUD;
 import one.oth3r.directionhud.commands.Destination;
-import one.oth3r.directionhud.commands.HUD;
 import one.oth3r.directionhud.files.LangReader;
 
 public class CUtl {
     public static CTxT tag() {
-        return CTxT.of("DirectionHUD").btn(true).color(pTC()).append(" ");
+        return CTxT.of("").append(CTxT.of("DirectionHUD").btn(true).color(pTC())).append(" ");
     }
     public static Style pS() {
         return Style.EMPTY.withColor(HEX(c.pri));
@@ -43,10 +42,10 @@ public class CUtl {
         return new HoverEvent(HoverEvent.Action.SHOW_TEXT, text.b());
     }
     public static Text error(CTxT s) {
-        return tag().append(lang("error").color("FF4646")).append(" ").append(s).b();
+        return tag().append(lang("error").color("#FF4646")).append(" ").append(s).b();
     }
     public static Text usage(String s) {
-        return tag().append(lang("usage").color("FF4646")).append(" ").append(s).b();
+        return tag().append(lang("usage").color("#FF4646")).append(" ").append(s).b();
     }
     public static TextColor HEX(String s) {
         if (s.contains("#")) return TextColor.parse(s);
@@ -84,6 +83,11 @@ public class CUtl {
     public static CTxT TBtn(String TBtn, Object... args) {
         return lang("button."+TBtn,args);
     }
+    public static CTxT xyzBadge(String xyz, String DIM, String color, CTxT hover) {
+        if (color == null) color = "white";
+        if (hover == null) hover = CTxT.of("");
+        return CTxT.of("").append(Utl.dim.getLetterButton(DIM)).append(" ").append(CTxT.of(xyz).color(color).hEvent(hover));
+    }
     public static class c {
         public static String convert = "#ffa93f";
         public static String set = "#fff540";
@@ -107,13 +111,15 @@ public class CUtl {
         }
         public static class dest {
             public static CTxT convert(String cmd) {
-                return TBtn("dest.convert").btn(true).color(c.convert).cEvent(1,cmd).hEvent(TBtn("dest.convert.hover").color(c.convert));
+                return TBtn("dest.convert").btn(true).color(c.convert).cEvent(1,cmd).hEvent(
+                        CTxT.of(cmd).color(c.convert).append("\n").append(TBtn("dest.convert.hover")));
             }
             public static CTxT set(String cmd) {
-                return TBtn("dest.set").btn(true).color(c.set).cEvent(1,cmd).hEvent(TBtn("dest.set.hover").color(c.set));
+                return TBtn("dest.set").btn(true).color(c.set).cEvent(1,cmd).hEvent(
+                        CTxT.of(cmd).color(c.set).append("\n").append(TBtn("dest.set.hover")));
             }
             public static CTxT edit(int t, String cmd) {
-                return CTxT.of("✎").btn(true).color(c.edit).cEvent(t,cmd).hEvent(TBtn("dest.edit.hover")).color(c.edit);
+                return CTxT.of("✎").btn(true).color(c.edit).cEvent(t,cmd).hEvent(TBtn("dest.edit.hover").color(c.edit)).color(c.edit);
             }
             public static CTxT settings() {
                 return TBtn("dest.settings").btn(true).color(c.setting).cEvent(1,"/dest settings")
@@ -124,7 +130,11 @@ public class CUtl {
                         CTxT.of(commandUsage.destSaved()).color(c.saved).append("\n").append(TBtn("dest.saved.hover")));
             }
             public static CTxT add() {
-                return CTxT.of("+").btn(true).color(c.add).cEvent(1,"dest add ").hEvent(
+                return CTxT.of("+").btn(true).color(c.add).cEvent(2,"/dest add ").hEvent(
+                        CTxT.of(commandUsage.destAdd()).color(c.add).append("\n").append(TBtn("dest.add.hover",TBtn("dest.add.hover_2").color(c.add))));
+            }
+            public static CTxT add(String cmd) {
+                return CUtl.TBtn("dest.add").btn(true).color(c.add).cEvent(2,cmd).hEvent(
                         CTxT.of(commandUsage.destAdd()).color(c.add).append("\n").append(TBtn("dest.add.hover",TBtn("dest.add.hover_2").color(c.add))));
             }
             public static CTxT set() {
