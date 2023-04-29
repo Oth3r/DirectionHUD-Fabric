@@ -12,7 +12,7 @@ public class CTxT {
     private ClickEvent clickEvent = null;
     private HoverEvent hoverEvent = null;
     private Boolean bold = false;
-    private Boolean italics = false;
+    private Boolean italic = false;
     private Boolean strikethrough = false;
     private Boolean underline = false;
     private List<MutableText> append = new ArrayList<>();
@@ -63,8 +63,8 @@ public class CTxT {
         this.bold = bold;
         return this;
     }
-    public CTxT italic(Boolean italics) {
-        this.italics = italics;
+    public CTxT italic(Boolean italic) {
+        this.italic = italic;
         return this;
     }
     public CTxT strikethrough(Boolean strikethrough) {
@@ -102,14 +102,14 @@ public class CTxT {
     }
     public MutableText b() {
         MutableText output = Text.literal("");
-        if (this.button) output.append("[");
+        if (this.button) output.append("[").setStyle(CUtl.C('f'));
         if (this.rainbow) output.append(Utl.color.rainbow(this.name.getString(),this.start,this.step));
         else output.append(this.name.styled(style -> style.withColor(this.color)));
-        if (this.button) output.append("]");
+        if (this.button) output.append("]").setStyle(CUtl.C('f'));
         output.styled(style -> style
                 .withClickEvent(this.clickEvent)
                 .withHoverEvent(this.hoverEvent)
-                .withItalic(this.italics)
+                .withItalic(this.italic)
                 .withBold(this.bold)
                 .withStrikethrough(this.strikethrough)
                 .withUnderline(this.underline));
