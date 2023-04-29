@@ -142,7 +142,7 @@ public class Utl {
             return player.getName().getString();
         }
         public static String dim(ServerPlayerEntity player) {
-            return player.getWorld().getRegistryKey().getValue().getPath();
+            return player.getWorld().getRegistryKey().getValue().toString().replace(":",".");
         }
         public static String XYZ(ServerPlayerEntity player) {
             return player.getBlockX()+" "+player.getBlockY()+" "+player.getBlockZ();
@@ -249,11 +249,12 @@ public class Utl {
         }
         public static void dimsToMap() {
             for (ServerWorld world : DirectionHUD.server.getWorlds()) {
-                String currentDIM = world.getRegistryKey().getValue().getPath();
+                String currentDIM = world.getRegistryKey().getValue().toString().replace(":",".");
+                String currentDIMp = world.getRegistryKey().getValue().getPath();
                 if (!dims.containsKey(currentDIM)) {
                     HashMap<String,String> map = new HashMap<>();
                     // try to make it look better, remove all "_" and "the" and capitalizes the first word.
-                    String formatted = currentDIM.replaceAll("_"," ");
+                    String formatted = currentDIMp.replaceAll("_"," ");
                     formatted = formatted.replaceFirst("the ","");
                     formatted = formatted.substring(0,1).toUpperCase()+formatted.substring(1);
                     //make random color to spice things up

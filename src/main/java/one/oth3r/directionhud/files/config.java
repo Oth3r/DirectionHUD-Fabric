@@ -234,7 +234,7 @@ public class config {
         public static boolean DESTSend = true;
         public static boolean DESTTrack = true;
         public static boolean DESTLastdeath = true;
-        public static List<String> dimensions = List.of("overworld|Overworld|#55FF55","the_nether|Nether|#e8342e","the_end|End|#edffb0");
-        public static List<String> dimensionRatios = List.of("overworld=1|the_nether=8");
+        public static List<String> dimensions = List.of("minecraft.overworld|Overworld|#55FF55","minecraft.the_nether|Nether|#e8342e","minecraft.the_end|End|#edffb0");
+        public static List<String> dimensionRatios = List.of("minecraft.overworld=1|minecraft.the_nether=8");
     }
 }
