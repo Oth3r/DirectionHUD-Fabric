@@ -166,7 +166,7 @@ public class Destination {
         set(player, Utl.xyz.fix(xyz));
         player.sendMessage(CUtl.tag().append(lang("set",
                 CTxT.of("").append(CUtl.xyzBadge(saved.getNames(player).get(key),DIM,
-                        Utl.color.getTC(saved.getColors(player).get(key)),CTxT.of(Utl.xyz.PFormat(xyz)).color('7'))).append(convertMsg))).b());
+                        saved.getColors(player).get(key),CTxT.of(Utl.xyz.PFormat(xyz)).color('7'))).append(convertMsg))).b());
         player.sendMessage(setMSG(player).b());
     }
     //CONVERT XYZ
@@ -192,8 +192,7 @@ public class Destination {
         }
         PlayerData.set.dest.setDest(player, xyz);
         player.sendMessage(CUtl.tag().append(lang("set",
-                CTxT.of("").append(Utl.dim.getLetterButton(Utl.player.dim(player))).append(" ")
-                                .append(CTxT.of(Utl.xyz.PFormat(xyz)).color(CUtl.sTC())).append(convertMsg))).b());
+                CTxT.of("").append(CUtl.xyzBadge(Utl.xyz.PFormat(xyz),Utl.player.dim(player),null,null)).append(convertMsg))).b());
         player.sendMessage(setMSG(player).b());
     }
     //set to player (sends msg)
@@ -206,7 +205,7 @@ public class Destination {
                 .append(" ")
                 .append(CUtl.TBtn("off").btn(true).color('c').cEvent(1,"/dest settings track false n").hEvent(
                         CTxT.of(CUtl.commandUsage.destSettings()).color('c').append("\n").append(
-                                CUtl.TBtn("state.hover",CUtl.TBtn("off").color('c'))).color('7'))).b());
+                                CUtl.TBtn("state.hover",CUtl.TBtn("off").color('c'))))).b());
     }
     public static void silentSetPlayer(ServerPlayerEntity player, ServerPlayerEntity pl) {
         PlayerData.set.dest.setDest(player, Utl.player.name(pl));
@@ -409,16 +408,16 @@ public class Destination {
                 else Destination.social.send(player, args[0], args[2], "saved", null);
                 return 1;
             }
-            String pDIM = Utl.dim.PFormat(Utl.player.dim(player));
+            String DIM = Utl.player.dim(player);
             //dest send <IGN> <xyz or xy> (dimension)
             //dest send <IGN> (name) <xyz or xy> (dimension)
             //dest send IGN x z
             if (args.length == 3) {
-                Destination.social.send(player, args[0], args[1]+" "+args[2], pDIM, null);
+                Destination.social.send(player, args[0], args[1]+" "+args[2], DIM, null);
             }
             //dest send IGN NAME x z
             if (args.length == 4 && !Utl.isInt(args[1])) {
-                Destination.social.send(player, args[0], args[2]+" "+args[3], pDIM, args[1]);
+                Destination.social.send(player, args[0], args[2]+" "+args[3], DIM, args[1]);
                 return 1;
             }
             //dest send IGN x z DIM
@@ -428,7 +427,7 @@ public class Destination {
             }
             //dest send IGN x y z
             if (args.length == 4) {
-                Destination.social.send(player, args[0], args[1]+" "+args[2]+" "+args[3], pDIM, null);
+                Destination.social.send(player, args[0], args[1]+" "+args[2]+" "+args[3], DIM, null);
             }
             //dest send IGN NAME x z DIM
             if (args.length == 5 && !Utl.isInt(args[1]) && !Utl.isInt(args[4])) {
@@ -437,7 +436,7 @@ public class Destination {
             }
             //dest send IGN NAME x y z
             if (args.length == 5 && !Utl.isInt(args[1])) {
-                Destination.social.send(player, args[0], args[2]+" "+args[3]+" "+args[4], pDIM, args[1]);
+                Destination.social.send(player, args[0], args[2]+" "+args[3]+" "+args[4], DIM, args[1]);
                 return 1;
             }
             //dest send IGN x y z DIM
@@ -766,7 +765,7 @@ public class Destination {
                 return;
             }
             color = Utl.color.fix(color==null?"white":color,false,"white");
-            TextColor colorTC = Utl.color.getTC(Utl.color.fix(color,false,"yellow"));
+            String colorMsg = Utl.color.fix(color,false,"white");
             xyz = Utl.xyz.fix(xyz);
             xyz = Utl.xyz.DFormat(xyz);
 
@@ -781,8 +780,7 @@ public class Destination {
                 if (Utl.dim.showConvertButton(Utl.player.dim(player),dimension))
                     buttons.append(" ").append(CUtl.CButton.dest.convert("/dest set saved "+name+" convert"));
                 player.sendMessage(CUtl.tag().append(lang("saved.add",
-                        CTxT.of("").append(Utl.dim.getLetterButton(dimension)).append(" ")
-                                .append(CTxT.of(name).color(colorTC).hEvent(CTxT.of(finalXyz).color('7'))).append(buttons))).b());
+                        CUtl.xyzBadge(name,dimension,colorMsg,CTxT.of(finalXyz).color('7')).append(buttons))).b());
             }
         }
         public static void delete(boolean send, ServerPlayerEntity player, String name) {
@@ -1062,8 +1060,8 @@ public class Destination {
                 if (!deathMap.containsKey(s)) continue;
                 num++;
                 String xyz = deathMap.get(s);
-                msg.append(Utl.dim.getLetterButton(s)).append(" ")
-                        .append(xyz).append("\n  ")
+                msg
+                        .append(CUtl.xyzBadge(xyz,s,null,null)).append("\n  ")
                         .append(CUtl.CButton.dest.add("/dest add "+Utl.dim.PFormat(s).toLowerCase()+"_death "+xyz+" "+s+" "+Utl.dim.getHEX(s).substring(1)))
                         .append(" ").append(CUtl.CButton.dest.set("/dest set "+xyz));
                 if (Utl.dim.showConvertButton(Utl.player.dim(player),s)) msg.append(" ").append(CUtl.CButton.dest.convert("/dest set "+xyz+" "+s));
@@ -1107,8 +1105,6 @@ public class Destination {
                 player.sendMessage(error("dest.saved.length",16));
                 return;
             }
-            CTxT pxyz = null;
-            CTxT pname = null;
             String color = "";
             if (DIM.equals("saved")) {
                 if (!saved.getNames(player).contains(xyz)) {
@@ -1117,8 +1113,6 @@ public class Destination {
                 }
                 int i = saved.getNames(player).indexOf(xyz);
                 xyz = saved.getPLocations(player).get(i);
-                pxyz = CTxT.of(" ("+xyz+")").color('7');
-                pname = CTxT.of(saved.getNames(player).get(i)).color(saved.getColors(player).get(i));
                 name = saved.getNames(player).get(i);
                 DIM = saved.getDimensions(player).get(i);
                 color = " "+saved.getColors(player).get(i);
@@ -1131,27 +1125,24 @@ public class Destination {
                 player.sendMessage(error("coordinates"));
                 return;
             }
+            CTxT xyzB = CTxT.of("");
             xyz = Utl.xyz.fix(xyz);
-            if (name==null) name = lang("send.change_name").getString()+" ";
-            else if (pxyz==null) {
-                pname = CTxT.of(name).color(CUtl.sTC());
-                pxyz = CTxT.of(" ("+xyz+")").color('7');
-            }
-            if (pxyz == null) pxyz = CTxT.of(xyz).color(CUtl.sTC());
-            if (pname == null) pname = CTxT.of("");
-            String plDimension = pl.getWorld().getRegistryKey().getValue().getPath();
+            if (name==null) {
+                name = lang("send.change_name").getString()+" ";
+                xyzB.append(CUtl.xyzBadge(xyz,DIM,null,null));
+            } else xyzB.append(CUtl.xyzBadge(name,DIM,color.equals("")?null:color,CTxT.of(xyz).color('7')));
+            String plDimension = Utl.player.dim(pl);
 
             CTxT msg = CTxT.of("\n ");
-            msg.append(Utl.dim.getLetterButton(DIM)).append(" ").append(pname).append(pxyz).append(" ");
+            msg.append(xyzB).append(" ");
             if (config.DESTSaving)
                 msg.append(CUtl.CButton.dest.add("/dest saved add "+name+" "+xyz+" "+DIM+color))
                         .append(" ").append(CUtl.CButton.dest.set("/dest set " + xyz)).append(" ");
             if (Utl.dim.showConvertButton(plDimension, DIM))
                 msg.append(CUtl.CButton.dest.convert("/dest set " +xyz+" "+DIM)).append(" ");
             player.sendMessage(CUtl.tag().append(lang("send",CTxT.of(Utl.player.name(pl)).color(CUtl.sTC()),
-                                    CTxT.of("\n ").append(Utl.dim.getLetterButton(DIM)).append(" ").append(pname).append(pxyz))).b());
-            pl.sendMessage(CUtl.tag().append(lang("send_player",CTxT.of(Utl.player.name(player)).color(CUtl.sTC()),msg))
-                                    .append("\n ").append(lang("send.disable",CUtl.CButton.dest.settings()).color('7').italic(true)).b());
+                                    CTxT.of("\n ").append(xyzB))).b());
+            pl.sendMessage(CUtl.tag().append(lang("send_player",CTxT.of(Utl.player.name(player)).color(CUtl.sTC()),msg)).b());
         }
         public static void track(ServerPlayerEntity player, String player2) {
             ServerPlayerEntity pl = DirectionHUD.server.getPlayerManager().getPlayer(player2);
@@ -1185,7 +1176,7 @@ public class Destination {
             PlayerData.set.dest.track.target(player, Utl.player.name(pl));
             player.sendMessage(CUtl.tag().append(lang("track",CTxT.of(Utl.player.name(pl)).color(CUtl.sTC())))
                     .append("\n ").append(lang("track_expire", 90).color('7').italic(true)).b());
-            pl.sendMessage(CUtl.tag().append(lang("track_player",CTxT.of(Utl.player.name(player)).color(CUtl.sTC()))).append("\n")
+            pl.sendMessage(CUtl.tag().append(lang("track_player",CTxT.of(Utl.player.name(player)).color(CUtl.sTC()))).append("\n ")
                     .append(CUtl.TBtn("accept").btn(true).color('a').cEvent(1,"/dest track acp "+Utl.player.name(player)+" "+trackID)
                             .hEvent(CUtl.TBtn("accept.hover"))).append(" ")
                     .append(CUtl.TBtn("deny").btn(true).color('c').cEvent(1,"/dest track dny "+Utl.player.name(player)+" "+trackID)
