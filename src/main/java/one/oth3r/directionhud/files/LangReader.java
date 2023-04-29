@@ -39,25 +39,25 @@ public class LangReader {
             }
             //if there are placeholders specified, and the split is more than 1, it will replace %(dfs) with the placeholder objects
             if (parts.length > 1) {
-                CTxT txT = CTxT.of("");
+                MutableText mutableText = MutableText.of(TextContent.EMPTY);
                 int i = 0;
                 for (Object placeholder : placeholders) {
                     // if it keeps looping after the max, stop the loop
                     if (i == max) break;
-                    if (parts.length != i) txT.append(parts[i]);
+                    if (parts.length != i) mutableText.append(parts[i]);
                     //if the placeholder object is a text, it will append the text
                     //otherwise it will try to turn the object into a string and append that
                     if (placeholder instanceof CTxT) {
-                        txT.append(((CTxT) placeholder).b());
+                        mutableText.append(((CTxT) placeholder).b());
                     } else if (placeholder instanceof Text) {
-                        txT.append((Text) placeholder);
+                        mutableText.append((Text) placeholder);
                     } else {
-                        txT.append(String.valueOf(placeholder));
+                        mutableText.append(String.valueOf(placeholder));
                     }
                     i++;
                 }
-                if (parts.length != i) txT.append(parts[i]);
-                return txT;
+                if (parts.length != i) mutableText.append(parts[i]);
+                return CTxT.of(mutableText);
             }
         }
         return CTxT.of(translated);
