@@ -3,7 +3,8 @@ package one.oth3r.directionhud.commands;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.*;
+import net.minecraft.text.Text;
+import net.minecraft.text.TextColor;
 import net.minecraft.util.math.Vec3d;
 import one.oth3r.directionhud.DirectionHUD;
 import one.oth3r.directionhud.files.PlayerData;
@@ -113,11 +114,10 @@ public class Destination {
     }
     public static CTxT setMSG(ServerPlayerEntity player) {
         boolean ac = PlayerData.get.dest.setting.autoclear(player);
-        //todo THIS WAS FIXED (TOOLTIP SAID ON INSTEAD OF OFF)
         CTxT btn = CUtl.TBtn(ac?"off":"on").btn(true).color(ac?'c':'a').cEvent(1,"/dest settings autoclear "+!ac+" n").hEvent(
                 CTxT.of(CUtl.commandUsage.destSettings()).color(ac?'c':'a').append("\n").append(CUtl.TBtn("state.hover",
                         CUtl.TBtn(ac?"off":"on").color(ac?'c':'a'))));
-        return lang("set.autoclear_"+(ac?"on":"off"),btn).italic(true).color('7');
+        return CTxT.of(" ").append(lang("set.autoclear_"+(ac?"on":"off"),btn).color('7').italic(true));
     }
     public static void set(ServerPlayerEntity player, String xyz) {
         if (!checkDist(player, xyz)) PlayerData.set.dest.setDest(player, xyz);
@@ -140,7 +140,8 @@ public class Destination {
             return;
         }
         PlayerData.set.dest.setDest(player, xyz);
-        player.sendMessage(CUtl.tag().append(lang("set",CTxT.of(Utl.xyz.PFormat(xyz)).color(CUtl.sTC()))).b());
+        player.sendMessage(CUtl.tag().append(
+                lang("set",CUtl.xyzBadge(Utl.xyz.PFormat(xyz),Utl.player.dim(player),null,null))).b());
         player.sendMessage(setMSG(player).b());
     }
     public static void setName(ServerPlayerEntity player, String name, boolean convert) {
@@ -151,10 +152,12 @@ public class Destination {
         int key = saved.getNames(player).indexOf(name);
         CTxT convertMsg = CTxT.of("");
         String xyz = saved.getCLocations(player).get(key);
-        if (convert) {
-            if (!xyz.equals(Utl.dim.convertXYZ(player, saved.getCLocations(player).get(key), saved.getDimensions(player).get(key))))
-                convertMsg.append(lang("converted").color('7').italic(true));
+        String DIM = saved.getDimensions(player).get(key);
+        if (convert && Utl.dim.showConvertButton(Utl.player.dim(player),DIM)) {
+            convertMsg.append(" ").append(lang("converted").color('7').italic(true)
+                    .hEvent(CUtl.xyzBadge(Utl.xyz.PFormat(xyz),DIM,null,null)));
             xyz = Utl.dim.convertXYZ(player, saved.getCLocations(player).get(key), saved.getDimensions(player).get(key));
+            DIM = Utl.player.dim(player);
         } else xyz = saved.getCLocations(player).get(key);
         if (checkDist(player, xyz)) {
             player.sendMessage(error("dest.at"));
@@ -162,9 +165,8 @@ public class Destination {
         }
         set(player, Utl.xyz.fix(xyz));
         player.sendMessage(CUtl.tag().append(lang("set",
-                CTxT.of(saved.getNames(player).get(key)).color(CUtl.sTC())
-                        .append(CTxT.of(" ("+Utl.xyz.PFormat(xyz)+")").color('7'))
-                        .append(convertMsg))).b());
+                CTxT.of("").append(CUtl.xyzBadge(saved.getNames(player).get(key),DIM,
+                        Utl.color.getTC(saved.getColors(player).get(key)),CTxT.of(Utl.xyz.PFormat(xyz)).color('7'))).append(convertMsg))).b());
         player.sendMessage(setMSG(player).b());
     }
     //CONVERT XYZ
@@ -181,14 +183,17 @@ public class Destination {
         }
         xyz = Utl.xyz.fix(xyz);
         CTxT convertMsg = CTxT.of("");
-        if (!xyz.equals(Utl.dim.convertXYZ(player, xyz, DIM))) convertMsg.append(lang("converted").color('7').italic(true));
+        if (!xyz.equals(Utl.dim.convertXYZ(player, xyz, DIM))) convertMsg.append(" ").append(lang("converted").color('7').italic(true)
+                .hEvent(CUtl.xyzBadge(Utl.xyz.PFormat(xyz),DIM,null,null)));
         xyz = Utl.dim.convertXYZ(player, xyz, DIM);
         if (checkDist(player, xyz)) {
             player.sendMessage(error("dest.at"));
             return;
         }
         PlayerData.set.dest.setDest(player, xyz);
-        player.sendMessage(CUtl.tag().append(lang("set",CTxT.of(Utl.xyz.PFormat(xyz)).color(CUtl.sTC()).append(convertMsg))).b());
+        player.sendMessage(CUtl.tag().append(lang("set",
+                CTxT.of("").append(Utl.dim.getLetterButton(Utl.player.dim(player))).append(" ")
+                                .append(CTxT.of(Utl.xyz.PFormat(xyz)).color(CUtl.sTC())).append(convertMsg))).b());
         player.sendMessage(setMSG(player).b());
     }
     //set to player (sends msg)
@@ -375,17 +380,8 @@ public class Destination {
                 return 1;
             }
             if (args.length == 1) {
-                if (args[0].equalsIgnoreCase("cl")) {
-                    Destination.lastdeath.clear(true, player, "all");
-                }
-                if (args[0].equalsIgnoreCase("cl_ow")) {
-                    Destination.lastdeath.clear(true, player, "ow");
-                }
-                if (args[0].equalsIgnoreCase("cl_n")) {
-                    Destination.lastdeath.clear(true, player, "n");
-                }
-                if (args[0].equalsIgnoreCase("cl_e")) {
-                    Destination.lastdeath.clear(true, player, "e");
+                if (args[0].equalsIgnoreCase("clear_all")) {
+                    Destination.lastdeath.clearAll(true, player);
                 }
                 return 1;
             }
@@ -771,7 +767,6 @@ public class Destination {
             }
             color = Utl.color.fix(color==null?"white":color,false,"white");
             TextColor colorTC = Utl.color.getTC(Utl.color.fix(color,false,"yellow"));
-            dimension = Utl.dim.CFormat(dimension);
             xyz = Utl.xyz.fix(xyz);
             xyz = Utl.xyz.DFormat(xyz);
 
@@ -782,11 +777,11 @@ public class Destination {
                 String finalXyz = Utl.xyz.PFormat(xyz);
                 CTxT buttons = CTxT.of(" ");
                 buttons.append(CUtl.CButton.dest.edit(1,"/dest saved edit " + name))
-                        .append(" ").append(CUtl.CButton.dest.set("/dest set "+finalXyz));
+                        .append(" ").append(CUtl.CButton.dest.set("/dest set saved "+name));
                 if (Utl.dim.showConvertButton(Utl.player.dim(player),dimension))
-                    buttons.append(" ").append(CUtl.CButton.dest.convert("/dest set "+finalXyz+" convert"));
+                    buttons.append(" ").append(CUtl.CButton.dest.convert("/dest set saved "+name+" convert"));
                 player.sendMessage(CUtl.tag().append(lang("saved.add",
-                        CTxT.of("[").append(CTxT.of(Utl.dim.getLetter(dimension)).color(Utl.dim.getHEX(dimension))).append("] ")
+                        CTxT.of("").append(Utl.dim.getLetterButton(dimension)).append(" ")
                                 .append(CTxT.of(name).color(colorTC).hEvent(CTxT.of(finalXyz).color('7'))).append(buttons))).b());
             }
         }
@@ -899,13 +894,13 @@ public class Destination {
                 if (send) player.sendMessage(error("dimension"));
                 return;
             }
-            if (getDimensions(player).get(i).equalsIgnoreCase(Utl.dim.CFormat(dimension))) {
+            if (getDimensions(player).get(i).equalsIgnoreCase(dimension)) {
                 if (send) player.sendMessage(error("dest.saved.duplicate.dimension", Utl.dim.PFormat(dimension).toUpperCase()));
                 return;
             }
             List<String> all = getList(player);
             List<String> current = getListIndex(player, i);
-            current.set(2, Utl.dim.CFormat(dimension));
+            current.set(2, dimension);
             all.set(i, String.join(" ", current));
             setList(player, all);
             if (send) {
@@ -965,7 +960,8 @@ public class Destination {
             //SEND BUTTON
             if (PlayerData.get.dest.setting.send(player) && DirectionHUD.server.isRemote()) {
                 msg.append(CUtl.TBtn("dest.send").btn(true).color(CUtl.c.send).cEvent(2,"/dest saved send "+names.get(i)+" ")
-                        .hEvent(CUtl.TBtn("dest.send.hover_saved"))).append(" ");
+                        .hEvent(CTxT.of("/dest saved send "+names.get(i)+" <player>").color(CUtl.c.send)
+                                .append("\n").append(CUtl.TBtn("dest.send.hover_saved")))).append(" ");
             }
             //SET BUTTON
             msg.append(CUtl.CButton.dest.set("/dest set saved " + names.get(i))).append(" ");
@@ -973,7 +969,6 @@ public class Destination {
             if (Utl.dim.showConvertButton(Utl.player.dim(player), getDimensions(player).get(i)))
                 msg.append(CUtl.CButton.dest.convert("/dest set saved " + names.get(i) + " convert"));
             //DELETE
-            //todo FIXED! made this use lang
             msg.append("\n\n ")
                     .append(CUtl.TBtn("delete").btn(true).color('c').cEvent(2,"/dest remove "+names.get(i))
                             .hEvent(CUtl.TBtn("delete.hover_dest").color('c'))).append(" ")
@@ -993,14 +988,14 @@ public class Destination {
                 pg = 1;
             }
             if (pg == 0) pg = 1;
-            String plDimension = player.getWorld().getRegistryKey().getValue().getPath();
+            String plDimension = Utl.player.dim(player);
             if (names.size() != 0) {
                 for (int i = 1; i <= 8; i++) {
                     int get = i + ((pg - 1) * 8) - 1;
                     if (names.size() > get) {
                         String dimension = getDimensions(player).get(get);
                         msg     //DIM
-                                .append(" [").append(CTxT.of(Utl.dim.getLetter(dimension)).color(Utl.dim.getHEX(dimension))).append("] ")
+                                .append(" ").append(Utl.dim.getLetterButton(dimension)).append(" ")
                                 //NAME
                                 .append(CTxT.of(names.get(get)).color(getColors(player).get(get)).hEvent(CTxT.of(getPLocations(player).get(get)).color('7'))).append(" ")
                                 //EDIT
@@ -1028,7 +1023,7 @@ public class Destination {
             msg.append(" ");
             if (pg == 1) msg.append(CTxT.of("<<").btn(true).color('7'));
             else msg.append(CTxT.of("<<").btn(true).color(CUtl.pTC()).cEvent(1,"/dest saved " + (finalPg-1)));
-            msg.append(CUtl.TBtn("dest.saved.page.hover", pg).color(CUtl.sTC())).append(" ");
+            msg.append(" ").append(CUtl.TBtn("dest.saved.page.hover", pg).color(CUtl.sTC())).append(" ");
             if (pg == getMaxPage(player)) msg.append(CTxT.of(">>").btn(true).color('7'));
             else msg.append(CTxT.of(">>").btn(true).color(CUtl.pTC()).cEvent(1,"/dest saved " + (finalPg+1)));
             msg.append(" ").append(addB).append(" ")
@@ -1038,111 +1033,54 @@ public class Destination {
         }
     }
     public static class lastdeath {
-        public static String get(ServerPlayerEntity player, int dim) {
-            if (dim==1) {
-                if (getC(player)[0].equals("f")) return "false";
-                else return Utl.xyz.PFormat(getC(player)[0]);
+        public static HashMap<String,String> getMap(ServerPlayerEntity player) {
+            ArrayList<String> deaths = PlayerData.get.dest.getLastdeaths(player);
+            HashMap<String,String> output = new HashMap<>();
+            for (String s:deaths) {
+                String[] split = s.split("\\|");
+                output.put(split[0],split[1]);
             }
-            if (dim==2) {
-                if (getC(player)[1].equals("f")) return "false";
-                else return Utl.xyz.PFormat(getC(player)[1]);
-            }
-            if (dim==3) {
-                if (getC(player)[2].equals("f")) return "false";
-                else return Utl.xyz.PFormat(getC(player)[2]);
-            }
-            return "false";
+            return output;
         }
-        public static String[] getC(ServerPlayerEntity player) {
-            return PlayerData.get.dest.getLastdeath(player).split(" ");
+        public static void add(ServerPlayerEntity player, String dim, String xyz) {
+            ArrayList<String> deaths = PlayerData.get.dest.getLastdeaths(player);
+            if (Utl.dim.checkValid(dim)) deaths.add(dim+"|"+Utl.xyz.fix(xyz));
+            PlayerData.set.dest.setLastdeaths(player,deaths);
         }
-        public static void set(ServerPlayerEntity player, int dim, String xyz) {
-            ArrayList<String> s = new ArrayList<>(Arrays.asList(getC(player)));
-            if (!xyz.equals("f")) xyz = Utl.xyz.DFormat(xyz);
-            if (dim==1) {
-                s.remove(0);
-                s.add(0, xyz);
-                PlayerData.set.dest.setLastdeath(player, String.join(" ", s));
-            }
-            if (dim==2) {
-                s.remove(1);
-                s.add(1, xyz);
-                PlayerData.set.dest.setLastdeath(player, String.join(" ", s));
-            }
-            if (dim==3) {
-                s.remove(2);
-                s.add(xyz);
-                PlayerData.set.dest.setLastdeath(player, String.join(" ", s));
-            }
-        }
-        public static void clear(boolean send, ServerPlayerEntity player, String type) {
-            CTxT msg = CUtl.tag();
-            List<String> locs = new ArrayList<>(Arrays.asList(lastdeath.getC(player)));
-            if (type.equals("all")) {
-                set(player, 1, "f");
-                set(player, 2, "f");
-                set(player, 3, "f");
-                if (Collections.frequency(locs, "f") == 3) return;
-                msg.append(lang("lastdeath.clear",CUtl.TBtn("all").color('c')));
-            }
-            if (type.equals("ow")) {
-                if (locs.get(0).equals("f")) return;
-                set(player, 1, "f");
-                msg.append(lang("lastdeath.clear",CTxT.of("OVERWORLD").color(Utl.dim.getHEX("OVERWORLD"))));
-            }
-            if (type.equals("n")) {
-                if (locs.get(1).equals("f")) return;
-                set(player, 2, "f");
-                msg.append(lang("lastdeath.clear",CTxT.of("NETHER").color(Utl.dim.getHEX("NETHER"))));
-            }
-            if (type.equals("e")) {
-                if (locs.get(2).equals("f")) return;
-                set(player, 3, "f");
-                msg.append(lang("lastdeath.clear",CTxT.of("END").color(Utl.dim.getHEX("END"))));
-            }
-            if (send) UI(player, msg);
+        public static void clearAll(boolean send, ServerPlayerEntity player) {
+            PlayerData.set.dest.setLastdeaths(player,new ArrayList<>());
+            if (send) UI(player, lang("lastdeath.clear",CUtl.TBtn("all").color('c')));
         }
         public static void UI(ServerPlayerEntity player, CTxT abovemsg) {
-            //todo redo lastdeath fr
-            CTxT noDeath = lang("lastdeath.no_deaths").color('c').append("\n ");
             CTxT msg = CTxT.of("");
             if (abovemsg != null) msg.append(abovemsg).append("\n");
-            msg.append(" ").append(lang("ui.lastdeath").color(CUtl.c.lastdeath)).append(CTxT.of("\n                                     \n").strikethrough(true));
-            String pDIM = Utl.player.dim(player);
-            //OVERWORLD
-            msg.append(CTxT.of(" Overworld: ").color(Utl.dim.getHEX("OVERWORLD")));
-            if (!(get(player, 1).equals("false"))) {
-                msg.append(get(player, 1) + "\n  ").append(CUtl.CButton.dest.set("/dest set " + get(player, 1))).append(" ");
-                if (pDIM.equals("the_nether")) msg.append(CUtl.CButton.dest.convert("/dest set " + Utl.xyz.divide(get(player, 1)))).append(" ");
-                msg.append(CUtl.TBtn("clear").btn(true).color('c').cEvent(1,"/dest lastdeath cl_ow")
-                                .hEvent(CUtl.TBtn("clear.hover_lastdeath").color('c'))).append("\n ");
-            } else msg.append(noDeath);
-            //NETHER
-            msg.append(CTxT.of("Nether: ").color(Utl.dim.getHEX("NETHER")));
-            if (!(get(player, 2).equals("false"))) {
-                msg.append(get(player, 2) + "\n  ").append(CUtl.CButton.dest.set("/dest set " + get(player, 2))).append(" ");
-                if (pDIM.equals("overworld")) msg.append(CUtl.CButton.dest.convert("/dest set " + Utl.xyz.divide(get(player, 2)))).append(" ");
-                msg.append(CUtl.TBtn("clear").btn(true).color('c').cEvent(1,"/dest lastdeath cl_n")
-                                .hEvent(CUtl.TBtn("clear.hover_lastdeath").color('c'))).append("\n ");
-            } else msg.append(noDeath);
-            //END
-            msg.append(CTxT.of("End: ").color(Utl.dim.getHEX("END")));
-            if (!(get(player, 3).equals("false"))) {
-                msg.append(get(player, 3) + "\n  ").append(CUtl.CButton.dest.set("/dest set " + get(player, 3))).append(" ")
-                        .append(CUtl.TBtn("clear").btn(true).color('c').cEvent(1,"/dest lastdeath cl_e")
-                                .hEvent(CUtl.TBtn("clear.hover_lastdeath").color('c'))).append("\n ");
-            } else msg.append(noDeath);
-            msg.append("\n      ");
-            List<String> locs = new ArrayList<>(Arrays.asList(getC(player)));
-            int reset = 0;
-            TextColor resetC = CUtl.TC('7');
-            if (Collections.frequency(locs, "f")!=3) {
-                reset = 1;
-                resetC = CUtl.TC('c');
+            msg.append(" ").append(lang("ui.lastdeath").color(CUtl.c.lastdeath)).append(CTxT.of("\n                                  \n").strikethrough(true));
+            HashMap<String,String> deathMap = getMap(player);
+            int num = 0;
+            msg.append(" ");
+            for (String s:Utl.dim.getList()) {
+                if (!deathMap.containsKey(s)) continue;
+                num++;
+                String xyz = deathMap.get(s);
+                msg.append(Utl.dim.getLetterButton(s)).append(" ")
+                        .append(xyz).append("\n  ")
+                        .append(CUtl.CButton.dest.add("/dest add "+Utl.dim.PFormat(s).toLowerCase()+"_death "+xyz+" "+s+" "+Utl.dim.getHEX(s).substring(1)))
+                        .append(" ").append(CUtl.CButton.dest.set("/dest set "+xyz));
+                if (Utl.dim.showConvertButton(Utl.player.dim(player),s)) msg.append(" ").append(CUtl.CButton.dest.convert("/dest set "+xyz+" "+s));
+                msg.append("\n ");
             }
-            msg.append(CUtl.TBtn("delete").btn(true).color(resetC).cEvent(reset,"/dest lastdeath cl")
-                    .hEvent(CUtl.TBtn("delete.hover_lastdeath",lang("lastdeath.clear_all").color('c'))));
-            msg.append("  ").append(CUtl.CButton.back("/dest")).append(CTxT.of("\n                                     ").strikethrough(true));
+            int reset = 1;
+            TextColor resetC = CUtl.TC('c');
+            if (num == 0) {
+                reset = 0;
+                resetC = CUtl.TC('7');
+                msg.append(lang("lastdeath.no_deaths").color('c')).append("\n");
+            }
+            msg.append("\n      ")
+                    .append(CUtl.TBtn("clear").btn(true).color(resetC).cEvent(reset,"/dest lastdeath clear_all")
+                    .hEvent(CUtl.TBtn("clear.hover_ld",CUtl.TBtn("all").color('c'))))
+                    .append("  ").append(CUtl.CButton.back("/dest"))
+                    .append(CTxT.of("\n                                  ").strikethrough(true));
             player.sendMessage(msg.b());
         }
     }
@@ -1182,7 +1120,7 @@ public class Destination {
                 pxyz = CTxT.of(" ("+xyz+")").color('7');
                 pname = CTxT.of(saved.getNames(player).get(i)).color(saved.getColors(player).get(i));
                 name = saved.getNames(player).get(i);
-                DIM = Utl.dim.PFormat(saved.getDimensions(player).get(i));
+                DIM = saved.getDimensions(player).get(i);
                 color = " "+saved.getColors(player).get(i);
             }
             if (!Utl.dim.checkValid(DIM)) {
@@ -1204,16 +1142,14 @@ public class Destination {
             String plDimension = pl.getWorld().getRegistryKey().getValue().getPath();
 
             CTxT msg = CTxT.of("\n ");
-            msg.append("[").append(CTxT.of(Utl.dim.getLetter(DIM)).color(Utl.dim.getHEX(DIM))).append("] ").append(pname).append(pxyz).append(" ");
+            msg.append(Utl.dim.getLetterButton(DIM)).append(" ").append(pname).append(pxyz).append(" ");
             if (config.DESTSaving)
-                msg.append(CUtl.TBtn("dest.add").btn(true).color(CUtl.c.add).cEvent(2,"/dest daved add "+name+" "+xyz+" "+DIM+color)
-                                .hEvent(CUtl.TBtn("dest.add.hover_save",CUtl.TBtn("dest.add.hover_2").color(CUtl.c.add))))
+                msg.append(CUtl.CButton.dest.add("/dest saved add "+name+" "+xyz+" "+DIM+color))
                         .append(" ").append(CUtl.CButton.dest.set("/dest set " + xyz)).append(" ");
-            if (Utl.dim.showConvertButton(plDimension, Utl.dim.CFormat(DIM)))
+            if (Utl.dim.showConvertButton(plDimension, DIM))
                 msg.append(CUtl.CButton.dest.convert("/dest set " +xyz+" "+DIM)).append(" ");
             player.sendMessage(CUtl.tag().append(lang("send",CTxT.of(Utl.player.name(pl)).color(CUtl.sTC()),
-                                    CTxT.of("\n ").append("[").append(CTxT.of(Utl.dim.getLetter(DIM)).color(Utl.dim.getHEX(DIM))).append("] ")
-                                            .append(pname).append(pxyz))).b());
+                                    CTxT.of("\n ").append(Utl.dim.getLetterButton(DIM)).append(" ").append(pname).append(pxyz))).b());
             pl.sendMessage(CUtl.tag().append(lang("send_player",CTxT.of(Utl.player.name(player)).color(CUtl.sTC()),msg))
                                     .append("\n ").append(lang("send.disable",CUtl.CButton.dest.settings()).color('7').italic(true)).b());
         }
