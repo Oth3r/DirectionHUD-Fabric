@@ -227,9 +227,9 @@ public class PlayerData {
             for (int i = 0;i<deaths.length;i++) {
                 if (deaths[i].equals("f")) continue;
                 String xyz = deaths[i].replace("_"," ");
-                if (i == 0) newDeaths.add("overworld|"+xyz);
-                if (i == 2) newDeaths.add("the_nether|"+xyz);
-                if (i == 3) newDeaths.add("the_end|"+xyz);
+                if (i == 0) newDeaths.add("minecraft.overworld|"+xyz);
+                if (i == 1) newDeaths.add("minecraft.the_nether|"+xyz);
+                if (i == 2) newDeaths.add("minecraft.the_end|"+xyz);
             }
             String pri = (String) hud.get("primary");
             String sec = (String) hud.get("secondary");
@@ -244,7 +244,35 @@ public class PlayerData {
             dest.put("lastdeath",newDeaths);
             map.put("destination",dest);
             map.put("hud",hud);
-            return map;
+        }
+        if (map.get("version").equals(1.2)) {
+            map.put("version",1.3);
+            Map<String,Object> dest = (Map<String, Object>) map.get("destination");
+            dest.computeIfAbsent("saved", k -> new ArrayList<String>());
+            if (((ArrayList<String>) dest.get("saved")).size() != 0) {
+                ArrayList<String> saved = (ArrayList<String>) dest.get("saved");
+                for (String s: saved) {
+                    String[] split = s.split(" ");
+                    switch (split[2]) {
+                        case "overworld" -> saved.set(saved.indexOf(s), split[0] + " " + split[1] + " minecraft.overworld " + split[3]);
+                        case "the_nether" -> saved.set(saved.indexOf(s), split[0] + " " + split[1] + " minecraft.the_nether " + split[3]);
+                        case "the_end" -> saved.set(saved.indexOf(s), split[0] + " " + split[1] + " minecraft.the_end " + split[3]);
+                    }
+                }
+                dest.put("saved",saved);
+            }
+            dest.computeIfAbsent("lastdeath", k -> new ArrayList<String>());
+            ArrayList<String> lastdeath = (ArrayList<String>) dest.get("lastdeath");
+            for (String s:new ArrayList<>(lastdeath)) {
+                if (s.startsWith("overworld|") || s.startsWith("the_nether|")) {
+                    String prefix = s.startsWith("overworld|") ? "overworld|" : "the_nether|";
+                    int count = 0;
+                    for (String z : lastdeath) if (z.startsWith("minecraft." + prefix)) count++;
+                    if (count == 0) lastdeath.set(lastdeath.indexOf(s),"minecraft."+s);
+                    else lastdeath.remove(s);
+                }
+            }
+            map.put("lastdeath",lastdeath);
         }
         return map;
     }
@@ -294,10 +322,12 @@ public class PlayerData {
         Map<String,Object> destination = new HashMap<>();
         destination.put("xyz", "f");
         destination.put("setting", defaults.destSetting());
+        destination.put("saved", new ArrayList<String>());
+        destination.put("lastdeath", new ArrayList<String>());
         destination.put("track", null);
         destination.put("suspended", null);
         //base
-        map.put("version", 1.2);
+        map.put("version", 1.3);
         map.put("name", Utl.player.name(player));
         map.put("hud", hud);
         map.put("destination", destination);
@@ -416,7 +446,6 @@ public class PlayerData {
                 return (Map<String,Object>) get(player,true).get("suspended");
             }
             public static ArrayList<String> getLastdeaths(ServerPlayerEntity player) {
-                if (get(player,false).get("lastdeath") == null) return new ArrayList<>();
                 return (ArrayList<String>) get(player,false).get("lastdeath");
             }
             public static boolean getTrackingPending(ServerPlayerEntity player) {
@@ -429,7 +458,6 @@ public class PlayerData {
                 return get(player,true).get("xyz").toString();
             }
             public static ArrayList<String> getSaved(ServerPlayerEntity player) {
-                if (get(player,false).get("saved") == null) return new ArrayList<>();
                 return (ArrayList<String>) get(player,false).get("saved");
             }
             public static class setting {
