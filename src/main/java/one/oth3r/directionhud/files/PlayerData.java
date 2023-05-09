@@ -272,7 +272,8 @@ public class PlayerData {
                     else lastdeath.remove(s);
                 }
             }
-            map.put("lastdeath",lastdeath);
+            dest.put("lastdeath",lastdeath);
+            map.put("dest",dest);
         }
         return map;
     }
