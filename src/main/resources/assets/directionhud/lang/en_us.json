@@ -217,7 +217,7 @@
   "key.directionhud.hud.module.move_down": "down",
   "key.directionhud.hud.module.toggle": "Turned %s %s module.",
   "key.directionhud.hud.module.none": "All modules are disabled!",
-  "key.directionhud.hud.module.none_2": "Click on one to enable!",
+  "key.directionhud.hud.module.none_2": "Click on a module to enable it!",
   "key.directionhud.hud.color.primary": "primary",
   "key.directionhud.hud.color.secondary": "secondary",
   "key.directionhud.hud.color.all": "all",

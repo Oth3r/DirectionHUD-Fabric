@@ -306,7 +306,7 @@ public class HUD {
             return CTxT.of("▼").btn(true).color(CUtl.pTC()).cEvent(1,"/hud edit move "+name+" down");
         }
         public static CTxT xButton(String name) {
-            return CTxT.of("✕").btn(true).color('c').cEvent(1,"/hud edit state"+name+" false")
+            return CTxT.of("✕").btn(true).color('c').cEvent(1,"/hud edit state "+name+" false")
                     .hEvent(CUtl.TBtn("module.disable.hover").color('c'));
         }
         public static String langName(String s) {
