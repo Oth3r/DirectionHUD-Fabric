@@ -11,14 +11,8 @@ public class CUtl {
     public static CTxT tag() {
         return CTxT.of("").append(CTxT.of("DirectionHUD").btn(true).color(pTC())).append(" ");
     }
-    public static Style pS() {
-        return Style.EMPTY.withColor(HEX(c.pri));
-    }
     public static TextColor pTC() {
         return HEX(c.pri);
-    }
-    public static Style sS() {
-        return Style.EMPTY.withColor(HEX(c.sec));
     }
     public static TextColor sTC() {
         return HEX(c.sec);
@@ -34,9 +28,6 @@ public class CUtl {
         if (typ == 2) return new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND,arg);
         if (typ == 3) return new ClickEvent(ClickEvent.Action.OPEN_URL,arg);
         return null;
-    }
-    public static HoverEvent hEvent(Text text) {
-        return new HoverEvent(HoverEvent.Action.SHOW_TEXT, text);
     }
     public static HoverEvent hEvent(CTxT text) {
         return new HoverEvent(HoverEvent.Action.SHOW_TEXT, text.b());
@@ -82,11 +73,6 @@ public class CUtl {
     }
     public static CTxT TBtn(String TBtn, Object... args) {
         return lang("button."+TBtn,args);
-    }
-    public static CTxT xyzBadge(String xyz, String DIM, String color, CTxT hover) {
-        if (color == null) color = "white";
-        if (hover == null) hover = CTxT.of("");
-        return CTxT.of("").append(Utl.dim.getLetterButton(DIM)).append(" ").append(CTxT.of(xyz).color(color).hEvent(hover));
     }
     public static class c {
         public static String convert = "#ffa93f";
@@ -142,7 +128,7 @@ public class CUtl {
                         CTxT.of(commandUsage.destSet()).color(c.set).append("\n").append(TBtn("dest.set.hover_info")));
             }
             public static CTxT clear(ServerPlayerEntity player) {
-                boolean o = !Destination.get(player, "xyz").equals("f");
+                boolean o = Destination.get(player).hasXYZ();
                 return CTxT.of("✕").btn(true).color(o?'c':'7').cEvent(o?1:0,"/dest clear").hEvent(
                         CTxT.of(commandUsage.destClear()).color(o?'c':'7').append("\n").append(TBtn("dest.clear.hover")));
             }
