@@ -151,11 +151,11 @@ public class CUtl {
                         CTxT.of(commandUsage.destLastdeath()).color(c.lastdeath).append("\n").append(TBtn("dest.lastdeath.hover")));
             }
             public static CTxT send() {
-                return TBtn("dest.send").btn(true).color(c.send).cEvent(2,"dest send ").hEvent(
+                return TBtn("dest.send").btn(true).color(c.send).cEvent(2,"/dest send ").hEvent(
                         CTxT.of(commandUsage.destSend()).color(c.send).append("\n").append(TBtn("dest.send.hover")));
             }
             public static CTxT track() {
-                return TBtn("dest.send").btn(true).color(c.track).cEvent(2,"dest track ").hEvent(
+                return TBtn("dest.send").btn(true).color(c.track).cEvent(2,"/dest track ").hEvent(
                         CTxT.of(commandUsage.destTrack()).color(c.track).append("\n").append(TBtn("dest.track.hover")));
             }
         }
