@@ -1,8 +1,11 @@
 package one.oth3r.directionhud.files;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import one.oth3r.directionhud.DirectionHUD;
 import one.oth3r.directionhud.commands.HUD;
+import one.oth3r.directionhud.utils.Loc;
 import one.oth3r.directionhud.utils.Utl;
 
 import java.io.*;
@@ -14,190 +17,20 @@ public class PlayerData {
         if (config.online) return new File(DirectionHUD.playerData+player.getUuidAsString()+".json");
         else return new File(DirectionHUD.playerData+player.getName().getString()+".json");
     }
-    private static Map<String, Object> parseObject(String jsonString) {
-        Map<String, Object> map = new HashMap<>();
-        int i = 0;
-        int depth = 0;
-        String key = null;
-        while (i < jsonString.length()) {
-            char c = jsonString.charAt(i);
-            if (c == '"') {
-                int j = i + 1;
-                while (j < jsonString.length() && jsonString.charAt(j) != '"') {
-                    j++;
-                }
-                key = jsonString.substring(i + 1, j);
-                i = j + 1;
-            } else if (Character.isWhitespace(c)) {
-                i++;
-            } else if (c == ':') {
-                while (Character.isWhitespace(jsonString.charAt(i+1))) {
-                    i++;
-                }
-                Map.Entry<Object, Integer> valuePair = parseValue(jsonString.substring(i + 1));
-                Object value = valuePair.getKey();
-                i += valuePair.getValue()+1;
-                map.put(key, value);
-                key = null;
-            } else if (c == '{') {
-                depth++;
-                i++;
-            } else if (c == '}') {
-                depth--;
-                i++;
-                if (depth == 0) {
-                    break;
-                }
-            } else if (c == ',') {
-                i++;
-            } else {
-                throw new IllegalArgumentException("Invalid JSON string: " + jsonString);
-            }
-        }
-        return map;
-    }
-    private static Map.Entry<Object, Integer> parseValue(String jsonString) {
-        if (jsonString.startsWith("{")) {
-            Map<String, Object> map = parseObject(jsonString);
-            int i = 1;
-            int depth = 1;
-            while (i < jsonString.length()) {
-                char c = jsonString.charAt(i);
-                i++;
-                if (c == '{') {
-                    depth++;
-                }
-                if (c == '}') {
-                    depth--;
-                    if (depth == 0) break;
-                }
-            }
-            return new AbstractMap.SimpleEntry<>(map, i);
-        } else if (jsonString.startsWith("[")) {
-            int i = 1;
-            int depth = 1;
-            while (i < jsonString.length()) {
-                char c = jsonString.charAt(i);
-                i++;
-                if (c == '[') {
-                    depth++;
-                }
-                if (c == ']') {
-                    depth--;
-                    if (depth == 0) break;
-                }
-            }
-            return new AbstractMap.SimpleEntry<>(parseArray(jsonString), i+1);
-        } else if (jsonString.startsWith("\"")) {
-            int i = 1;
-            while (i < jsonString.length() && jsonString.charAt(i) != '"') {
-                i++;
-            }
-            return new AbstractMap.SimpleEntry<>(jsonString.substring(1, i), i + 1);
-        } else if (jsonString.startsWith("true")) {
-            return new AbstractMap.SimpleEntry<>(true, 4);
-        } else if (jsonString.startsWith("false")) {
-            return new AbstractMap.SimpleEntry<>(false, 5);
-        } else if (jsonString.startsWith("null")) {
-            return new AbstractMap.SimpleEntry<>(null, 4);
-        } else {
-            int i = 0;
-            while (i < jsonString.length() && (Character.isDigit(jsonString.charAt(i)) || jsonString.charAt(i) == '-')) {
-                i++;
-            }
-            if (i < jsonString.length() && jsonString.charAt(i) == '.') {
-                i++;
-                while (i < jsonString.length() && Character.isDigit(jsonString.charAt(i))) {
-                    i++;
-                }
-                return new AbstractMap.SimpleEntry<>(Double.parseDouble(jsonString.substring(0, i)), i);
-            } else {
-                return new AbstractMap.SimpleEntry<>(Integer.parseInt(jsonString.substring(0, i)), i);
-            }
-        }
-    }
-    private static Object parseArray(String jsonString) {
-        ArrayList<Object> array = new ArrayList<>();
-        int i = 1;
-        while (i < jsonString.length()) {
-            char c = jsonString.charAt(i);
-            if (c == ',') {
-                i++;
-            } else if (Character.isWhitespace(c)) {
-                i++;
-            } else if (c == ']') {
-                break;
-            } else {
-                while (Character.isWhitespace(jsonString.charAt(i+1))) {
-                    i++;
-                }
-                Map.Entry<Object, Integer> valuePair = parseValue(jsonString.substring(i));
-                Object value = valuePair.getKey();
-                i += valuePair.getValue();
-                array.add(value);
-            }
-        }
-        return array;
-    }
     public static Map<String, Object> getMap(ServerPlayerEntity player) {
         File file = getFile(player);
-        if (!file.exists()) {
-            return getDefaults(player);
-        }
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String jsonString = br.readLine();
-            return parseObject(jsonString);
-        } catch (IOException e) {
+        if (!file.exists()) return getDefaults(player);
+        try {
+            return new ObjectMapper().readValue(file, new TypeReference<>() {});
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return new HashMap<>();
     }
-    @SuppressWarnings("unchecked")
-    private static String mapToJSONString(Map<String, Object> map) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("{");
-        for (Map.Entry<String, Object> entry : map.entrySet()) {
-            builder.append("\"");
-            builder.append(entry.getKey());
-            builder.append("\":");
-            if (entry.getValue() instanceof Map) {
-                builder.append(mapToJSONString((Map<String, Object>) entry.getValue()));
-            } else if (entry.getValue() instanceof String) {
-                builder.append("\"");
-                builder.append(entry.getValue());
-                builder.append("\"");
-            } else if (entry.getValue() instanceof List) {
-                List<Object> list = (List<Object>) entry.getValue();
-                builder.append("[");
-                for (Object item : list) {
-                    if (item instanceof Map) {
-                        builder.append(mapToJSONString((Map<String, Object>) item));
-                    } else if (item instanceof String) {
-                        builder.append("\"");
-                        builder.append(item);
-                        builder.append("\"");
-                    } else {
-                        builder.append(item);
-                    }
-                    builder.append(",");
-                }
-                if (!list.isEmpty()) {
-                    builder.deleteCharAt(builder.length() - 1);
-                }
-                builder.append("]");
-            } else {
-                builder.append(entry.getValue());
-            }
-            builder.append(",");
-        }
-        builder.deleteCharAt(builder.length() - 1);
-        builder.append("}");
-        return builder.toString();
-    }
     public static void writeMap(ServerPlayerEntity player, Map<String, Object> map) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(getFile(player)))) {
-            writer.write(mapToJSONString(addExpires(player,map)));
-        } catch (IOException e) {
+        try {
+            new ObjectMapper().writeValue(getFile(player),addExpires(player,map));
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -272,7 +105,48 @@ public class PlayerData {
                     else lastdeath.remove(s);
                 }
             }
-            map.put("lastdeath",lastdeath);
+            dest.put("lastdeath",lastdeath);
+            map.put("dest",dest);
+        }
+        if (map.get("version").equals(1.3)) {
+            // dest logic, add new tracking
+            map.put("version",1.4);
+            map.remove("lastdeath");
+            Map<String,Object> dest = (Map<String, Object>) map.get("destination");
+            Map<String,Object> hud = (Map<String, Object>) map.get("hud");
+            String order = (String) hud.get("order");
+            hud.put("order",order.replace("order","tracking"));
+            dest.put("hud",hud);
+            dest.put("tracking",null);
+            String xyz = (String) dest.get("xyz");
+            if (xyz.equals("f")) dest.put("dest","null");
+            else if (xyz.split(" ").length == 1) {
+                dest.put("dest", "null");
+                dest.put("tracking",xyz);
+            } else {
+                String[] sp = xyz.split(" ");
+                Loc loc = new Loc(xyz);
+                if (sp[1].equals("n")) loc = new Loc(sp[0]+" "+sp[2]);
+                dest.put("dest",loc);
+            }
+            dest.remove("xyz");
+            ArrayList<String> saved = (ArrayList<String>) dest.get("saved");
+            List<List<String>> savedN = new ArrayList<>();
+            for (String s: saved) {
+                String[] split = s.split(" ");
+                String[] coordS = split[1].split("_");
+                Loc loc = new Loc(Utl.tryInt(coordS[0]),Utl.tryInt(coordS[1]),Utl.tryInt(coordS[2]),split[2]);
+                savedN.add(saved.indexOf(s),Arrays.asList(split[0],loc.getLocC(),split[3]));
+            }
+            System.out.println(savedN);
+            dest.put("saved",savedN);
+            ArrayList<String> lastdeath = (ArrayList<String>) dest.get("lastdeath");
+            for (String s:lastdeath) {
+                String[] split = s.split("\\|");
+                lastdeath.set(lastdeath.indexOf(s),new Loc(split[1],split[0]).getLocC());
+            }
+            dest.put("lastdeath",lastdeath);
+            map.put("destination",dest);
         }
         return map;
     }
@@ -320,14 +194,15 @@ public class PlayerData {
         hud.put("secondary", HUD.color.defaultFormat(2));
         //dest
         Map<String,Object> destination = new HashMap<>();
-        destination.put("xyz", "f");
+        destination.put("dest", "null");
         destination.put("setting", defaults.destSetting());
         destination.put("saved", new ArrayList<String>());
         destination.put("lastdeath", new ArrayList<String>());
+        destination.put("tracking", null);
         destination.put("track", null);
         destination.put("suspended", null);
         //base
-        map.put("version", 1.3);
+        map.put("version", 1.4);
         map.put("name", Utl.player.name(player));
         map.put("hud", hud);
         map.put("destination", destination);
@@ -415,7 +290,7 @@ public class PlayerData {
                 public static boolean direction(ServerPlayerEntity player) {
                     return (boolean) getModule(player).get("direction");
                 }
-                public static boolean compass(ServerPlayerEntity player) {
+                public static boolean tracking(ServerPlayerEntity player) {
                     return (boolean) getModule(player).get("compass");
                 }
                 public static boolean time(ServerPlayerEntity player) {
@@ -448,17 +323,20 @@ public class PlayerData {
             public static ArrayList<String> getLastdeaths(ServerPlayerEntity player) {
                 return (ArrayList<String>) get(player,false).get("lastdeath");
             }
-            public static boolean getTrackingPending(ServerPlayerEntity player) {
+            public static boolean getTrackPending(ServerPlayerEntity player) {
                 return get(player,true).get("track") != null;
             }
             public static boolean getSuspendedState(ServerPlayerEntity player) {
                 return get(player,true).get("suspended") != null;
             }
-            public static String getDest(ServerPlayerEntity player) {
-                return get(player,true).get("xyz").toString();
+            public static Loc getDest(ServerPlayerEntity player) {
+                return new Loc((String) get(player,true).get("dest"));
             }
-            public static ArrayList<String> getSaved(ServerPlayerEntity player) {
-                return (ArrayList<String>) get(player,false).get("saved");
+            public static String getTracking(ServerPlayerEntity player) {
+                return (String) get(player,true).get("tracking");
+            }
+            public static List<List<String>> getSaved(ServerPlayerEntity player) {
+                return (List<List<String>>) get(player,false).get("saved");
             }
             public static class setting {
                 public static boolean autoclear(ServerPlayerEntity player) {
@@ -600,9 +478,14 @@ public class PlayerData {
                 data.put("suspended", setting);
                 setM(player, data);
             }
-            public static void setDest(ServerPlayerEntity player, String xyz) {
+            public static void setDest(ServerPlayerEntity player, Loc loc) {
                 Map<String,Object> data = get.dest.get(player,false);
-                data.put("xyz", xyz);
+                data.put("xyz", loc.getLocC());
+                set(player, data);
+            }
+            public static void setTracking(ServerPlayerEntity player, String s) {
+                Map<String,Object> data = get.dest.get(player,false);
+                data.put("tracking", s);
                 set(player, data);
             }
             public static void setTrackNull(ServerPlayerEntity player) {
@@ -620,7 +503,7 @@ public class PlayerData {
                 data.put("lastdeath", lastdeath);
                 set(player, data);
             }
-            public static void setSaved(ServerPlayerEntity player, ArrayList<String> saved) {
+            public static void setSaved(ServerPlayerEntity player, List<List<String>> saved) {
                 Map<String,Object> data = get.dest.get(player,false);
                 data.put("saved", saved);
                 set(player, data);
