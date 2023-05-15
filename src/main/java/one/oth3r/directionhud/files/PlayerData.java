@@ -13,6 +13,7 @@ import java.util.*;
 
 public class PlayerData {
     public static Map<ServerPlayerEntity,Map<String,Object>> playerMap = new HashMap<>();
+    public static Map<ServerPlayerEntity,Map<String,String>> oneTimeMap = new HashMap<>();
     public static File getFile(ServerPlayerEntity player) {
         if (config.online) return new File(DirectionHUD.playerData+player.getUuidAsString()+".json");
         else return new File(DirectionHUD.playerData+player.getName().getString()+".json");
@@ -33,11 +34,6 @@ public class PlayerData {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-    public static void addPlayer(ServerPlayerEntity player) {
-        Map<String, Object> map = updater(player, getMap(player));
-        writeMap(player, map);
-        playerMap.put(player,removeUnnecessary(map));
     }
     @SuppressWarnings("unchecked")
     public static Map<String, Object> updater(ServerPlayerEntity player, Map<String,Object> map) {
@@ -114,9 +110,11 @@ public class PlayerData {
             map.remove("lastdeath");
             Map<String,Object> dest = (Map<String, Object>) map.get("destination");
             Map<String,Object> hud = (Map<String, Object>) map.get("hud");
+            //ORDER FIX
             String order = (String) hud.get("order");
             hud.put("order",order.replace("order","tracking"));
             dest.put("hud",hud);
+            //NEW TRACKING & XYZ FIX
             dest.put("tracking",null);
             String xyz = (String) dest.get("xyz");
             if (xyz.equals("f")) dest.put("dest","null");
@@ -130,6 +128,13 @@ public class PlayerData {
                 dest.put("dest",loc);
             }
             dest.remove("xyz");
+            //REMOVE SUSPENDED
+            Map<String,Object> suspended = (Map<String, Object>) dest.get("suspended");
+            if (suspended != null) {
+                dest.put("tracking",suspended.get("target"));
+            }
+            dest.remove("suspended");
+            //SAVED FIX
             ArrayList<String> saved = (ArrayList<String>) dest.get("saved");
             List<List<String>> savedN = new ArrayList<>();
             for (String s: saved) {
@@ -140,12 +145,21 @@ public class PlayerData {
             }
             System.out.println(savedN);
             dest.put("saved",savedN);
+            //LASTDEATH FIX
             ArrayList<String> lastdeath = (ArrayList<String>) dest.get("lastdeath");
             for (String s:lastdeath) {
                 String[] split = s.split("\\|");
                 lastdeath.set(lastdeath.indexOf(s),new Loc(split[1],split[0]).getLocC());
             }
             dest.put("lastdeath",lastdeath);
+            //ADD NEW PARTICLES & AUTOCONVERT
+            Map<String,Object> setting = (Map<String, Object>) dest.get("setting");
+            Map<String,Object> particles = (Map<String, Object>) setting.get("particles");
+            particles.put("tracking",config.defaults.DESTTrackingParticles);
+            particles.put("trackingcolor",config.defaults.DESTTrackingParticleColor);
+            setting.put("autoconvert",config.defaults.DESTAutoConvert);
+            setting.put("particles",particles);
+            dest.put("setting",setting);
             map.put("destination",dest);
         }
         return map;
@@ -172,16 +186,28 @@ public class PlayerData {
         Map<String,Object> mdest = (Map<String, Object>) map.get("destination");
         if (cdest.get("track")!=null) mdest.put("track",cdest.get("track"));
         else if (mdest.get("track") != null) mdest.put("track", null);
-        if (cdest.get("suspended")!=null) mdest.put("suspended",cdest.get("suspended"));
-        else if (mdest.get("suspended")!=null) mdest.put("suspended",null);
         map.put("destination",mdest);
         return map;
+    }
+    public static void addPlayer(ServerPlayerEntity player) {
+        Map<String, Object> map = updater(player, getMap(player));
+        writeMap(player, map);
+        playerMap.put(player,removeUnnecessary(map));
+        oneTimeMap.put(player,new HashMap<>());
     }
     public static void removePlayer(ServerPlayerEntity player) {
         writeMap(player,getMap(player));
         playerMap.remove(player);
+        oneTimeMap.remove(player);
     }
-
+    public static String getOneTime(ServerPlayerEntity player, String key) {
+        return oneTimeMap.get(player).get(key);
+    }
+    public static void setOneTime(ServerPlayerEntity player, String key, String value) {
+        Map<String,String> map = oneTimeMap.get(player);
+        map.put(key,value);
+        oneTimeMap.put(player,map);
+    }
     public static Map<String,Object> getDefaults(ServerPlayerEntity player) {
         Map<String,Object> map = new HashMap<>();
         //hud
@@ -200,7 +226,6 @@ public class PlayerData {
         destination.put("lastdeath", new ArrayList<String>());
         destination.put("tracking", null);
         destination.put("track", null);
-        destination.put("suspended", null);
         //base
         map.put("version", 1.4);
         map.put("name", Utl.player.name(player));
@@ -220,7 +245,7 @@ public class PlayerData {
             hudModule.put("distance", config.HUDDistance);
             hudModule.put("destination", config.HUDDestination);
             hudModule.put("direction", config.HUDDirection);
-            hudModule.put("compass", config.HUDCompass);
+            hudModule.put("tracking", config.HUDTracking);
             hudModule.put("time", config.HUDTime);
             hudModule.put("weather", config.HUDWeather);
             return hudModule;
@@ -229,6 +254,7 @@ public class PlayerData {
             Map<String,Object> destSetting = new HashMap<>();
             destSetting.put("autoclear", config.DESTAutoClear);
             destSetting.put("autoclearradius", config.DESTAutoClearRad);
+            destSetting.put("autoconvert", config.DESTAutoConvert);
             destSetting.put("ylevel", config.DESTYLevel);
             destSetting.put("send", config.DESTSend);
             destSetting.put("track", config.DESTTrack);
@@ -242,17 +268,19 @@ public class PlayerData {
             destParticles.put("linecolor", config.DESTLineParticleColor);
             destParticles.put("dest", config.DESTDestParticles);
             destParticles.put("destcolor", config.DESTDestParticleColor);
+            destParticles.put("tracking", config.DESTTrackingParticles);
+            destParticles.put("trackingcolor", config.DESTTrackingParticleColor);
             return destParticles;
         }
     }
-    public static Map<String,Object> getFromMap(ServerPlayerEntity player) {
-        return playerMap.get(player);
-    }
     @SuppressWarnings("unchecked")
     public static class get {
+        public static Map<String,Object> fromMap(ServerPlayerEntity player) {
+            return playerMap.get(player);
+        }
         public static class hud {
             private static Map<String,Object> get(ServerPlayerEntity player) {
-                return (Map<String, Object>) getFromMap(player).get("hud");
+                return (Map<String, Object>) fromMap(player).get("hud");
             }
             public static Map<String,Object> getSetting(ServerPlayerEntity player) {
                 return (Map<String,Object>) get(player).get("setting");
@@ -291,7 +319,7 @@ public class PlayerData {
                     return (boolean) getModule(player).get("direction");
                 }
                 public static boolean tracking(ServerPlayerEntity player) {
-                    return (boolean) getModule(player).get("compass");
+                    return (boolean) getModule(player).get("tracking");
                 }
                 public static boolean time(ServerPlayerEntity player) {
                     return (boolean) getModule(player).get("time");
@@ -303,7 +331,7 @@ public class PlayerData {
         }
         public static class dest {
             private static Map<String,Object> get(ServerPlayerEntity player, boolean map) {
-                if (map) return (Map<String,Object>) getFromMap(player).get("destination");
+                if (map) return (Map<String,Object>) fromMap(player).get("destination");
                 return (Map<String, Object>) getMap(player).get("destination");
             }
             private static Map<String,Object> getSetting(ServerPlayerEntity player, boolean map) {
@@ -316,18 +344,11 @@ public class PlayerData {
                 if (get(player,true).get("track") == null) return new HashMap<>();
                 return (Map<String,Object>) get(player,true).get("track");
             }
-            private static Map<String,Object> getSuspended(ServerPlayerEntity player) {
-                if (get(player,true).get("suspended") == null) return new HashMap<>();
-                return (Map<String,Object>) get(player,true).get("suspended");
-            }
             public static ArrayList<String> getLastdeaths(ServerPlayerEntity player) {
                 return (ArrayList<String>) get(player,false).get("lastdeath");
             }
             public static boolean getTrackPending(ServerPlayerEntity player) {
                 return get(player,true).get("track") != null;
-            }
-            public static boolean getSuspendedState(ServerPlayerEntity player) {
-                return get(player,true).get("suspended") != null;
             }
             public static Loc getDest(ServerPlayerEntity player) {
                 return new Loc((String) get(player,true).get("dest"));
@@ -344,6 +365,9 @@ public class PlayerData {
                 }
                 public static int autoclearrad(ServerPlayerEntity player) {
                     return Integer.parseInt(getSetting(player, true).get("autoclearradius").toString());
+                }
+                public static boolean autoconvert(ServerPlayerEntity player) {
+                    return (boolean) getSetting(player, true).get("autoconvert");
                 }
                 public static boolean ylevel(ServerPlayerEntity player) {
                     return (boolean) getSetting(player, true).get("ylevel");
@@ -370,6 +394,12 @@ public class PlayerData {
                     public static String destcolor(ServerPlayerEntity player) {
                         return (String) getParticleSetting(player).get("destcolor");
                     }
+                    public static boolean tracking(ServerPlayerEntity player) {
+                        return (boolean) getParticleSetting(player).get("tracking");
+                    }
+                    public static String trackingcolor(ServerPlayerEntity player) {
+                        return (String) getParticleSetting(player).get("trackingcolor");
+                    }
                 }
             }
             public static class track {
@@ -381,14 +411,6 @@ public class PlayerData {
                 }
                 public static String target(ServerPlayerEntity player) {
                     return (String) getTrack(player).get("target");
-                }
-            }
-            public static class suspended {
-                public static int expire(ServerPlayerEntity player) {
-                    return Integer.parseInt(getSuspended(player).get("expire").toString());
-                }
-                public static String target(ServerPlayerEntity player) {
-                    return (String) getSuspended(player).get("target");
                 }
             }
         }
@@ -454,7 +476,7 @@ public class PlayerData {
                 playerMap.put(player,map);
             }
             public static void setM(ServerPlayerEntity player, Map<String,Object> dest) {
-                Map<String,Object> map = getFromMap(player);
+                Map<String,Object> map = get.fromMap(player);
                 map.put("destination",dest);
                 playerMap.put(player,map);
             }
@@ -473,14 +495,9 @@ public class PlayerData {
                 data.put("track", setting);
                 setM(player, data);
             }
-            private static void setSuspended(ServerPlayerEntity player, Map<String,Object> setting) {
-                Map<String,Object> data = get.dest.get(player,true);
-                data.put("suspended", setting);
-                setM(player, data);
-            }
             public static void setDest(ServerPlayerEntity player, Loc loc) {
                 Map<String,Object> data = get.dest.get(player,false);
-                data.put("xyz", loc.getLocC());
+                data.put("dest", loc.getLocC());
                 set(player, data);
             }
             public static void setTracking(ServerPlayerEntity player, String s) {
@@ -491,11 +508,6 @@ public class PlayerData {
             public static void setTrackNull(ServerPlayerEntity player) {
                 Map<String,Object> data = get.dest.get(player,true);
                 data.put("track", null);
-                setM(player, data);
-            }
-            public static void setSuspendedNull(ServerPlayerEntity player) {
-                Map<String,Object> data = get.dest.get(player,true);
-                data.put("suspended", null);
                 setM(player, data);
             }
             public static void setLastdeaths(ServerPlayerEntity player, ArrayList<String> lastdeath) {
@@ -517,6 +529,11 @@ public class PlayerData {
                 public static void autoclearrad(ServerPlayerEntity player, int b) {
                     Map<String,Object> data = get.dest.getSetting(player,false);
                     data.put("autoclearradius", b);
+                    setSetting(player, data);
+                }
+                public static void autoconvert(ServerPlayerEntity player, boolean b) {
+                    Map<String,Object> data = get.dest.getSetting(player,false);
+                    data.put("autoconvert", b);
                     setSetting(player, data);
                 }
                 public static void ylevel(ServerPlayerEntity player, boolean b) {
@@ -560,6 +577,16 @@ public class PlayerData {
                         data.put("destcolor", b);
                         setParticleSetting(player, data);
                     }
+                    public static void tracking(ServerPlayerEntity player, boolean b) {
+                        Map<String,Object> data = get.dest.getParticleSetting(player);
+                        data.put("tracking", b);
+                        setParticleSetting(player, data);
+                    }
+                    public static void trackingcolor(ServerPlayerEntity player, String b) {
+                        Map<String,Object> data = get.dest.getParticleSetting(player);
+                        data.put("trackingcolor", b);
+                        setParticleSetting(player, data);
+                    }
                 }
             }
             public static class track {
@@ -577,18 +604,6 @@ public class PlayerData {
                     Map<String,Object> data = get.dest.getTrack(player);
                     data.put("target", b);
                     setTrack(player, data);
-                }
-            }
-            public static class suspended {
-                public static void expire(ServerPlayerEntity player, int b) {
-                    Map<String,Object> data = get.dest.getSuspended(player);
-                    data.put("expire", b);
-                    setSuspended(player, data);
-                }
-                public static void target(ServerPlayerEntity player, String b) {
-                    Map<String,Object> data = get.dest.getSuspended(player);
-                    data.put("target", b);
-                    setSuspended(player, data);
                 }
             }
         }
