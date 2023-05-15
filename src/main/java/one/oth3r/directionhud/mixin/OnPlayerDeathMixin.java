@@ -24,9 +24,9 @@ public class OnPlayerDeathMixin {
         Destination.lastdeath.add(player, loc);
         CTxT msg = CUtl.tag().append(CUtl.lang("dest.lastdeath.save"))
                 .append(" ").append(loc.getBadge())
-                .append(" ").append(CUtl.CButton.dest.set("/dest set "+loc.getXYZ()));
-        if (Utl.dim.showConvertButton(Utl.dim.format(player.getSpawnPointDimension().getValue()),loc.getDIM()))
-            msg.append(" ").append(CUtl.CButton.dest.convert("/dest set "+loc.getXYZ()+" "+loc.getDIM()));
+                .append(" ").append(CUtl.CButton.dest.set("/dest set "+loc.getXYZ()+" "+loc.getDIM()));
+        if (Utl.dim.canConvert(Utl.dim.format(player.getSpawnPointDimension().getValue()),loc.getDIM()))
+            msg.append(" ").append(CUtl.CButton.dest.convert("/dest set "+loc.getXYZ()+" "+loc.getDIM()+" convert"));
         player.sendMessage(msg.b());
     }
 }
