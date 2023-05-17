@@ -14,16 +14,19 @@ public class DirHUD {
     public static void setDefaults(ServerPlayerEntity player) {
         config.DESTAutoClear = PlayerData.get.dest.setting.autoclear(player);
         config.DESTAutoClearRad = PlayerData.get.dest.setting.autoclearrad(player);
+        config.DESTAutoConvert = PlayerData.get.dest.setting.autoconvert(player);
         config.DESTDestParticles = PlayerData.get.dest.setting.particle.dest(player);
         config.DESTDestParticleColor = PlayerData.get.dest.setting.particle.destcolor(player);
         config.DESTLineParticles = PlayerData.get.dest.setting.particle.line(player);
         config.DESTLineParticleColor = PlayerData.get.dest.setting.particle.linecolor(player);
+        config.DESTTrackingParticles = PlayerData.get.dest.setting.particle.tracking(player);
+        config.DESTTrackingParticleColor = PlayerData.get.dest.setting.particle.trackingcolor(player);
         config.DESTYLevel = PlayerData.get.dest.setting.ylevel(player);
         config.DESTSend = PlayerData.get.dest.setting.send(player);
         config.DESTTrack = PlayerData.get.dest.setting.track(player);
 
         config.HUD24HR = PlayerData.get.hud.setting.time24h(player);
-        config.HUDCompass = PlayerData.get.hud.module.compass(player);
+        config.HUDTracking = PlayerData.get.hud.module.tracking(player);
         config.HUDCoordinates = PlayerData.get.hud.module.coordinates(player);
         config.HUDDistance = PlayerData.get.hud.module.distance(player);
         config.HUDDirection = PlayerData.get.hud.module.direction(player);
@@ -64,24 +67,23 @@ public class DirHUD {
         player.sendMessage(msg.b());
     }
     public static void reload(ServerPlayerEntity player) {
-        if (player == null) {
-            if (DirectionHUD.configFile == null) DirectionHUD.configFile = FabricLoader.getInstance().getConfigDir().toFile()+"/";
-            config.load();
-            Utl.dim.dimsToMap();
-            LangReader.loadLanguageFile();
-            DirectionHUD.LOGGER.info(CUtl.lang("dirhud.reload", CUtl.lang("dirhud.reload_2")).getString());
-            return;
-        }
-        if (!player.hasPermissionLevel(2)) return;
+        if (player != null && !player.hasPermissionLevel(2)) return;
         if (DirectionHUD.configFile == null) DirectionHUD.configFile = FabricLoader.getInstance().getConfigDir().toFile()+"/";
         LangReader.loadLanguageFile();
+        Utl.dim.dimsToMap();
         config.load();
-        player.sendMessage(CUtl.tag().append(CUtl.lang("dirhud.reload",CUtl.lang("dirhud.reload_2").color('a'))).b());
+        for (ServerPlayerEntity pl:DirectionHUD.server.getPlayerManager().getPlayerList()) {
+            PlayerData.removePlayer(pl);
+            PlayerData.addPlayer(pl);
+        }
+        if (player == null) DirectionHUD.LOGGER.info(CUtl.lang("dirhud.reload", CUtl.lang("dirhud.reload_2")).getString());
+        else player.sendMessage(CUtl.tag().append(CUtl.lang("dirhud.reload",CUtl.lang("dirhud.reload_2").color('a'))).b());
     }
     public static void UI(ServerPlayerEntity player) {
         CTxT msg = CTxT.of("")
                 .append(CTxT.of(" DirectionHUD ").color(CUtl.pTC()))
-                .append(CTxT.of("v"+DirectionHUD.VERSION).color(CUtl.sTC()))
+                .append(CTxT.of("v"+DirectionHUD.VERSION+"⧉").color(CUtl.sTC()).cEvent(3,"https://modrinth.com/mod/directionhud/changelog")
+                        .hEvent(CUtl.TBtn("version.hover").color(CUtl.sTC())))
                 .append(CTxT.of("\n                                 \n").strikethrough(true)).append(" ");
         //hud
         if (config.HUDEditing) msg.append(CUtl.CButton.dirHUD.hud()).append("  ");
