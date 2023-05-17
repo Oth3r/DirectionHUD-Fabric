@@ -42,6 +42,7 @@ public class DirectionHUD {
 	public static void initializeCommon() {
 		configFile = FabricLoader.getInstance().getConfigDir().toFile()+"/";
 		config.load();
+		//START
 		ServerLifecycleEvents.SERVER_STARTED.register(s -> {
 			DirectionHUD.playerManager = s.getPlayerManager();
 			DirectionHUD.server = s;
@@ -55,6 +56,12 @@ public class DirectionHUD {
 			} catch (IOException e) {
 				System.out.println("Failed to create playerdata directory: " + e.getMessage());
 			}
+		});
+		//STOP
+		ServerLifecycleEvents.SERVER_STOPPING.register(s -> {
+			System.out.println("DirectionHUD: Shutting down...");
+			for (ServerPlayerEntity player:server.getPlayerManager().getPlayerList())
+				PlayerData.removePlayer(player);
 		});
 		//PLAYER
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
