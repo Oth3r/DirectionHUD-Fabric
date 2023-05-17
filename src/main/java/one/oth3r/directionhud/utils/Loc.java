@@ -2,6 +2,7 @@ package one.oth3r.directionhud.utils;
 
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.Vec3d;
+import one.oth3r.directionhud.files.config;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -18,24 +19,24 @@ public class Loc {
     private String dimension = null;
     public Loc() {}
     public Loc(Integer x, Integer y, Integer z, String dimension) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
+        this.x = xzBounds(x);
+        this.y = yBounds(y);
+        this.z = xzBounds(x);
         if (Utl.dim.checkValid(dimension)) this.dimension = dimension;
     }
     public Loc(Integer x, Integer y, Integer z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
+        this.x = xzBounds(x);
+        this.y = yBounds(y);
+        this.z = xzBounds(z);
     }
-    public Loc(Integer x, Integer y, String dimension) {
-        this.x = x;
-        this.y = y;
+    public Loc(Integer x, Integer z, String dimension) {
+        this.x = xzBounds(x);
+        this.z = xzBounds(z);
         if (Utl.dim.checkValid(dimension)) this.dimension = dimension;
     }
     public Loc(Integer x, Integer z) {
-        this.x = x;
-        this.z = z;
+        this.x = xzBounds(x);
+        this.z = xzBounds(z);
     }
     public Loc(String xyz) {
         parseXYZ(xyz);
@@ -43,6 +44,14 @@ public class Loc {
     public Loc(String xyz, String dimension) {
         parseXYZ(xyz);
         if (Utl.dim.checkValid(dimension)) this.dimension = dimension;
+    }
+    private static int yBounds(int s) {
+        if (s > config.MAXy) return config.MAXy;
+        return Math.max(s, config.MAXy*-1);
+    }
+    private static int xzBounds(int s) {
+        if (s > config.MAXxz) return config.MAXxz;
+        return Math.max(s, config.MAXxz*-1);
     }
     private void parseXYZ(String xyz) {
         if (xyz == null || xyz.equals("null")) return;
@@ -65,25 +74,25 @@ public class Loc {
         if (!isInt(sp.get(0))) sp.set(0, "0");
         if (!isInt(sp.get(1))) sp.set(1, "0");
         if (sp.size() == 3 && !isInt(sp.get(2))) sp.set(2,"0");
-        this.x = Utl.xyz.xzBounds(Integer.parseInt(sp.get(0)));
+        this.x = xzBounds(Integer.parseInt(sp.get(0)));
         if (sp.size() == 2) {
-            this.z = Utl.xyz.xzBounds(Integer.parseInt(sp.get(1)));
+            this.z = xzBounds(Integer.parseInt(sp.get(1)));
             return;
         }
-        this.y = Utl.xyz.yBounds(Integer.parseInt(sp.get(1)));
-        this.z = Utl.xyz.xzBounds(Integer.parseInt(sp.get(2)));
+        this.y = yBounds(Integer.parseInt(sp.get(1)));
+        this.z = xzBounds(Integer.parseInt(sp.get(2)));
     }
     public Loc(ServerPlayerEntity player) {
-        this.x = player.getBlockX();
-        this.y = player.getBlockY();
-        this.z = player.getBlockZ();
+        this.x = xzBounds(player.getBlockX());
+        this.y = yBounds(player.getBlockY());
+        this.z = xzBounds(player.getBlockZ());
         this.dimension = Utl.player.dim(player);
     }
     public Loc(ServerPlayerEntity player, String dimension) {
-        this.x = player.getBlockX();
-        this.y = player.getBlockY();
-        this.z = player.getBlockZ();
-        this.dimension = dimension;
+        this.x = xzBounds(player.getBlockX());
+        this.y = yBounds(player.getBlockY());
+        this.z = xzBounds(player.getBlockZ());
+        if (Utl.dim.checkValid(dimension)) this.dimension = dimension;
     }
     public void convertTo(String toDimension) {
         String fromDimension = this.getDIM();
@@ -98,7 +107,6 @@ public class Loc {
             else return;
         }
         this.setDIM(toDimension);
-        if (this.yExists()) this.setY((int) (this.getY()*ratio));
         this.setX((int) (this.getX()*ratio));
         this.setZ((int) (this.getZ()*ratio));
     }
@@ -111,6 +119,7 @@ public class Loc {
         return x+" "+y+" "+z;
     }
     public String getLocC() {
+        if (x == null || z == null) return "null";
         if (this.dimension == null) return Arrays.toString(new String[]{this.x+"",this.y+"",this.z+""});
         return Arrays.toString(new String[]{this.x+"",this.y+"",this.z+"",this.dimension});
     }
@@ -156,6 +165,6 @@ public class Loc {
         return dimension;
     }
     public void setDIM(String setDIM) {
-        this.dimension = setDIM;
+        if (Utl.dim.checkValid(setDIM)) this.dimension = setDIM;
     }
 }
