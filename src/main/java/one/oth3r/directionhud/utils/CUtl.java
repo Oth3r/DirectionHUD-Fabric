@@ -109,89 +109,94 @@ public class CUtl {
             }
             public static CTxT settings() {
                 return TBtn("dest.settings").btn(true).color(c.setting).cEvent(1,"/dest settings")
-                        .hEvent(CTxT.of(commandUsage.destSettings()).color(c.setting).append("\n").append(TBtn("dest.settings.hover")));
+                        .hEvent(CTxT.of(cmdUsage.destSettings()).color(c.setting).append("\n").append(TBtn("dest.settings.hover")));
             }
             public static CTxT saved() {
                 return TBtn("dest.saved").btn(true).color(c.saved).cEvent(1,"/dest saved").hEvent(
-                        CTxT.of(commandUsage.destSaved()).color(c.saved).append("\n").append(TBtn("dest.saved.hover")));
+                        CTxT.of(cmdUsage.destSaved()).color(c.saved).append("\n").append(TBtn("dest.saved.hover")));
             }
             public static CTxT add() {
                 return CTxT.of("+").btn(true).color(c.add).cEvent(2,"/dest add ").hEvent(
-                        CTxT.of(commandUsage.destAdd()).color(c.add).append("\n").append(TBtn("dest.add.hover",TBtn("dest.add.hover_2").color(c.add))));
+                        CTxT.of(cmdUsage.destAdd()).color(c.add).append("\n").append(TBtn("dest.add.hover",TBtn("dest.add.hover_2").color(c.add))));
             }
             public static CTxT add(String cmd) {
                 return CUtl.TBtn("dest.add").btn(true).color(c.add).cEvent(2,cmd).hEvent(
-                        CTxT.of(commandUsage.destAdd()).color(c.add).append("\n").append(TBtn("dest.add.hover",TBtn("dest.add.hover_2").color(c.add))));
+                        CTxT.of(cmdUsage.destAdd()).color(c.add).append("\n").append(TBtn("dest.add.hover",TBtn("dest.add.hover_2").color(c.add))));
             }
             public static CTxT set() {
                 return TBtn("dest.set").btn(true).color(c.set).cEvent(2,"/dest set ").hEvent(
-                        CTxT.of(commandUsage.destSet()).color(c.set).append("\n").append(TBtn("dest.set.hover_info")));
+                        CTxT.of(cmdUsage.destSet()).color(c.set).append("\n").append(TBtn("dest.set.hover_info")));
             }
             public static CTxT clear(ServerPlayerEntity player) {
                 boolean o = Destination.get(player).hasXYZ();
                 return CTxT.of("✕").btn(true).color(o?'c':'7').cEvent(o?1:0,"/dest clear").hEvent(
-                        CTxT.of(commandUsage.destClear()).color(o?'c':'7').append("\n").append(TBtn("dest.clear.hover")));
+                        CTxT.of(cmdUsage.destClear()).color(o?'c':'7').append("\n").append(TBtn("dest.clear.hover")));
+            }
+            public static CTxT clear() {
+                return TBtn("clear").btn(true).color('c').cEvent(1,"/dest track .clear").hEvent(
+                        CTxT.of(cmdUsage.destTrackClear()).color('c').append("\n").append(TBtn("dest.track_clear.hover")));
             }
             public static CTxT lastdeath() {
                 return TBtn("dest.lastdeath").btn(true).color(c.lastdeath).cEvent(1,"/dest lastdeath").hEvent(
-                        CTxT.of(commandUsage.destLastdeath()).color(c.lastdeath).append("\n").append(TBtn("dest.lastdeath.hover")));
+                        CTxT.of(cmdUsage.destLastdeath()).color(c.lastdeath).append("\n").append(TBtn("dest.lastdeath.hover")));
             }
             public static CTxT send() {
                 return TBtn("dest.send").btn(true).color(c.send).cEvent(2,"/dest send ").hEvent(
-                        CTxT.of(commandUsage.destSend()).color(c.send).append("\n").append(TBtn("dest.send.hover")));
+                        CTxT.of(cmdUsage.destSend()).color(c.send).append("\n").append(TBtn("dest.send.hover")));
             }
             public static CTxT track() {
-                return TBtn("dest.send").btn(true).color(c.track).cEvent(2,"/dest track ").hEvent(
-                        CTxT.of(commandUsage.destTrack()).color(c.track).append("\n").append(TBtn("dest.track.hover")));
+                return TBtn("dest.track").btn(true).color(c.track).cEvent(2,"/dest track ").hEvent(
+                        CTxT.of(cmdUsage.destTrack()).color(c.track).append("\n").append(TBtn("dest.track.hover")));
             }
         }
         public static class hud {
             public static CTxT color() {
                 return CTxT.of(Utl.color.rainbow(TBtn("hud.color").getString(),15,45)).btn(true).cEvent(1,"/hud color")
-                        .hEvent(CTxT.of(Utl.color.rainbow(commandUsage.hudColor(),10f,23f)).append("\n").append(TBtn("hud.color.hover")));
+                        .hEvent(CTxT.of(Utl.color.rainbow(cmdUsage.hudColor(),10f,23f)).append("\n").append(TBtn("hud.color.hover")));
             }
             public static CTxT edit() {
                 return TBtn("hud.edit").btn(true).color(c.edit).cEvent(1,"/hud edit").hEvent(
-                        CTxT.of(commandUsage.hudEdit()).color(c.edit).append("\n").append(TBtn("hud.edit.hover")));
+                        CTxT.of(cmdUsage.hudEdit()).color(c.edit).append("\n").append(TBtn("hud.edit.hover")));
             }
             public static CTxT toggle(Character color, String type) {
                 return TBtn("hud.toggle").btn(true).color(color).cEvent(1,"/hud toggle "+type).hEvent(
-                        CTxT.of(commandUsage.hudToggle()).color(color).append("\n").append(TBtn("hud.toggle.hover")));
+                        CTxT.of(cmdUsage.hudToggle()).color(color).append("\n").append(TBtn("hud.toggle.hover")));
             }
         }
         public static class dirHUD {
             public static CTxT hud() {
                 return TBtn("dirhud.hud").btn(true).color(c.hud).cEvent(1,"/hud").hEvent(
-                        CTxT.of(commandUsage.hud()).color(c.hud).append("\n").append(TBtn("dirhud.hud.hover")));
+                        CTxT.of(cmdUsage.hud()).color(c.hud).append("\n").append(TBtn("dirhud.hud.hover")));
             }
             public static CTxT dest() {
                 return TBtn("dirhud.dest").btn(true).color(c.dest).cEvent(1,"/dest").hEvent(
-                        CTxT.of(commandUsage.dest()).color(c.dest).append("\n").append(TBtn("dirhud.dest.hover")));
+                        CTxT.of(cmdUsage.dest()).color(c.dest).append("\n").append(TBtn("dirhud.dest.hover")));
             }
             public static CTxT defaults() {
                 return TBtn("dirhud.defaults").btn(true).color(c.defaults).cEvent(1,"/dirhud defaults").hEvent(
-                        CTxT.of(commandUsage.defaults()).color(c.defaults).append("\n").append(TBtn("dirhud.defaults.hover")));
+                        CTxT.of(cmdUsage.defaults()).color(c.defaults).append("\n").append(TBtn("dirhud.defaults.hover")));
             }
             public static CTxT reload() {
                 return TBtn("dirhud.reload").btn(true).color(c.defaults).cEvent(1,"/dirhud reload").hEvent(
-                        CTxT.of(commandUsage.defaults()).color(c.defaults).append("\n").append(TBtn("dirhud.reload.hover")));
+                        CTxT.of(cmdUsage.defaults()).color(c.defaults).append("\n").append(TBtn("dirhud.reload.hover")));
             }
         }
     }
-    public static class commandUsage {
+    public static class cmdUsage {
         public static String hud() {return "/hud";}
         public static String hudToggle() {return "/hud toggle";}
         public static String hudColor() {return "/hud color";}
         public static String hudEdit() {return "/hud edit";}
         public static String dest() {return "/dest | /destination";}
-        public static String destAdd() {return "/dest (saved) add <name> (x) (y) (z) (dimension) (color)";}
-        public static String destSet() {return "/dest set <x> (y) <z> (dimension) | /dest set saved <name> (convert)";}
+        public static String destAdd() {return "/dest (saved) add <name> <x> (y) <z> (dimension) (color)";}
+        public static String destSet() {return "/dest set <x> (y) <z> (dimension) (convert) | /dest set saved <name> (convert)";}
         public static String destLastdeath() {return "/dest lastdeath";}
         public static String destClear() {return "/dest clear";}
         public static String destSaved() {return "/dest saved";}
         public static String destSettings() {return "/dest settings";}
-        public static String destSend() {return "/dest send <IGN> <name> | /dest send <IGN> (name) <x> (y) <z> (dimension)";}
-        public static String destTrack() {return "/dest track <IGN>";}
+        public static String destSend() {return "/dest send <IGN> saved <name> | /dest send <IGN> (name) <x> (y) <z> (dimension)";}
+        public static String destTrack() {return "/dest track <IGN> | /dest track .clear";}
+        public static String destTrackClear() {return "/dest track .clear";}
         public static String defaults() {return "/dirhud defaults";}
     }
 }
