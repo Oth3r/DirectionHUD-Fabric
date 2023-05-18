@@ -92,7 +92,8 @@ public class config {
             save();
             return;
         }
-        try (FileInputStream fileStream = new FileInputStream(configFile())){
+        Utl.dim.dimsToMap();
+        try (FileInputStream fileStream = new FileInputStream(configFile())) {
             Properties properties = new Properties();
             properties.load(fileStream);
             loadVersion(properties,(String) properties.computeIfAbsent("version", a -> defaults.version+""));
@@ -157,8 +158,8 @@ public class config {
             social = Boolean.parseBoolean((String) properties.computeIfAbsent("social-commands", a -> defaults.social+""));
             DESTAutoConvert = Boolean.parseBoolean((String) properties.computeIfAbsent("autoconvert", a -> defaults.DESTAutoConvert+""));
             HUDTracking = Boolean.parseBoolean((String) properties.computeIfAbsent("tracking", a -> defaults.HUDTracking+""));
-            DESTTrackingParticles = Boolean.parseBoolean((String) properties.computeIfAbsent("dest-particles", a -> defaults.DESTTrackingParticles+""));
-            DESTTrackingParticleColor = Utl.color.fix((String) properties.computeIfAbsent("dest-particle-color", a -> defaults.DESTTrackingParticleColor),false,defaults.DESTDestParticleColor);
+            DESTTrackingParticles = Boolean.parseBoolean((String) properties.computeIfAbsent("tracking-particles", a -> defaults.DESTTrackingParticles+""));
+            DESTTrackingParticleColor = Utl.color.fix((String) properties.computeIfAbsent("tracking-particle-color", a -> defaults.DESTTrackingParticleColor),false,defaults.DESTDestParticleColor);
         }
     }
     public static void save() {
@@ -211,6 +212,8 @@ public class config {
             file.write(("\nline-particle-color=" + DESTLineParticleColor).getBytes());
             file.write(("\ndest-particles=" + DESTDestParticles).getBytes());
             file.write(("\ndest-particle-color=" + DESTDestParticleColor).getBytes());
+            file.write(("\ntracking-particles=" + DESTTrackingParticles).getBytes());
+            file.write(("\ntracking-particle-color=" + DESTTrackingParticleColor).getBytes());
             file.write(("\nsend=" + HUDDirection).getBytes());
             file.write(("\ntrack=" + HUDTime).getBytes());
             file.write(("\nlastdeath=" + DESTLastdeath).getBytes());
