@@ -8,7 +8,6 @@ import one.oth3r.directionhud.files.PlayerData;
 import one.oth3r.directionhud.files.config;
 import one.oth3r.directionhud.utils.CTxT;
 import one.oth3r.directionhud.utils.CUtl;
-import one.oth3r.directionhud.utils.Utl;
 
 public class DirHUD {
     public static void setDefaults(ServerPlayerEntity player) {
@@ -70,7 +69,6 @@ public class DirHUD {
         if (player != null && !player.hasPermissionLevel(2)) return;
         if (DirectionHUD.configFile == null) DirectionHUD.configFile = FabricLoader.getInstance().getConfigDir().toFile()+"/";
         LangReader.loadLanguageFile();
-        Utl.dim.dimsToMap();
         config.load();
         for (ServerPlayerEntity pl:DirectionHUD.server.getPlayerManager().getPlayerList()) {
             PlayerData.removePlayer(pl);

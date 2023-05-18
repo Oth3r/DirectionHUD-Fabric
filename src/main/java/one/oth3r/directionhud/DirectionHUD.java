@@ -17,7 +17,6 @@ import one.oth3r.directionhud.commands.DirHUDCommand;
 import one.oth3r.directionhud.commands.HUDCommand;
 import one.oth3r.directionhud.files.PlayerData;
 import one.oth3r.directionhud.files.config;
-import one.oth3r.directionhud.utils.Utl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -49,7 +48,7 @@ public class DirectionHUD {
 			DirectionHUD.commandManager = s.getCommandManager();
 			if (isClient) playerData = DirectionHUD.server.getSavePath(WorldSavePath.ROOT).normalize()+"/directionhud/playerdata/";
 			else playerData = FabricLoader.getInstance().getConfigDir().toFile()+"/directionhud/playerdata/";
-			Utl.dim.dimsToMap();
+			config.load();
 			Path dirPath = Paths.get(DirectionHUD.playerData);
 			try {
 				Files.createDirectories(dirPath);
