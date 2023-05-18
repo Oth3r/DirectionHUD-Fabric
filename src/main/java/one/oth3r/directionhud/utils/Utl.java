@@ -144,39 +144,31 @@ public class Utl {
                     .hEvent(CTxT.of(map.get("name").toUpperCase()).color(map.get("color")));
         }
         public static HashMap<Pair<String, String>, Double> conversionRatios = new HashMap<>();
-        public static void loadRatios() {
-            HashMap<Pair<String, String>, Double> output = new HashMap<>();
+        public static HashMap<String,HashMap<String,String>> dims = new HashMap<>();
+        //only works when the server is on, loads server dimensions into the config.
+        public static void loadConfig() {
+            if (DirectionHUD.server == null) return;
+            //LOAD DIM RATIOS
+            HashMap<Pair<String, String>, Double> configRatios = new HashMap<>();
             for (String s : config.dimensionRatios) {
                 String[] split = s.split("\\|");
                 if (split.length != 2) continue;
                 double ratio = Double.parseDouble(split[0].split("=")[1])/Double.parseDouble(split[1].split("=")[1]);
-                output.put(new ImmutablePair<>(split[0].split("=")[0], split[1].split("=")[0]), ratio);
+                configRatios.put(new ImmutablePair<>(split[0].split("=")[0], split[1].split("=")[0]), ratio);
             }
-            conversionRatios = output;
-        }
-        public static HashMap<String,HashMap<String,String>> dims = new HashMap<>();
-        public static void configToMap() {
-            HashMap<String,HashMap<String,String>> output = new HashMap<>();
+            conversionRatios = configRatios;
+            //CONFIG TO MAP
+            HashMap<String,HashMap<String,String>> configDims = new HashMap<>();
             for (String s : config.dimensions) {
                 String[] split = s.split("\\|");
                 if (split.length != 3) continue;
                 HashMap<String,String> data = new HashMap<>();
                 data.put("name",split[1]);
                 data.put("color",split[2]);
-                output.put(split[0],data);
+                configDims.put(split[0],data);
             }
-            dims = output;
-        }
-        public static void mapToConfig() {
-            List<String> output = new ArrayList<>();
-            for (Map.Entry<String, HashMap<String, String>> entry : dims.entrySet()) {
-                String key = entry.getKey();
-                HashMap<String, String> data = entry.getValue();
-                output.add(key+"|"+data.get("name")+"|"+data.get("color"));
-            }
-            config.defaults.dimensions = output;
-        }
-        public static void dimsToMap() {
+            dims = configDims;
+            //ADD MISSING DIMS TO MAP
             for (ServerWorld world : DirectionHUD.server.getWorlds()) {
                 String currentDIM = world.getRegistryKey().getValue().toString().replace(":",".");
                 String currentDIMp = world.getRegistryKey().getValue().getPath();
@@ -196,7 +188,14 @@ public class Utl {
                     dims.put(currentDIM,map);
                 }
             }
-            mapToConfig();
+            //MAP TO CONFIG
+            List<String> output = new ArrayList<>();
+            for (Map.Entry<String, HashMap<String, String>> entry : dims.entrySet()) {
+                String key = entry.getKey();
+                HashMap<String, String> data = entry.getValue();
+                output.add(key+"|"+data.get("name")+"|"+data.get("color"));
+            }
+            config.dimensions = output;
         }
     }
 
