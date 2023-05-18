@@ -170,7 +170,6 @@ public class Destination {
             return 1;
         }
         public static int addCMD(ServerPlayerEntity player, String[] args) {
-            String playerDIM = Utl.player.dim(player);
             //dest saved add <name>
             if (args.length == 1) {
                 saved.add(true,player,args[0],new Loc(player),null);
@@ -1151,10 +1150,13 @@ public class Destination {
             PlayerData.set.dest.setting.autoclear(player,config.DESTAutoClear);
             PlayerData.set.dest.setting.autoclearrad(player,config.DESTAutoClearRad);
             PlayerData.set.dest.setting.ylevel(player,config.DESTYLevel);
+            PlayerData.set.dest.setting.autoconvert(player,config.DESTAutoConvert);
             PlayerData.set.dest.setting.particles.line(player,config.DESTLineParticles);
             PlayerData.set.dest.setting.particles.linecolor(player,config.DESTLineParticleColor);
             PlayerData.set.dest.setting.particles.dest(player,config.DESTDestParticles);
             PlayerData.set.dest.setting.particles.destcolor(player,config.DESTDestParticleColor);
+            PlayerData.set.dest.setting.particles.tracking(player,config.DESTTrackingParticles);
+            PlayerData.set.dest.setting.particles.trackingcolor(player,config.DESTTrackingParticleColor);
             PlayerData.set.dest.setting.track(player,config.DESTTrack);
             PlayerData.set.dest.setting.send(player,config.DESTSend);
             CTxT msg = CUtl.tag().append(lang("setting.reset", CUtl.TBtn("all").color('c')));
