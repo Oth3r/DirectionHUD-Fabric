@@ -1,12 +1,15 @@
 package one.oth3r.directionhud.files;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import one.oth3r.directionhud.DirectionHUD;
 import one.oth3r.directionhud.commands.HUD;
 import one.oth3r.directionhud.utils.CUtl;
 import one.oth3r.directionhud.utils.Utl;
 
-import java.io.*;
-import java.util.Arrays;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.List;
 import java.util.Properties;
 
@@ -92,11 +95,11 @@ public class config {
             save();
             return;
         }
-        Utl.dim.dimsToMap();
         try (FileInputStream fileStream = new FileInputStream(configFile())) {
             Properties properties = new Properties();
             properties.load(fileStream);
             loadVersion(properties,(String) properties.computeIfAbsent("version", a -> defaults.version+""));
+            Utl.dim.loadConfig();
             save();
         } catch (Exception f) {
             //read fail
@@ -142,12 +145,14 @@ public class config {
         DESTSend = Boolean.parseBoolean((String) properties.computeIfAbsent("send", a -> defaults.DESTSend+""));
         DESTTrack = Boolean.parseBoolean((String) properties.computeIfAbsent("track", a -> defaults.DESTTrack+""));
         //DIM
-        String dims = (String) properties.computeIfAbsent("dimensions", a -> defaults.dimensions+"");
-        dimensions = Arrays.asList(dims.substring(1, dims.length()-1).split(", "));
-        String dimRatios = (String) properties.computeIfAbsent("dimension-ratios", a -> defaults.dimensionRatios+"");
-        dimensionRatios = Arrays.asList(dimRatios.substring(1, dimRatios.length()-1).split(", "));
-        Utl.dim.loadRatios();
-        Utl.dim.configToMap();
+        try {
+            dimensionRatios = new ObjectMapper().readValue((String)
+                    properties.computeIfAbsent("dimension-ratios", a -> defaults.dimensionRatios+""), new TypeReference<>() {});
+            dimensions = new ObjectMapper().readValue((String)
+                    properties.computeIfAbsent("dimensions", a -> defaults.dimensions+""), new TypeReference<>() {});
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         if (version.equalsIgnoreCase("v1.1")) {
             HUDTracking = Boolean.parseBoolean((String) properties.computeIfAbsent("compass", a -> defaults.HUDTracking+""));
