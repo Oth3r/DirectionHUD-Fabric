@@ -174,8 +174,7 @@ public class Utl {
                 HashMap<String, String> data = entry.getValue();
                 output.add(key+"|"+data.get("name")+"|"+data.get("color"));
             }
-            config.dimensions = output;
-            config.save();
+            config.defaults.dimensions = output;
         }
         public static void dimsToMap() {
             for (ServerWorld world : DirectionHUD.server.getWorlds()) {
