@@ -1,14 +1,16 @@
 package one.oth3r.directionhud.files;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import net.minecraft.server.network.ServerPlayerEntity;
 import one.oth3r.directionhud.DirectionHUD;
 import one.oth3r.directionhud.commands.HUD;
 import one.oth3r.directionhud.utils.Loc;
 import one.oth3r.directionhud.utils.Utl;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.util.*;
 
 public class PlayerData {
@@ -21,16 +23,16 @@ public class PlayerData {
     public static Map<String, Object> getMap(ServerPlayerEntity player) {
         File file = getFile(player);
         if (!file.exists()) return getDefaults(player);
-        try {
-            return new ObjectMapper().readValue(file, new TypeReference<>() {});
+        try (FileReader reader = new FileReader(file)) {
+            return new Gson().fromJson(reader,new TypeToken<Map<String, Object>>() {}.getType());
         } catch (Exception e) {
             e.printStackTrace();
         }
         return new HashMap<>();
     }
     public static void writeMap(ServerPlayerEntity player, Map<String, Object> map) {
-        try {
-            new ObjectMapper().writeValue(getFile(player),addExpires(player,map));
+        try (FileWriter writer = new FileWriter(getFile(player))){
+            writer.write(new Gson().toJson(map));
         } catch (Exception e) {
             e.printStackTrace();
         }

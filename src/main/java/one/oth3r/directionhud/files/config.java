@@ -1,7 +1,7 @@
 package one.oth3r.directionhud.files;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import one.oth3r.directionhud.DirectionHUD;
 import one.oth3r.directionhud.commands.HUD;
 import one.oth3r.directionhud.utils.CUtl;
@@ -10,6 +10,8 @@ import one.oth3r.directionhud.utils.Utl;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -145,14 +147,11 @@ public class config {
         DESTSend = Boolean.parseBoolean((String) properties.computeIfAbsent("send", a -> defaults.DESTSend+""));
         DESTTrack = Boolean.parseBoolean((String) properties.computeIfAbsent("track", a -> defaults.DESTTrack+""));
         //DIM
-        try {
-            dimensionRatios = new ObjectMapper().readValue((String)
-                    properties.computeIfAbsent("dimension-ratios", a -> defaults.dimensionRatios+""), new TypeReference<>() {});
-            dimensions = new ObjectMapper().readValue((String)
-                    properties.computeIfAbsent("dimensions", a -> defaults.dimensions+""), new TypeReference<>() {});
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        Type mapType = new TypeToken<HashMap<String, Object>>() {}.getType();
+        dimensionRatios = new Gson().fromJson((String)
+                properties.computeIfAbsent("dimension-ratios", a -> defaults.dimensionRatios+""),mapType);
+        dimensions = new Gson().fromJson((String)
+                properties.computeIfAbsent("dimensions", a -> defaults.dimensions+""),mapType);
 
         if (version.equalsIgnoreCase("v1.1")) {
             HUDTracking = Boolean.parseBoolean((String) properties.computeIfAbsent("compass", a -> defaults.HUDTracking+""));
