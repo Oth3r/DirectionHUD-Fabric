@@ -1,6 +1,8 @@
 package one.oth3r.directionhud.files;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.ToNumberPolicy;
 import com.google.gson.reflect.TypeToken;
 import net.minecraft.server.network.ServerPlayerEntity;
 import one.oth3r.directionhud.DirectionHUD;
@@ -20,19 +22,21 @@ public class PlayerData {
         if (config.online) return new File(DirectionHUD.playerData+player.getUuidAsString()+".json");
         else return new File(DirectionHUD.playerData+player.getName().getString()+".json");
     }
-    public static Map<String, Object> getMap(ServerPlayerEntity player) {
+    public static Map<String, Object> fileToMap(ServerPlayerEntity player) {
         File file = getFile(player);
         if (!file.exists()) return getDefaults(player);
         try (FileReader reader = new FileReader(file)) {
-            return new Gson().fromJson(reader,new TypeToken<Map<String, Object>>() {}.getType());
+            Gson gson = new GsonBuilder().setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE).create();
+            return gson.fromJson(reader,new TypeToken<Map<String, Object>>() {}.getType());
         } catch (Exception e) {
             e.printStackTrace();
         }
         return new HashMap<>();
     }
-    public static void writeMap(ServerPlayerEntity player, Map<String, Object> map) {
+    public static void mapToFile(ServerPlayerEntity player, Map<String, Object> map) {
         try (FileWriter writer = new FileWriter(getFile(player))){
-            writer.write(new Gson().toJson(map));
+            Gson gson = new GsonBuilder().setObjectToNumberStrategy(ToNumberPolicy.LONG_OR_DOUBLE).create();
+            writer.write(gson.toJson(addExpires(player,map)));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -114,7 +118,7 @@ public class PlayerData {
             Map<String,Object> hud = (Map<String, Object>) map.get("hud");
             //ORDER FIX
             String order = (String) hud.get("order");
-            hud.put("order",order.replace("order","tracking"));
+            hud.put("order",order.replace("compass","tracking"));
             dest.put("hud",hud);
             //NEW TRACKING & XYZ FIX
             dest.put("tracking",null);
@@ -127,7 +131,7 @@ public class PlayerData {
                 String[] sp = xyz.split(" ");
                 Loc loc = new Loc(xyz);
                 if (sp[1].equals("n")) loc = new Loc(sp[0]+" "+sp[2]);
-                dest.put("dest",loc);
+                dest.put("dest",loc.getLocC());
             }
             dest.remove("xyz");
             //REMOVE SUSPENDED
@@ -192,13 +196,13 @@ public class PlayerData {
         return map;
     }
     public static void addPlayer(ServerPlayerEntity player) {
-        Map<String, Object> map = updater(player, getMap(player));
-        writeMap(player, map);
+        Map<String, Object> map = updater(player, fileToMap(player));
+        mapToFile(player, map);
         playerMap.put(player,removeUnnecessary(map));
         oneTimeMap.put(player,new HashMap<>());
     }
     public static void removePlayer(ServerPlayerEntity player) {
-        writeMap(player,getMap(player));
+        mapToFile(player, fileToMap(player));
         playerMap.remove(player);
         oneTimeMap.remove(player);
     }
@@ -334,7 +338,7 @@ public class PlayerData {
         public static class dest {
             private static Map<String,Object> get(ServerPlayerEntity player, boolean map) {
                 if (map) return (Map<String,Object>) fromMap(player).get("destination");
-                return (Map<String, Object>) getMap(player).get("destination");
+                return (Map<String, Object>) fileToMap(player).get("destination");
             }
             private static Map<String,Object> getSetting(ServerPlayerEntity player, boolean map) {
                 return (Map<String,Object>) get(player,map).get("setting");
@@ -366,7 +370,7 @@ public class PlayerData {
                     return (boolean) getSetting(player, true).get("autoclear");
                 }
                 public static int autoclearrad(ServerPlayerEntity player) {
-                    return Integer.parseInt(getSetting(player, true).get("autoclearradius").toString());
+                    return ((Long) getSetting(player, true).get("autoclearradius")).intValue();
                 }
                 public static boolean autoconvert(ServerPlayerEntity player) {
                     return (boolean) getSetting(player, true).get("autoconvert");
@@ -409,7 +413,7 @@ public class PlayerData {
                     return (String) getTrack(player).get("id");
                 }
                 public static int expire(ServerPlayerEntity player) {
-                    return Integer.parseInt(getTrack(player).get("expire").toString());
+                    return ((Long) getTrack(player).get("expire")).intValue();
                 }
                 public static String target(ServerPlayerEntity player) {
                     return (String) getTrack(player).get("target");
@@ -420,9 +424,9 @@ public class PlayerData {
     public static class set {
         public static class hud {
             public static void set(ServerPlayerEntity player, Map<String,Object> hud) {
-                Map<String,Object> map = getMap(player);
+                Map<String,Object> map = fileToMap(player);
                 map.put("hud",hud);
-                writeMap(player,map);
+                mapToFile(player,map);
                 playerMap.put(player,removeUnnecessary(map));
             }
             private static void setSetting(ServerPlayerEntity player, Map<String,Object> setting) {
@@ -472,9 +476,9 @@ public class PlayerData {
         }
         public static class dest {
             public static void set(ServerPlayerEntity player, Map<String,Object> dest) {
-                Map<String,Object> map = getMap(player);
+                Map<String,Object> map = fileToMap(player);
                 map.put("destination",dest);
-                writeMap(player,map);
+                mapToFile(player,map);
                 playerMap.put(player,map);
             }
             public static void setM(ServerPlayerEntity player, Map<String,Object> dest) {
@@ -597,7 +601,7 @@ public class PlayerData {
                     data.put("id", b);
                     setTrack(player, data);
                 }
-                public static void expire(ServerPlayerEntity player, int b) {
+                public static void expire(ServerPlayerEntity player, long b) {
                     Map<String,Object> data = get.dest.getTrack(player);
                     data.put("expire", b);
                     setTrack(player, data);
