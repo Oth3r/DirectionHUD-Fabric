@@ -62,8 +62,7 @@ public class Utl {
         System.arraycopy(arr, numToRemove, result, 0, result.length);
         return result;
     }
-    public static SuggestionsBuilder xyzSuggester(ServerPlayerEntity player, SuggestionsBuilder builders, String type) {
-        SuggestionsBuilder builder = new SuggestionsBuilder(builders.getInput(),builders.getStart());
+    public static SuggestionsBuilder xyzSuggester(ServerPlayerEntity player, SuggestionsBuilder builder, String type) {
         if (type.equalsIgnoreCase("x")) {
             builder.suggest(player.getBlockX());
             builder.suggest(player.getBlockX()+" "+player.getBlockZ());
