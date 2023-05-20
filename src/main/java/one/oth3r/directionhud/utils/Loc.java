@@ -21,7 +21,7 @@ public class Loc {
     public Loc(Integer x, Integer y, Integer z, String dimension) {
         this.x = xzBounds(x);
         this.y = yBounds(y);
-        this.z = xzBounds(x);
+        this.z = xzBounds(z);
         if (Utl.dim.checkValid(dimension)) this.dimension = dimension;
     }
     public Loc(Integer x, Integer y, Integer z) {
@@ -45,11 +45,13 @@ public class Loc {
         parseXYZ(xyz);
         if (Utl.dim.checkValid(dimension)) this.dimension = dimension;
     }
-    private static int yBounds(int s) {
+    private static Integer yBounds(Integer s) {
+        if (s == null) return null;
         if (s > config.MAXy) return config.MAXy;
         return Math.max(s, config.MAXy*-1);
     }
-    private static int xzBounds(int s) {
+    private static Integer xzBounds(Integer s) {
+        if (s == null) return null;
         if (s > config.MAXxz) return config.MAXxz;
         return Math.max(s, config.MAXxz*-1);
     }
