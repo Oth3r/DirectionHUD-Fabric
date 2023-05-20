@@ -148,6 +148,10 @@ public class CUtl {
                 return TBtn("dest.track").btn(true).color(c.track).cEvent(2,"/dest track ").hEvent(
                         CTxT.of(cmdUsage.destTrack()).color(c.track).append("\n").append(TBtn("dest.track.hover")));
             }
+            public static CTxT trackX() {
+                return CTxT.of("✕").btn(true).color('c').cEvent(1,"/dest track .clear").hEvent(
+                        CTxT.of(cmdUsage.destClear()).color('c').append("\n").append(TBtn("dest.track_clear.hover")));
+            }
         }
         public static class hud {
             public static CTxT color() {
