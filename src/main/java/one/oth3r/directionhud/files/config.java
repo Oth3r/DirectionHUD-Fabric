@@ -1,6 +1,7 @@
 package one.oth3r.directionhud.files;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import one.oth3r.directionhud.DirectionHUD;
 import one.oth3r.directionhud.commands.HUD;
@@ -11,9 +12,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 public class config {
     public static String lang = defaults.lang;
@@ -147,7 +146,7 @@ public class config {
         DESTSend = Boolean.parseBoolean((String) properties.computeIfAbsent("send", a -> defaults.DESTSend+""));
         DESTTrack = Boolean.parseBoolean((String) properties.computeIfAbsent("track", a -> defaults.DESTTrack+""));
         //DIM
-        Type mapType = new TypeToken<HashMap<String, Object>>() {}.getType();
+        Type mapType = new TypeToken<ArrayList<String>>() {}.getType();
         dimensionRatios = new Gson().fromJson((String)
                 properties.computeIfAbsent("dimension-ratios", a -> defaults.dimensionRatios+""),mapType);
         dimensions = new Gson().fromJson((String)
@@ -224,8 +223,9 @@ public class config {
             file.write(("\n# VALID DEST COLORS: hex colors, & all default minecraft colors. (light_purple -> pink & dark_purple -> purple)").getBytes());
             file.write("\n\n# Dimension".getBytes());
             file.write("\n# Add/edit custom dimensions and conversion ratios".getBytes());
-            file.write(("\ndimensions="+dimensions).getBytes());
-            file.write(("\ndimension-ratios="+dimensionRatios).getBytes());
+            Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+            file.write(("\ndimensions="+gson.toJson(dimensions)).getBytes());
+            file.write(("\ndimension-ratios="+gson.toJson(dimensionRatios)).getBytes());
         } catch (Exception e) {
             e.printStackTrace();
         }
