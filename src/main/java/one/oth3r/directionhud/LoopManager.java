@@ -96,7 +96,7 @@ public class LoopManager {
                     }
                 }
                 if (PlayerData.get.dest.getTracking(player) != null && !PlayerData.get.dest.setting.track(player))
-                    Destination.social.track.clear(player, CUtl.lang("tracking_off").color('7').italic(true));
+                    Destination.social.track.clear(player, CUtl.lang("dest.track.clear.tracking_off").color('7').italic(true));
                 ServerPlayerEntity trackingP = Destination.social.track.getTarget(player);
                 //TRACKING
                 if (trackingP != null && PlayerData.get.dest.setting.track(trackingP)) {
@@ -105,7 +105,7 @@ public class LoopManager {
                         player.sendMessage(CUtl.tag().append(CUtl.lang("dest.track.back")).b());
                         PlayerData.setOneTime(player,"tracking.offline",null);
                     }
-                    Loc tParticleLoc = new Loc(trackingP);
+                    Vec3d trackingVec = trackingP.getPos();
                     boolean particles = true;
                     //IF NOT IN SAME DIM
                     if (!Utl.player.dim(trackingP).equals(Utl.player.dim(player))) {
@@ -122,7 +122,9 @@ public class LoopManager {
                                 PlayerData.setOneTime(player,"tracking.converted",Utl.player.dim(player));
                             }
                             particles = true;
-                            tParticleLoc.convertTo(Utl.player.dim(player));
+                            Loc tLoc = new Loc(trackingP);
+                            tLoc.convertTo(Utl.player.dim(player));
+                            trackingVec = tLoc.getVec3d(player);
                         } else if (PlayerData.getOneTime(player,"tracking.dimension") == null) {
                             //NOT CONVERTIBLE OR AUTOCONVERT OFF -- SEND DIM MSG
                             //RESET CONVERT
@@ -148,9 +150,8 @@ public class LoopManager {
                     //PARTICLES
                     if (PlayerData.get.dest.setting.particle.tracking(player) && particles) {
                         if (PlayerData.get.dest.setting.ylevel(player))
-                            tParticleLoc.setY(null);
-                        Vec3d tVec = tParticleLoc.getVec3d(player);
-                        tVec.add(0,1,0);
+                            trackingVec = new Vec3d(trackingVec.getX(),player.getY(),trackingVec.getZ());
+                        Vec3d tVec = trackingVec.add(0,1,0);
                         double distance = pVec.distanceTo(tVec);
                         Vec3d particlePos = pVec.subtract(0, 0.2, 0);
                         double spacing = 0.5;
@@ -171,7 +172,7 @@ public class LoopManager {
                     }
                 } else if (trackingP != null) {
                     //TRACKING PLAYER TURNED OFF TRACKING
-                    Destination.social.track.clear(player, CUtl.lang("tracking_off_tracked").color('7').italic(true));
+                    Destination.social.track.clear(player, CUtl.lang("dest.track.clear.tracking_off_tracked").color('7').italic(true));
                 } else if (PlayerData.getOneTime(player,"tracking.offline") == null && PlayerData.get.dest.getTracking(player) != null) {
                     //TRACKING PLAYER OFFLINE
                     player.sendMessage(CUtl.tag().append(CUtl.lang("dest.track.offline")).append(" ")
