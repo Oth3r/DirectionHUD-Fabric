@@ -85,6 +85,10 @@ public class Destination {
             player.sendMessage(error("coordinates"));
             return;
         }
+        if (loc.getDIM() == null) {
+            player.sendMessage(error("dimension"));
+            return;
+        }
         if (checkDist(player,loc)) {
             player.sendMessage(error("dest.at"));
             return;
@@ -137,7 +141,7 @@ public class Destination {
     }
     public static class commandExecutor {
         public static int setCMD(ServerPlayerEntity player, String[] args) {
-            if (!Utl.inBetween(args.length, 2,4)) {
+            if (!Utl.inBetween(args.length, 2,5)) {
                 player.sendMessage(CUtl.usage(CUtl.cmdUsage.destSet()));
                 return 1;
             }
@@ -154,19 +158,19 @@ public class Destination {
                 Destination.set(true,player,new Loc(Utl.tryInt(args[0]),Utl.tryInt(args[1]),Utl.player.dim(player)));
             // /dest set x z DIM
             if (args.length == 3 && !Utl.isInt(args[2]))
-                Destination.set(player,new Loc(Utl.tryInt(args[0]),Utl.tryInt(args[1]),args[2]));
+                Destination.set(true, player,new Loc(Utl.tryInt(args[0]),Utl.tryInt(args[1]),args[2]));
             // /dest set x y z
             if (args.length == 3 && Utl.isInt(args[2]))
                 Destination.set(true,player,new Loc(Utl.tryInt(args[0]),Utl.tryInt(args[1]),Utl.tryInt(args[2]),Utl.player.dim(player)));
             // /dest set x z DIM (convert)
             if (args.length == 4 && !Utl.isInt(args[2]))
-                Destination.setConvert(player,new Loc(Utl.tryInt(args[0]),Utl.tryInt(args[1]),args[2]),args[3]);
+                Destination.setConvert(player,new Loc(Utl.tryInt(args[0]),Utl.tryInt(args[1]),args[2]),Utl.player.dim(player));
             // /dest set x y z DIM
-            if (args.length == 4)
-                Destination.set(player,new Loc(Utl.tryInt(args[0]),Utl.tryInt(args[1]),Utl.tryInt(args[2]),args[3]));
+            if (args.length == 4 && Utl.isInt(args[2]))
+                Destination.set(true,player,new Loc(Utl.tryInt(args[0]),Utl.tryInt(args[1]),Utl.tryInt(args[2]),args[3]));
             // /dest set x y z DIM (convert)
             if (args.length == 5)
-                Destination.setConvert(player,new Loc(Utl.tryInt(args[0]),Utl.tryInt(args[1]),Utl.tryInt(args[2]),args[3]),args[4]);
+                Destination.setConvert(player,new Loc(Utl.tryInt(args[0]),Utl.tryInt(args[1]),Utl.tryInt(args[2]),args[3]),Utl.player.dim(player));
             return 1;
         }
         public static int addCMD(ServerPlayerEntity player, String[] args) {
@@ -487,7 +491,7 @@ public class Destination {
         }
         public static CompletableFuture<Suggestions> setCMD(ServerPlayerEntity player, SuggestionsBuilder builder, int pos, String[] args) {
             // set <saved> <name> (convert)
-            // set <x> (y) <z> (dim)
+            // set <x> (y) <z> (dim) (convert)
             if (pos == 0) {
                 if (config.DESTSaving) builder.suggest("saved");
                 builder.add(Utl.xyzSuggester(player,builder,"x"));
@@ -507,13 +511,21 @@ public class Destination {
                 if (!Utl.isInt(args[1])) {
                     return builder.suggest("convert").buildFuture();
                 }
-                for (String s : Utl.dim.getList()) builder.suggest(s);
+                if (args.length == 3 && !Utl.isInt(args[2]))
+                    for (String s : Utl.dim.getList()) builder.suggest(s);
                 return Utl.xyzSuggester(player,builder,"z").buildFuture();
             }
             // set <x> (y) <z> (dim)
+            // set x z dim (convert
             if (pos == 3) {
-                if (Utl.isInt(args[1]))
+                if (Utl.isInt(args[2]))
                     for (String s : Utl.dim.getList()) builder.suggest(s);
+                else builder.suggest("convert");
+                return builder.buildFuture();
+            }
+            // set x y z dim convert
+            if (pos == 4) {
+                if (Utl.isInt(args[2])) builder.suggest("convert");
                 return builder.buildFuture();
             }
             return builder.buildFuture();
@@ -989,7 +1001,7 @@ public class Destination {
                 }
                 int i = saved.getNames(player).indexOf(name);
                 loc = saved.getLocs(player).get(i);
-                color = " "+saved.getColors(player).get(i);
+                color = saved.getColors(player).get(i);
             }
             if (!loc.hasXYZ()) {
                 player.sendMessage(error("coordinates"));
@@ -1001,7 +1013,7 @@ public class Destination {
             }
             CTxT xyzB = CTxT.of("");
             if (name==null) {
-                name = lang("send.change_name").getString()+" ";
+                name = lang("send.change_name").getString();
                 xyzB.append(loc.getBadge());
             } else xyzB.append(loc.getBadge(name,color.equals("")?"white":color));
             String plDimension = Utl.player.dim(pl);
@@ -1009,7 +1021,7 @@ public class Destination {
             CTxT msg = CTxT.of("\n ");
             msg.append(xyzB).append(" ");
             if (config.DESTSaving)
-                msg.append(CUtl.CButton.dest.add("/dest saved add "+name+" "+loc.getXYZ()+" "+loc.getDIM()+color)).append(" ");
+                msg.append(CUtl.CButton.dest.add("/dest saved add "+name+" "+loc.getXYZ()+" "+loc.getDIM()+" "+color)).append(" ");
             msg.append(CUtl.CButton.dest.set("/dest set "+loc.getXYZ()+" "+loc.getDIM())).append(" ");
             if (Utl.dim.canConvert(plDimension,loc.getDIM()))
                 msg.append(CUtl.CButton.dest.convert("/dest set " +loc.getXYZ()+" "+loc.getDIM()+" convert")).append(" ");
@@ -1025,7 +1037,7 @@ public class Destination {
             }
             public static void clear(ServerPlayerEntity player, CTxT reason) {
                 CTxT msg = CUtl.tag().append(lang("track.clear"));
-                if (getTarget(player) == null) {
+                if (PlayerData.get.dest.getTracking(player) == null) {
                     player.sendMessage(error("dest.track.cleared"));
                     return;
                 }
@@ -1316,6 +1328,8 @@ public class Destination {
         // lmao this is a mess but is it the best way to do it? dunno
         boolean line1Free = false;
         boolean line2Free = !(PlayerData.get.dest.setting.lastdeath(player) && config.deathsaving);
+        boolean trackBig = PlayerData.get.dest.getTracking(player) != null;
+        boolean sendThird = showSend(player);
         //SAVED + ADD
         if (config.DESTSaving) {
             msg.append(CUtl.CButton.dest.saved()).append(CUtl.CButton.dest.add());
@@ -1347,13 +1361,21 @@ public class Destination {
             if (line2Free && !line1Free) {
                 msg.append("\n\n ");
                 line2Free = false;
-            } else msg.append("   ");
+                sendThird = false;
+            } else if (trackBig) msg.append(" ");
+            else msg.append("   ");
         }
         //TRACK
         if (showTracking(player)) {
             msg.append(CUtl.CButton.dest.track());
+            if (trackBig) msg.append(CUtl.CButton.dest.trackX());
             if (line2Free && !line1Free) {
                 msg.append("\n\n ");
+            } else if (trackBig && line2Free) {
+                if (showSend(player)) msg.append(" ");
+                else msg.append("   ");
+            } else if (sendThird && trackBig) {
+                msg.append(" ");
             } else msg.append("   ");
         }
         //back
