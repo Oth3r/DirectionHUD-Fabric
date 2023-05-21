@@ -150,7 +150,7 @@ public class CUtl {
             }
             public static CTxT trackX() {
                 return CTxT.of("✕").btn(true).color('c').cEvent(1,"/dest track .clear").hEvent(
-                        CTxT.of(cmdUsage.destClear()).color('c').append("\n").append(TBtn("dest.track_clear.hover")));
+                        CTxT.of(cmdUsage.destTrackClear()).color('c').append("\n").append(TBtn("dest.track_clear.hover")));
             }
         }
         public static class hud {

@@ -39,6 +39,7 @@ public class DirectionHUD {
 	public static MinecraftServer server;
 	public static CommandManager commandManager;
 	public static void initializeCommon() {
+		//todo LATER save cmd color support and '/dest send <IGN>' support
 		configFile = FabricLoader.getInstance().getConfigDir().toFile()+"/";
 		config.load();
 		//START
