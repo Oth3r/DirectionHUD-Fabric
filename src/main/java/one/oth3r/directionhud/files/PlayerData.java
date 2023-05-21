@@ -116,10 +116,14 @@ public class PlayerData {
             map.remove("lastdeath");
             Map<String,Object> dest = (Map<String, Object>) map.get("destination");
             Map<String,Object> hud = (Map<String, Object>) map.get("hud");
+            Map<String,Object> hudModule = (Map<String, Object>) hud.get("module");
+            hudModule.put("tracking",hudModule.get("compass"));
+            hudModule.put("compass",null);
+            hud.put("module",hudModule);
             //ORDER FIX
             String order = (String) hud.get("order");
             hud.put("order",order.replace("compass","tracking"));
-            dest.put("hud",hud);
+            map.put("hud",hud);
             //NEW TRACKING & XYZ FIX
             dest.put("tracking",null);
             String xyz = (String) dest.get("xyz");
@@ -175,6 +179,7 @@ public class PlayerData {
         Map<String,Object> dest = (Map<String, Object>) map.get("destination");
         Map<String,Object> dSet = (Map<String, Object>) dest.get("setting");
         dSet.remove("send");
+        dSet.remove("lastdeath");
         dest.remove("saved");
         dest.remove("lastdeath");
         dest.put("setting",dSet);
@@ -389,7 +394,7 @@ public class PlayerData {
                     return (boolean) getSetting(player, true).get("track");
                 }
                 public static boolean lastdeath(ServerPlayerEntity player) {
-                    return (boolean) getSetting(player, true).get("lastdeath");
+                    return (boolean) getSetting(player, false).get("lastdeath");
                 }
                 public static class particle {
                     public static boolean line(ServerPlayerEntity player) {
