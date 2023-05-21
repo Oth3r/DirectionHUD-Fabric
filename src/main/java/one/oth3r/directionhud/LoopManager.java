@@ -187,8 +187,13 @@ public class LoopManager {
                     if (PlayerData.get.dest.track.expire(player) == 0) {
                         player.sendMessage(CUtl.tag().append(CUtl.lang("dest.track.expired")).b());
                         PlayerData.set.dest.setTrackNull(player);
-                    } else if (PlayerData.get.dest.track.expire(player) > 0)
+                    } else if (PlayerData.get.dest.track.expire(player) > 0) {
                         PlayerData.set.dest.track.expire(player, PlayerData.get.dest.track.expire(player) - 1);
+                        if (Utl.player.getFromIdentifier(PlayerData.get.dest.track.target(player)) == null) {
+                            player.sendMessage(CUtl.tag().append(CUtl.lang("dest.track.expired")).b());
+                            PlayerData.set.dest.setTrackNull(player);
+                        }
+                    }
                 }
             }
         }
