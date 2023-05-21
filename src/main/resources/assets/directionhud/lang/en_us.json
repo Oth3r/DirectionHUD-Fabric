@@ -22,7 +22,7 @@
   "key.directionhud.error.dest.saved.length": "Destination name is too long! Max length is %d characters.",
   "key.directionhud.error.dest.send.disabled_player": "%s isn't accepting coordinates at this time!",
   "key.directionhud.error.dest.send.alone": "You cant send coordinates to yourself!",
-  "key.directionhud.error.dest.send.player": "Enter a player to send to!",
+  "key.directionhud.error.dest.send.player": "Enter a player!",
   "key.directionhud.error.dest.track.disabled": "%s has the track command disabled!",
   "key.directionhud.error.dest.track.alone": "You cant send coordinates to yourself!",
   "key.directionhud.error.dest.track.pending": "You already have a tracking request pending!",
