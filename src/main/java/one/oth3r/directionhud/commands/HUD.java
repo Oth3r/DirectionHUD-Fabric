@@ -9,6 +9,7 @@ import one.oth3r.directionhud.files.PlayerData;
 import one.oth3r.directionhud.files.config;
 import one.oth3r.directionhud.utils.CTxT;
 import one.oth3r.directionhud.utils.CUtl;
+import one.oth3r.directionhud.utils.Loc;
 import one.oth3r.directionhud.utils.Utl;
 
 import java.util.*;
@@ -26,16 +27,18 @@ public class HUD {
         coordinates.add("s"+player.getBlockX()+" "+player.getBlockY()+" "+player.getBlockZ());
         ArrayList<String> destination = new ArrayList<>();
         ArrayList<String> distance = new ArrayList<>();
-        ArrayList<String> compass = new ArrayList<>();
-        if (!Destination.get(player, "xyz").equals("f")) {
+        ArrayList<String> tracking = new ArrayList<>();
+        if (Destination.get(player).hasXYZ()) {
             destination.add("pDEST: ");
-            destination.add("s"+Destination.get(player, "xyz"));
+            destination.add("s"+Destination.get(player).getXYZ());
             distance.add("p[");
             distance.add("s"+Destination.getDist(player));
             distance.add("p]");
-            compass.add("p[");
-            compass.add("s"+getCompass(player));
-            compass.add("p]");
+        }
+        if (PlayerData.get.dest.getTracking(player) != null) {
+            tracking.add("/p[");
+            tracking.add("s"+getTracking(player));
+            tracking.add("/p]");
         }
         ArrayList<String> direction = new ArrayList<>();
         direction.add("p"+HUD.getPlayerDirection(player));
@@ -55,23 +58,30 @@ public class HUD {
         modules.put("direction", direction);
         modules.put("time", time);
         modules.put("weather", weather);
-        modules.put("compass", compass);
+        modules.put("tracking", tracking);
         int start = 1;
         CTxT msg = CTxT.of("");
         for (int i=0; i < order.getEnabled(player).size(); i++) {
-            if (!Destination.checkDestination(player)) {
+            if (!Destination.get(player).hasXYZ()) {
                 if (modules.get(order.getEnabled(player).get(i)).equals(destination) ||
-                        modules.get(order.getEnabled(player).get(i)).equals(distance) ||
-                        modules.get(order.getEnabled(player).get(i)).equals(compass)) continue;
+                        modules.get(order.getEnabled(player).get(i)).equals(distance)) continue;
             }
             for (String str : modules.get(order.getEnabled(player).get(i))) {
                 String string = str.substring(1);
+                boolean strike = false;
+                if (str.charAt(0) == '/') {
+                    str = str.substring(1);
+                    string = string.substring(1);
+                    strike = true;
+                }
                 if (str.charAt(0) == 'p') {
-                    msg.append(color.addColor(player,string,1,LoopManager.rainbowF+start,5));
+                    msg.append(color.addColor(player,string,1,LoopManager.rainbowF+start,5)
+                            .strikethrough(strike));
                     if (color.getHUDColors(player)[0].equals("rainbow"))
                         start = start + (string.replaceAll("\\s", "").length()*5);
                 } else if (str.charAt(0) == 's') {
-                    msg.append(color.addColor(player,string,2,LoopManager.rainbowF+start,5));
+                    msg.append(color.addColor(player,string,2,LoopManager.rainbowF+start,5)
+                            .strikethrough(strike));
                     if (color.getHUDColors(player)[1].equals("rainbow"))
                         start = start + (string.replaceAll("\\s", "").length()*5);
                 }
@@ -135,24 +145,32 @@ public class HUD {
 
         return ampm;
     }
-    public static String getCompass(ServerPlayerEntity player) {
-        if (!Destination.checkDestination(player)) return "";
-        int x = Integer.parseInt(Destination.get(player, "x")) - player.getBlockX();
-        int z = (Integer.parseInt(Destination.get(player, "z")) - player.getBlockZ()) * -1;
+    public static String getTracking(ServerPlayerEntity player) {
+        if (PlayerData.get.dest.getTracking(player) == null) return "";
+        ServerPlayerEntity pl = Destination.social.track.getTarget(player);
+        if (pl == null) return "???";
+        Loc plLoc = new Loc(pl);
+        if (!Utl.player.dim(player).equals(Utl.player.dim(pl))) {
+            if (Utl.dim.canConvert(Utl.player.dim(player),Utl.player.dim(pl))) {
+                plLoc.convertTo(Utl.player.dim(player));
+            } else return "-?-";
+        }
+        int x = plLoc.getX()-player.getBlockX();
+        int z = (plLoc.getZ()-player.getBlockZ())*-1;
         double rotation = (player.getYaw() - 180) % 360;
         if (rotation < 0) {
             rotation += 360.0;
         }
         double d = Math.toDegrees(Math.atan2(x, z));
         if (d < 0) d = d + 360;
-        if (Utl.inBetweenD(rotation, Utl.sub(d, 15, 360), (d+15)%360)) return "▲";
-//        if (Utl.inBetweenR(rotation, d, (d+65)%360)) return "⬉";
-        if (Utl.inBetweenD(rotation, d, (d+115)%360)) return "◀";
-//        if (Utl.inBetweenR(rotation, d, (d+165)%360)) return "⬋";
-//        if (Utl.inBetweenR(rotation, Utl.sub(d, 65, 360), d)) return "⬈";
-        if (Utl.inBetweenD(rotation, Utl.sub(d, 115, 360), d)) return "▶";
-//        if (Utl.inBetweenR(rotation, Utl.sub(d, 165, 360), d)) return "⬊";
-        return "▼";
+        if (Utl.inBetweenD(rotation, Utl.sub(d, 15, 360), (d+15)%360)) return "-▲-";
+        if (Utl.inBetweenD(rotation, d, (d+65)%360)) return "◀▲-";
+        if (Utl.inBetweenD(rotation, d, (d+115)%360)) return "◀--";
+        if (Utl.inBetweenD(rotation, d, (d+165)%360)) return "◀▼-";
+        if (Utl.inBetweenD(rotation, Utl.sub(d, 65, 360), d)) return "-▲▶";
+        if (Utl.inBetweenD(rotation, Utl.sub(d, 115, 360), d)) return "--▶";
+        if (Utl.inBetweenD(rotation, Utl.sub(d, 165, 360), d)) return "-▼▶";
+        return "-▼-";
     }
     public static class order {
         //has to be lowercase
@@ -162,7 +180,7 @@ public class HUD {
             if (s.equals("distance")) return true;
             if (s.equals("destination")) return true;
             if (s.equals("direction")) return true;
-            if (s.equals("compass")) return true;
+            if (s.equals("tracking")) return true;
             if (s.equals("time")) return true;
             return s.equals("weather");
         }
@@ -228,8 +246,8 @@ public class HUD {
             if (s.equalsIgnoreCase("direction")) {
                 return PlayerData.get.hud.module.direction(player);
             }
-            if (s.equalsIgnoreCase("compass")) {
-                return PlayerData.get.hud.module.compass(player);
+            if (s.equalsIgnoreCase("tracking")) {
+                return PlayerData.get.hud.module.tracking(player);
             }
             if (s.equalsIgnoreCase("time")) {
                 return PlayerData.get.hud.module.time(player);
@@ -240,7 +258,7 @@ public class HUD {
             return false;
         }
         public static String allModules() {
-            return "coordinates distance compass destination direction time weather";
+            return "coordinates distance tracking destination direction time weather";
         }
         public static String[] getOrderC(ServerPlayerEntity player) {
             return PlayerData.get.hud.order(player).split(" ");
@@ -314,7 +332,7 @@ public class HUD {
             if (s.equalsIgnoreCase("distance")) return lang("module.distance").getString();
             if (s.equalsIgnoreCase("destination")) return lang("module.destination").getString();
             if (s.equalsIgnoreCase("direction")) return lang("module.direction").getString();
-            if (s.equalsIgnoreCase("compass")) return lang("module.compass").getString();
+            if (s.equalsIgnoreCase("tracking")) return lang("module.tracking").getString();
             if (s.equalsIgnoreCase("time")) return lang("module.time").getString();
             if (s.equalsIgnoreCase("weather")) return lang("module.weather").getString();
             return "";
@@ -341,11 +359,11 @@ public class HUD {
                 hoverT.append(lang("module.direction.info")).append("\n")
                         .append(color.addColor(player,"N",1,15,20));
             }
-            if (s.equalsIgnoreCase("compass")) {
-                hoverT.append(lang("module.compass.info")).append("\n")
-                        .append(color.addColor(player,"[",1,15,20))
+            if (s.equalsIgnoreCase("tracking")) {
+                hoverT.append(lang("module.tracking.info")).append("\n")
+                        .append(color.addColor(player,"[",1,15,20).strikethrough(true))
                         .append(color.addColor(player,"▲",2,35,20))
-                        .append(color.addColor(player,"]",1,55,20));
+                        .append(color.addColor(player,"]",1,55,20).strikethrough(true));
             }
             if (s.equalsIgnoreCase("time")) {
                 if (PlayerData.get.hud.setting.time24h(player)) {
@@ -371,7 +389,7 @@ public class HUD {
             modules.put("coordinates", CTxT.of(" "));
             modules.put("distance", CTxT.of(" "));
             modules.put("destination", CTxT.of(" "));
-            modules.put("compass", CTxT.of(" "));
+            modules.put("tracking", CTxT.of(" "));
             modules.put("direction", CTxT.of(" "));
             modules.put("time", CTxT.of(" "));
             modules.put("weather", CTxT.of(" "));

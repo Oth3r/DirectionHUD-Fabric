@@ -3,13 +3,14 @@ package one.oth3r.directionhud;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
 import one.oth3r.directionhud.commands.Destination;
 import one.oth3r.directionhud.commands.HUD;
 import one.oth3r.directionhud.files.PlayerData;
 import one.oth3r.directionhud.files.config;
+import one.oth3r.directionhud.utils.CTxT;
 import one.oth3r.directionhud.utils.CUtl;
+import one.oth3r.directionhud.utils.Loc;
 import one.oth3r.directionhud.utils.Utl;
 import org.joml.Vector3f;
 
@@ -34,8 +35,8 @@ public class LoopManager {
                     HUD.build(player);
                 }
                 if (Destination.getDist(player) <= PlayerData.get.dest.setting.autoclearrad(player)
-                        && PlayerData.get.dest.setting.autoclear(player) && Destination.checkDestination(player))
-                    Destination.clear(player, CUtl.lang("dest.cleared_reached").color('7').italic(true));
+                        && PlayerData.get.dest.setting.autoclear(player) && Destination.get(player).hasXYZ())
+                    Destination.clear(player, CUtl.lang("dest.changed.cleared.reached").color('7').italic(true));
             }
         }
         if (rainbowF >= 360) rainbowF = 0;
@@ -58,78 +59,141 @@ public class LoopManager {
             tickS = 0;
             for (ServerPlayerEntity player : DirectionHUD.playerManager.getPlayerList()) {
                 //PARTICLES
-                if (Destination.checkDestination(player)) {
-                    Vec3d PlayerLoc = player.getPos().add(0, 1, 0);
-                    if (player.getVehicle() != null) PlayerLoc.add(0,-0.2,0);
-                    Vec3d DestinationLoc = new Vec3d(Integer.parseInt(Destination.get(player, "x")), Integer.parseInt(Destination.get(player, "y")), Integer.parseInt(Destination.get(player, "z"))).add(0.5, 0.5, 0.5);
+                Vec3d pVec = player.getPos().add(0, 1, 0);
+                if (Destination.get(player).hasXYZ()) {
+                    if (player.getVehicle() != null) pVec.add(0,-0.2,0);
+                    Vec3d destVec = Destination.get(player).getVec3d(player).add(0.5, 0.5, 0.5);
                     if (PlayerData.get.dest.setting.particle.dest(player)) {
-                        Vec3d p1 = DestinationLoc.add(0, 3, 0);
-                        double space = 1;
-                        Vec3d vector = DestinationLoc.add(0, -3, 0).subtract(p1).normalize().multiply(space);
-                        double covered = 0;
-                        for (; covered <= 6; p1 = p1.add(vector)) {
-                            if (PlayerLoc.distanceTo(DestinationLoc) > 0.5 && PlayerLoc.distanceTo(DestinationLoc) < 101) {
-                                player.getWorld().spawnParticles(player, new DustParticleEffect(new Vector3f(Vec3d.unpackRgb(Utl.color.getCodeRGB(PlayerData.get.dest.setting.particle.destcolor(player))).toVector3f()), 3), true, p1.getX(), p1.getY(), p1.getZ(), 1, 0, 0, 0, 1);
+                        Vec3d particlePos = destVec.add(0, 3, 0);
+                        double spacing = 1;
+                        Vec3d segment = destVec.add(0, -3, 0).subtract(particlePos).normalize().multiply(spacing);
+                        double distCovered = 0;
+                        for (; distCovered <= 6; particlePos = particlePos.add(segment)) {
+                            if (pVec.distanceTo(destVec) > 0.5 && pVec.distanceTo(destVec) < 50) {
+                                player.getWorld().spawnParticles(player,
+                                        new DustParticleEffect(new Vector3f(Vec3d.unpackRgb(
+                                                Utl.color.getCodeRGB(PlayerData.get.dest.setting.particle.destcolor(player))).toVector3f()),3),
+                                        true,particlePos.getX(),particlePos.getY(),particlePos.getZ(),1,0,0,0,1);
                             }
-                            covered += space;
+                            distCovered += spacing;
                         }
                     }
                     if (PlayerData.get.dest.setting.particle.line(player)) {
-                        double distance = PlayerLoc.distanceTo(DestinationLoc);
-                        Vec3d p3 = PlayerLoc.subtract(0, 0.2, 0);
-                        double space2 = 1;
-                        Vec3d vector2 = DestinationLoc.subtract(PlayerLoc).normalize().multiply(space2);
-                        double covered2 = 0;
-                        for (; covered2 <= distance; p3 = p3.add(vector2)) {
-                            if (PlayerLoc.distanceTo(DestinationLoc) > 2) {
-                                if (covered2 > 50) {
-                                    break;
-                                }
-                                player.getWorld().spawnParticles(player, new DustParticleEffect(new Vector3f(Vec3d.unpackRgb(Utl.color.getCodeRGB(PlayerData.get.dest.setting.particle.linecolor(player))).toVector3f()), 1), true, p3.getX(), p3.getY(), p3.getZ(), 1, 0, 0, 0, 1);
-                            }
-                            covered2 += space2;
+                        double distance = pVec.distanceTo(destVec);
+                        Vec3d particlePos = pVec.subtract(0, 0.2, 0);
+                        double spacing = 1;
+                        Vec3d segment = destVec.subtract(pVec).normalize().multiply(spacing);
+                        double distCovered = 0;
+                        for (; distCovered <= distance; particlePos = particlePos.add(segment)) {
+                            distCovered += spacing;
+                            if (pVec.distanceTo(destVec) < 2) continue;
+                            if (distCovered >= 50) break;
+                            player.getWorld().spawnParticles(player,
+                                    new DustParticleEffect(new Vector3f(Vec3d.unpackRgb(
+                                            Utl.color.getCodeRGB(PlayerData.get.dest.setting.particle.linecolor(player))).toVector3f()),1),
+                                    true,particlePos.getX(),particlePos.getY(),particlePos.getZ(),1,0,0,0,1);
                         }
                     }
                 }
-                //SUSPEND
-                if (Destination.isPlayer(player)) {
-                    //maybe in the future auto convert when player and tplayer are in overworld/nether
-                    //sends a message that says "converting..." or smth
-                    //too much for me rn tho
-                    ServerPlayerEntity tplayer = DirectionHUD.server.getPlayerManager().getPlayer(PlayerData.get.dest.getDest(player));
-                    if (!(tplayer == null || player.getWorld() == tplayer.getWorld())) {
-                        Destination.suspend(player,tplayer.getName().getString(),4,CUtl.lang("dest.suspended.dimension",
-                                Text.literal(tplayer.getName().getString()).setStyle(CUtl.sS())));
-//                        if (Utl.dim.getPDIM(player).equals("the_end") || Utl.dim.getPDIM(tplayer).equals("the_end")) {
-//                        }
+                if (PlayerData.get.dest.getTracking(player) != null && !PlayerData.get.dest.setting.track(player))
+                    Destination.social.track.clear(player, CUtl.lang("dest.track.clear.tracking_off").color('7').italic(true));
+                ServerPlayerEntity trackingP = Destination.social.track.getTarget(player);
+                //TRACKING
+                if (trackingP != null && PlayerData.get.dest.setting.track(trackingP)) {
+                    //TRACKING OFFLINE MSG RESET
+                    if (PlayerData.getOneTime(player,"tracking.offline") != null) {
+                        player.sendMessage(CUtl.tag().append(CUtl.lang("dest.track.back")).b());
+                        PlayerData.setOneTime(player,"tracking.offline",null);
                     }
-                }
-                //UNSUSPEND
-                if (PlayerData.get.dest.getSuspendedState(player)) {
-                    ServerPlayerEntity tplayer = DirectionHUD.server.getPlayerManager().getPlayer(PlayerData.get.dest.suspended.target(player));
-                    if (!(tplayer == null || player.getWorld() != tplayer.getWorld())) {
-                        Destination.silentSetPlayer(player, tplayer);
-                        PlayerData.set.dest.setSuspendedNull(player);
-                        player.sendMessage(CUtl.tag().append(CUtl.lang("dest.unsuspended")).b());
+                    Vec3d trackingVec = trackingP.getPos();
+                    boolean particles = true;
+                    //IF NOT IN SAME DIM
+                    if (!Utl.player.dim(trackingP).equals(Utl.player.dim(player))) {
+                        particles = false;
+                        // AUTOCONVERT ON AND CONVERTIBLE
+                        if (PlayerData.get.dest.setting.autoconvert(player) && Utl.dim.canConvert(Utl.player.dim(player),Utl.player.dim(trackingP))) {
+                            if (PlayerData.getOneTime(player,"tracking.converted") == null) {
+                                //SEND MSG IF HAVENT B4
+                                player.sendMessage(CUtl.tag().append(CUtl.lang("dest.autoconvert.tracking")).append("\n ")
+                                        .append(CUtl.lang("dest.autoconvert.info",
+                                                        CTxT.of(Utl.dim.getName(Utl.player.dim(trackingP))).italic(true).color(Utl.dim.getHEX(Utl.player.dim(trackingP))),
+                                                        CTxT.of(Utl.dim.getName(Utl.player.dim(player))).italic(true).color(Utl.dim.getHEX(Utl.player.dim(player))))
+                                                .italic(true).color('7')).b());
+                                PlayerData.setOneTime(player,"tracking.converted",Utl.player.dim(player));
+                            }
+                            particles = true;
+                            Loc tLoc = new Loc(trackingP);
+                            tLoc.convertTo(Utl.player.dim(player));
+                            trackingVec = tLoc.getVec3d(player);
+                        } else if (PlayerData.getOneTime(player,"tracking.dimension") == null) {
+                            //NOT CONVERTIBLE OR AUTOCONVERT OFF -- SEND DIM MSG
+                            //RESET CONVERT
+                            PlayerData.setOneTime(player,"tracking.converted",null);
+                            player.sendMessage(CUtl.tag().append(CUtl.lang("dest.track.dimension").append("\n ")
+                                    .append(CUtl.lang("dest.track.dimension_2",
+                                            CTxT.of(Utl.player.name(trackingP)).color(CUtl.sTC())).color('7').italic(true))).b());
+                            PlayerData.setOneTime(player,"tracking.dimension","1");
+                        }
+                    } else if (PlayerData.getOneTime(player,"tracking.converted") != null) {
+                        //SAME DIM & RESET CONVERT MSG
+                        player.sendMessage(CUtl.tag().append(CUtl.lang("dest.autoconvert.tracking")).append("\n ")
+                                .append(CUtl.lang("dest.autoconvert.info",
+                                        CTxT.of(Utl.dim.getName(PlayerData.getOneTime(player,"tracking.converted"))).italic(true).color(Utl.dim.getHEX(PlayerData.getOneTime(player,"tracking.converted"))),
+                                        CTxT.of(Utl.dim.getName(Utl.player.dim(player))).italic(true).color(Utl.dim.getHEX(Utl.player.dim(player))))
+                                        .italic(true).color('7')).b());
+                        PlayerData.setOneTime(player,"tracking.converted",null);
+                    } else if (PlayerData.getOneTime(player,"tracking.dimension") != null) {
+                        //SAME DIM, RESET DIM MSG
+                        player.sendMessage(CUtl.tag().append(CUtl.lang("dest.track.back")).b());
+                        PlayerData.setOneTime(player,"tracking.dimension",null);
                     }
+                    //PARTICLES
+                    if (PlayerData.get.dest.setting.particle.tracking(player) && particles) {
+                        if (PlayerData.get.dest.setting.ylevel(player))
+                            trackingVec = new Vec3d(trackingVec.getX(),player.getY(),trackingVec.getZ());
+                        Vec3d tVec = trackingVec.add(0,1,0);
+                        double distance = pVec.distanceTo(tVec);
+                        Vec3d particlePos = pVec.subtract(0, 0.2, 0);
+                        double spacing = 0.5;
+                        //space between each particle
+                        Vec3d segment = tVec.subtract(pVec).normalize().multiply(spacing);
+                        double distanceCovered = 0;
+                        for (; distanceCovered <= distance; particlePos = particlePos.add(segment)) {
+                            distanceCovered += spacing;
+                            //min particle spawning distance
+                            if (pVec.distanceTo(tVec) < 2) continue;
+                            //if more than x blocks away
+                            if (distanceCovered >= 50) break;
+                            player.getWorld().spawnParticles(player,
+                                    new DustParticleEffect(new Vector3f(Vec3d.unpackRgb(
+                                            Utl.color.getCodeRGB(PlayerData.get.dest.setting.particle.trackingcolor(player))).toVector3f()),0.5f),
+                                    true,particlePos.getX(),particlePos.getY(),particlePos.getZ(),2,0,0,0,1);
+                        }
+                    }
+                } else if (trackingP != null) {
+                    //TRACKING PLAYER TURNED OFF TRACKING
+                    Destination.social.track.clear(player, CUtl.lang("dest.track.clear.tracking_off_tracked").color('7').italic(true));
+                } else if (PlayerData.getOneTime(player,"tracking.offline") == null && PlayerData.get.dest.getTracking(player) != null) {
+                    //TRACKING PLAYER OFFLINE
+                    player.sendMessage(CUtl.tag().append(CUtl.lang("dest.track.offline")).append(" ")
+                            .append(CUtl.CButton.dest.clear()).b());
+                    PlayerData.setOneTime(player,"tracking.offline","1");
+                    //RESET OTHER MSGS
+                    PlayerData.setOneTime(player,"tracking.converted",null);
+                    PlayerData.setOneTime(player,"tracking.dimension",null);
                 }
                 //TRACK TIMER
-                if (PlayerData.get.dest.getTrackingPending(player)) {
+                if (PlayerData.get.dest.getTrackPending(player)) {
                     if (PlayerData.get.dest.track.expire(player) == 0) {
                         player.sendMessage(CUtl.tag().append(CUtl.lang("dest.track.expired")).b());
-//                        Player pl = Bukkit.getPlayer(playerdata.getString(player, "destination.track.target"));
-//                        if (pl != null) pl.sendMessage(CUtl.tag("&fThe tracking request has expired!"));
                         PlayerData.set.dest.setTrackNull(player);
-                    } else if (PlayerData.get.dest.track.expire(player) > 0)
+                    } else if (PlayerData.get.dest.track.expire(player) > 0) {
                         PlayerData.set.dest.track.expire(player, PlayerData.get.dest.track.expire(player) - 1);
-                }
-                //SUSPEND TIMER
-                if (PlayerData.get.dest.getSuspendedState(player)) {
-                    if (PlayerData.get.dest.suspended.expire(player) == 0) {
-                        player.sendMessage(CUtl.tag().append(CUtl.lang("dest.suspended.expired")).b());
-                        PlayerData.set.dest.setSuspendedNull(player);
-                    } else if (PlayerData.get.dest.suspended.expire(player) > 0)
-                        PlayerData.set.dest.suspended.expire(player, (PlayerData.get.dest.suspended.expire(player) - 1));
+                        if (Utl.player.getFromIdentifier(PlayerData.get.dest.track.target(player)) == null) {
+                            player.sendMessage(CUtl.tag().append(CUtl.lang("dest.track.expired")).b());
+                            PlayerData.set.dest.setTrackNull(player);
+                        }
+                    }
                 }
             }
         }

@@ -29,6 +29,13 @@ public class Utl {
         }
         return true;
     }
+    public static Integer tryInt(String s) {
+        try {
+            return Integer.parseInt(s);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public static boolean inBetween(int i, int min, int max) {
         return i >= min && i <= max;
@@ -55,8 +62,7 @@ public class Utl {
         System.arraycopy(arr, numToRemove, result, 0, result.length);
         return result;
     }
-    public static SuggestionsBuilder xyzSuggester(ServerPlayerEntity player, SuggestionsBuilder builders, String type) {
-        SuggestionsBuilder builder = new SuggestionsBuilder(builders.getInput(),builders.getStart());
+    public static SuggestionsBuilder xyzSuggester(ServerPlayerEntity player, SuggestionsBuilder builder, String type) {
         if (type.equalsIgnoreCase("x")) {
             builder.suggest(player.getBlockX());
             builder.suggest(player.getBlockX()+" "+player.getBlockZ());
@@ -71,66 +77,6 @@ public class Utl {
         if (type.equalsIgnoreCase("z")) return builder.suggest(player.getBlockZ());
         return builder;
     }
-    public static class xyz {
-        public static String fix(String loc) {
-            ArrayList<String> sp = new ArrayList<>(Arrays.asList(loc.split(" ")));
-            if (sp.size() == 1) sp = new ArrayList<>(Arrays.asList(loc.split("_")));
-            if (sp.size() == 1) return "0 0 0";
-            if (!isInt(sp.get(0))) sp.set(0, "0");
-            if (sp.size() == 3) {
-                if ((!sp.get(1).equals("n") && !isInt(sp.get(1)))) sp.set(1, "0");
-                if (!isInt(sp.get(2))) sp.set(2, "0");
-            } else {
-                if (!isInt(sp.get(1))) sp.set(1, "0");
-            }
-            if (sp.size() == 2)
-                return xzBounds(Integer.parseInt(sp.get(0))) + " " + xzBounds(Integer.parseInt(sp.get(1)));
-            if (sp.get(1).equals("n"))
-                return xzBounds(Integer.parseInt(sp.get(0))) + " n " + xzBounds(Integer.parseInt(sp.get(2)));
-            return xzBounds(Integer.parseInt(sp.get(0))) + " " + yBounds(Integer.parseInt(sp.get(1))) + " " + xzBounds(Integer.parseInt(sp.get(2)));
-        }
-        public static int yBounds(int s) {
-            if (s > 20000000) return 20000000;
-            return Math.max(s, -64);
-        }
-        public static int xzBounds(int s) {
-            if (s > 30000000) return 30000000;
-            return Math.max(s, -30000000);
-        }
-        @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-        public static boolean check(String xyz) {
-            String[] split = xyz.split(" ");
-            if (split.length == 1) return false;
-            if (!isInt(split[0])) return false;
-            if (split.length == 2 && isInt(split[1])) return true;
-            if (split.length == 3 && split[1].equals("n") && isInt(split[2])) return true;
-            return split.length == 3 && isInt(split[2]) && isInt(split[2]);
-        }
-        //DATA/FILE FORMAT: ADD UNDERSCORES AND N IF NEEDED //DISPLAY FORMAT?
-        public static String DFormat(String xyz) {
-            String[] split = xyz.split(" ");
-            if (split.length == 2) {
-                return split[0] + "_n_" + split[1];
-            }
-            return split[0] + "_" + split[1] + "_" + split[2];
-        }
-        //PLAYER FORMAT: REMOVE UNDERSCORES AND N
-        public static String PFormat(String xyz) {
-            if (xyz.contains("_")) {
-                String[] split = xyz.split("_");
-                if (split[1].equals("n")) return split[0] + " " + split[2];
-                return split[0] + " " + split[1] + " " + split[2];
-            }
-            String[] split = xyz.split(" ");
-            if (split[1].equals("n")) return split[0] + " " + split[2];
-            return split[0] + " " + split[1] + " " + split[2];
-        }
-        //CODE FORMAT: REMOVE UNDERSCORES AND KEEP N
-        public static String CFormat(String xyz) {
-            String[] split = xyz.split("_");
-            return split[0] + " " + split[1] + " " + split[2];
-        }
-    }
     public static class player {
         public static List<String> getList() {
             ArrayList<String> array = new ArrayList<>(List.of());
@@ -139,14 +85,18 @@ public class Utl {
             }
             return array;
         }
+        public static ServerPlayerEntity getFromIdentifier(String s) {
+            if (s.contains("-")) DirectionHUD.server.getPlayerManager().getPlayer(UUID.fromString(s));
+            return DirectionHUD.server.getPlayerManager().getPlayer(s);
+        }
+        public static String uuid(ServerPlayerEntity player) {
+            return player.getUuid().toString();
+        }
         public static String name(ServerPlayerEntity player) {
             return player.getName().getString();
         }
         public static String dim(ServerPlayerEntity player) {
             return dim.format(player.getWorld().getRegistryKey().getValue());
-        }
-        public static String XYZ(ServerPlayerEntity player) {
-            return player.getBlockX()+" "+player.getBlockY()+" "+player.getBlockZ();
         }
         public static void sendAs(String command, ServerPlayerEntity player) {
             try {
@@ -162,43 +112,19 @@ public class Utl {
         public static String format(Identifier identifier) {
             return identifier.toString().replace(":",".");
         }
-        public static String convertXYZ(ServerPlayerEntity player, String xyz, String toDimension) {
-            String fromDimension = Utl.player.dim(player);
-            if (fromDimension.equalsIgnoreCase(toDimension)) return xyz;
-
-            Pair<String, String> dimensionPair = new ImmutablePair<>(fromDimension, toDimension);
-            Double ratio;
-            if (conversionRatios.containsKey(dimensionPair)) ratio = conversionRatios.get(dimensionPair);
-            else {
-                dimensionPair = new ImmutablePair<>(toDimension,fromDimension);
-                if (conversionRatios.containsKey(dimensionPair)) ratio = 1/conversionRatios.get(dimensionPair);
-                else return xyz;
-            }
-            String[] coords = xyz.split(" ");
-            int x;
-            int z;
-            if (coords.length == 2) {
-                x = (int) (Double.parseDouble(coords[0]) * ratio);
-                z = (int) (Double.parseDouble(coords[1]) * ratio);
-                return x+" "+z;
-            } else if (coords.length != 3) return xyz;
-            x = (int) (Double.parseDouble(coords[0]) * ratio);
-            z = (int) (Double.parseDouble(coords[2]) * ratio);
-            return x+" "+coords[1]+" "+z;
-        }
         public static boolean checkValid(String s) {
             return dims.containsKey(s);
         }
-        public static String PFormat(String dim) {
+        public static String getName(String dim) {
             if (!dims.containsKey(dim)) return "unknown";
             HashMap<String,String> map = dims.get(dim);
             return map.get("name");
         }
-        public static boolean showConvertButton(String playerDIM, String DIM) {
+        public static boolean canConvert(String DIM1, String DIM2) {
             // both in same dim, cant convert
-            if (playerDIM.equalsIgnoreCase(DIM)) return false;
-            Pair<String, String> key = new ImmutablePair<>(playerDIM, DIM);
-            Pair<String, String> flippedKey = new ImmutablePair<>(DIM, playerDIM);
+            if (DIM1.equalsIgnoreCase(DIM2)) return false;
+            Pair<String, String> key = new ImmutablePair<>(DIM1, DIM2);
+            Pair<String, String> flippedKey = new ImmutablePair<>(DIM2, DIM1);
             // if the ratio exists, show the button
             return conversionRatios.containsKey(key) || conversionRatios.containsKey(flippedKey);
         }
@@ -217,40 +143,31 @@ public class Utl {
                     .hEvent(CTxT.of(map.get("name").toUpperCase()).color(map.get("color")));
         }
         public static HashMap<Pair<String, String>, Double> conversionRatios = new HashMap<>();
-        public static void loadRatios() {
-            HashMap<Pair<String, String>, Double> output = new HashMap<>();
+        public static HashMap<String,HashMap<String,String>> dims = new HashMap<>();
+        //only works when the server is on, loads server dimensions into the config.
+        public static void loadConfig() {
+            if (DirectionHUD.server == null) return;
+            //LOAD DIM RATIOS
+            HashMap<Pair<String, String>, Double> configRatios = new HashMap<>();
             for (String s : config.dimensionRatios) {
                 String[] split = s.split("\\|");
                 if (split.length != 2) continue;
                 double ratio = Double.parseDouble(split[0].split("=")[1])/Double.parseDouble(split[1].split("=")[1]);
-                output.put(new ImmutablePair<>(split[0].split("=")[0], split[1].split("=")[0]), ratio);
+                configRatios.put(new ImmutablePair<>(split[0].split("=")[0], split[1].split("=")[0]), ratio);
             }
-            conversionRatios = output;
-        }
-        public static HashMap<String,HashMap<String,String>> dims = new HashMap<>();
-        public static void configToMap() {
-            HashMap<String,HashMap<String,String>> output = new HashMap<>();
+            conversionRatios = configRatios;
+            //CONFIG TO MAP
+            HashMap<String,HashMap<String,String>> configDims = new HashMap<>();
             for (String s : config.dimensions) {
                 String[] split = s.split("\\|");
                 if (split.length != 3) continue;
                 HashMap<String,String> data = new HashMap<>();
                 data.put("name",split[1]);
                 data.put("color",split[2]);
-                output.put(split[0],data);
+                configDims.put(split[0],data);
             }
-            dims = output;
-        }
-        public static void mapToConfig() {
-            List<String> output = new ArrayList<>();
-            for (Map.Entry<String, HashMap<String, String>> entry : dims.entrySet()) {
-                String key = entry.getKey();
-                HashMap<String, String> data = entry.getValue();
-                output.add(key+"|"+data.get("name")+"|"+data.get("color"));
-            }
-            config.dimensions = output;
-            config.save();
-        }
-        public static void dimsToMap() {
+            dims = configDims;
+            //ADD MISSING DIMS TO MAP
             for (ServerWorld world : DirectionHUD.server.getWorlds()) {
                 String currentDIM = world.getRegistryKey().getValue().toString().replace(":",".");
                 String currentDIMp = world.getRegistryKey().getValue().getPath();
@@ -270,7 +187,14 @@ public class Utl {
                     dims.put(currentDIM,map);
                 }
             }
-            mapToConfig();
+            //MAP TO CONFIG
+            List<String> output = new ArrayList<>();
+            for (Map.Entry<String, HashMap<String, String>> entry : dims.entrySet()) {
+                String key = entry.getKey();
+                HashMap<String, String> data = entry.getValue();
+                output.add(key+"|"+data.get("name")+"|"+data.get("color"));
+            }
+            config.dimensions = output;
         }
     }
 
