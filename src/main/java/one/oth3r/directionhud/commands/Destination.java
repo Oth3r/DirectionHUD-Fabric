@@ -579,12 +579,13 @@ public class Destination {
                     builder.add(Utl.xyzSuggester(player,builder,"z"));
                     return builder.buildFuture();
                 }
-                for (String s : Utl.dim.getList()) builder.suggest(s);
+                if (Utl.isInt(args[3]))
+                    for (String s : Utl.dim.getList()) builder.suggest(s);
                 return builder.buildFuture();
             }
             // send <player> (name) <x> (y) <z> ((dimension))
             if (pos == 5) {
-                if (!Utl.isInt(args[1])) {
+                if (!Utl.isInt(args[1]) && Utl.isInt(args[4])) {
                     for (String s : Utl.dim.getList()) builder.suggest(s);
                     return builder.buildFuture();
                 }
@@ -931,7 +932,17 @@ public class Destination {
     public static class lastdeath {
         public static void add(ServerPlayerEntity player, Loc loc) {
             ArrayList<String> deaths = PlayerData.get.dest.getLastdeaths(player);
-            if (Utl.dim.checkValid(loc.getDIM())) deaths.add(loc.getLocC());
+            if (Utl.dim.checkValid(loc.getDIM())) {
+                int i = 0;
+                for (String s: deaths) {
+                    if (new Loc(s).getDIM().equals(loc.getDIM())) {
+                        deaths.set(deaths.indexOf(s),loc.getLocC());
+                        i++;
+                        break;
+                    }
+                }
+                if (i == 0) deaths.add(loc.getLocC());
+            }
             PlayerData.set.dest.setLastdeaths(player,deaths);
         }
         public static void clearAll(boolean send, ServerPlayerEntity player) {
