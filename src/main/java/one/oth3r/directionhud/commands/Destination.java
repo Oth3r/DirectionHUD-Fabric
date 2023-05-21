@@ -482,7 +482,7 @@ public class Destination {
             // settings <reset>
             if (pos == 0) return builder.suggest("reset").buildFuture();
             if (pos == 1) {
-                if (args[0].equals("particlesdestc") || args[0].equals("particleslinec")) {
+                if (args[0].equals("particlesdestc") || args[0].equals("particleslinec") || args[0].equals("particlestrackingc")) {
                     for (String s : Utl.color.getList()) builder.suggest(s);
                     return builder.buildFuture();
                 }
