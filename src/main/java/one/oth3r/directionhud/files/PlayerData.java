@@ -190,8 +190,12 @@ public class PlayerData {
         if (cache == null) return map;
         Map<String,Object> cdest = (Map<String, Object>) cache.get("destination");
         Map<String,Object> mdest = (Map<String, Object>) map.get("destination");
-        if (cdest.get("track")!=null) mdest.put("track",cdest.get("track"));
-        else if (mdest.get("track") != null) mdest.put("track", null);
+        if (cdest.get("track")!=null) {
+            Map<String,Object> track = (Map<String, Object>) cdest.get("track");
+            if (Utl.player.getFromIdentifier((String) track.get("target")) == null) {
+                mdest.put("track", null);
+            } else mdest.put("track",cdest.get("track"));
+        } else if (mdest.get("track") != null) mdest.put("track", null);
         map.put("destination",mdest);
         return map;
     }
