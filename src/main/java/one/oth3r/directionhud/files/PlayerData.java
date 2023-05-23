@@ -268,7 +268,7 @@ public class PlayerData {
         public static Map<String,Object> destSetting() {
             Map<String,Object> destSetting = new HashMap<>();
             destSetting.put("autoclear", config.DESTAutoClear);
-            destSetting.put("autoclearradius", config.DESTAutoClearRad);
+            destSetting.put("autoclearradius",(long) config.DESTAutoClearRad);
             destSetting.put("autoconvert", config.DESTAutoConvert);
             destSetting.put("ylevel", config.DESTYLevel);
             destSetting.put("send", config.DESTSend);
@@ -541,7 +541,7 @@ public class PlayerData {
                     data.put("autoclear", b);
                     setSetting(player, data);
                 }
-                public static void autoclearrad(ServerPlayerEntity player, int b) {
+                public static void autoclearrad(ServerPlayerEntity player, long b) {
                     Map<String,Object> data = get.dest.getSetting(player,false);
                     data.put("autoclearradius", b);
                     setSetting(player, data);
