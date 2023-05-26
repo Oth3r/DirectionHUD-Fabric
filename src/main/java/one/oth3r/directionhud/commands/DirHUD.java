@@ -80,7 +80,7 @@ public class DirHUD {
     public static void UI(ServerPlayerEntity player) {
         CTxT msg = CTxT.of("")
                 .append(CTxT.of(" DirectionHUD ").color(CUtl.pTC()))
-                .append(CTxT.of("v"+DirectionHUD.VERSION+"⧉").color(CUtl.sTC()).cEvent(3,"https://modrinth.com/mod/directionhud/changelog")
+                .append(CTxT.of(DirectionHUD.VERSION+"⧉").color(CUtl.sTC()).cEvent(3,"https://modrinth.com/mod/directionhud/changelog")
                         .hEvent(CUtl.TBtn("version.hover").color(CUtl.sTC())))
                 .append(CTxT.of("\n                                 \n").strikethrough(true)).append(" ");
         //hud
