@@ -25,7 +25,7 @@ public class OnPlayerWorldChanged {
                     && !Utl.player.dim(player).equals(Destination.get(player).getDIM())) {
                 Loc cLoc = Destination.get(player);
                 cLoc.convertTo(Utl.player.dim(player));
-                Destination.set(player,cLoc);
+                Destination.silentSet(player,cLoc);
                 player.sendMessage(CUtl.tag().append(CUtl.lang("dest.autoconvert.dest"))
                         .append("\n ").append(CUtl.lang("dest.autoconvert.info",loc.getBadge(),cLoc.getBadge()).italic(true).color('7')).b());
             } else if (PlayerData.get.dest.setting.autoclear(player)) {
