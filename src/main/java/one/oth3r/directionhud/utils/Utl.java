@@ -86,7 +86,7 @@ public class Utl {
             return array;
         }
         public static ServerPlayerEntity getFromIdentifier(String s) {
-            if (s.contains("-")) DirectionHUD.server.getPlayerManager().getPlayer(UUID.fromString(s));
+            if (s.contains("-")) return DirectionHUD.server.getPlayerManager().getPlayer(UUID.fromString(s));
             return DirectionHUD.server.getPlayerManager().getPlayer(s);
         }
         public static String uuid(ServerPlayerEntity player) {
