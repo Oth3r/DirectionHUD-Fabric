@@ -74,13 +74,11 @@ public class Destination {
                         CUtl.TBtn(ac?"off":"on").color(ac?'c':'a'))));
         return CTxT.of(" ").append(lang("set.autoclear_"+(ac?"on":"off"),btn).color('7').italic(true));
     }
-    public static void set(ServerPlayerEntity player, Loc loc) {
+    public static void silentSet(ServerPlayerEntity player, Loc loc) {
         if (!checkDist(player, loc)) PlayerData.set.dest.setDest(player, loc);
     }
-    //responds to player
-    //XYZ HAS TO BE XYZ (x n z, x y z)
-    public static void set(boolean send, ServerPlayerEntity player, Loc loc) {
-        if (!send) set(player,loc);
+    //convert converts loc dim to player dim
+    public static void set(ServerPlayerEntity player, Loc loc, boolean convert) {
         if (!loc.hasXYZ()) {
             player.sendMessage(error("coordinates"));
             return;
@@ -89,12 +87,17 @@ public class Destination {
             player.sendMessage(error("dimension"));
             return;
         }
+        CTxT convertMsg = CTxT.of("");
+        if (Utl.dim.canConvert(Utl.player.dim(player),loc.getDIM()) && convert) {
+            convertMsg.append(" ").append(lang("converted_badge").color('7').italic(true).hEvent(loc.getBadge()));
+            loc.convertTo(Utl.player.dim(player));
+        }
         if (checkDist(player,loc)) {
             player.sendMessage(error("dest.at"));
             return;
         }
-        set(player, loc);
-        player.sendMessage(CUtl.tag().append(lang("set",loc.getBadge())).b());
+        silentSet(player, loc);
+        player.sendMessage(CUtl.tag().append(lang("set",loc.getBadge())).append(convertMsg).b());
         player.sendMessage(setMSG(player).b());
     }
     public static void setName(ServerPlayerEntity player, String name, boolean convert) {
@@ -113,30 +116,9 @@ public class Destination {
             player.sendMessage(error("dest.at"));
             return;
         }
-        set(player,loc);
+        silentSet(player,loc);
         player.sendMessage(CUtl.tag().append(lang("set",
                 CTxT.of("").append(loc.getBadge(saved.getNames(player).get(key),saved.getColors(player).get(key))).append(convertMsg))).b());
-        player.sendMessage(setMSG(player).b());
-    }
-    //CONVERT XYZ
-    public static void setConvert(ServerPlayerEntity player, Loc loc, String DIM) {
-        if (!Utl.dim.checkValid(DIM)) {
-            player.sendMessage(error("dimension"));
-            return;
-        }
-        if (!loc.hasXYZ()) {
-            player.sendMessage(error("coordinates"));
-            return;
-        }
-        CTxT convertMsg = CTxT.of("");
-        if (Utl.dim.canConvert(Utl.player.dim(player),DIM)) convertMsg.append(" ").append(lang("converted_badge").color('7').italic(true).hEvent(loc.getBadge()));
-        loc.convertTo(DIM);
-        if (checkDist(player,loc)) {
-            player.sendMessage(error("dest.at"));
-            return;
-        }
-        PlayerData.set.dest.setDest(player,loc);
-        player.sendMessage(CUtl.tag().append(lang("set",CTxT.of("").append(loc.getBadge()).append(convertMsg))).b());
         player.sendMessage(setMSG(player).b());
     }
     public static class commandExecutor {
@@ -155,22 +137,22 @@ public class Destination {
             if (!Utl.isInt(args[0]) || !Utl.isInt(args[1])) return 1;
             // /dest set x z
             if (args.length == 2)
-                Destination.set(true,player,new Loc(Utl.tryInt(args[0]),Utl.tryInt(args[1]),Utl.player.dim(player)));
+                Destination.set(player,new Loc(Utl.tryInt(args[0]),Utl.tryInt(args[1]),Utl.player.dim(player)),false);
             // /dest set x z DIM
             if (args.length == 3 && !Utl.isInt(args[2]))
-                Destination.set(true, player,new Loc(Utl.tryInt(args[0]),Utl.tryInt(args[1]),args[2]));
+                Destination.set(player,new Loc(Utl.tryInt(args[0]),Utl.tryInt(args[1]),args[2]),false);
             // /dest set x y z
             if (args.length == 3 && Utl.isInt(args[2]))
-                Destination.set(true,player,new Loc(Utl.tryInt(args[0]),Utl.tryInt(args[1]),Utl.tryInt(args[2]),Utl.player.dim(player)));
+                Destination.set(player,new Loc(Utl.tryInt(args[0]),Utl.tryInt(args[1]),Utl.tryInt(args[2]),Utl.player.dim(player)),false);
             // /dest set x z DIM (convert)
             if (args.length == 4 && !Utl.isInt(args[2]))
-                Destination.setConvert(player,new Loc(Utl.tryInt(args[0]),Utl.tryInt(args[1]),args[2]),Utl.player.dim(player));
+                Destination.set(player,new Loc(Utl.tryInt(args[0]),Utl.tryInt(args[1]),args[2]),true);
             // /dest set x y z DIM
             if (args.length == 4 && Utl.isInt(args[2]))
-                Destination.set(true,player,new Loc(Utl.tryInt(args[0]),Utl.tryInt(args[1]),Utl.tryInt(args[2]),args[3]));
+                Destination.set(player,new Loc(Utl.tryInt(args[0]),Utl.tryInt(args[1]),Utl.tryInt(args[2]),args[3]),false);
             // /dest set x y z DIM (convert)
             if (args.length == 5)
-                Destination.setConvert(player,new Loc(Utl.tryInt(args[0]),Utl.tryInt(args[1]),Utl.tryInt(args[2]),args[3]),Utl.player.dim(player));
+                Destination.set(player,new Loc(Utl.tryInt(args[0]),Utl.tryInt(args[1]),Utl.tryInt(args[2]),args[3]),true);
             return 1;
         }
         public static int addCMD(ServerPlayerEntity player, String[] args) {
