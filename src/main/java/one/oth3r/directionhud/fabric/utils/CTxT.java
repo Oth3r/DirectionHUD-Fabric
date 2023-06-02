@@ -1,4 +1,4 @@
-package one.oth3r.directionhud.utils;
+package one.oth3r.directionhud.fabric.utils;
 
 import net.minecraft.text.*;
 

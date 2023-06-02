@@ -1,13 +1,13 @@
-package one.oth3r.directionhud.mixin;
+package one.oth3r.directionhud.fabric.mixin;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.Text;
-import one.oth3r.directionhud.DirectionHUD;
-import one.oth3r.directionhud.DirectionHUDClient;
-import one.oth3r.directionhud.files.PlayerData;
-import one.oth3r.directionhud.utils.CUtl;
+import one.oth3r.directionhud.fabric.DirectionHUD;
+import one.oth3r.directionhud.fabric.DirectionHUDClient;
+import one.oth3r.directionhud.fabric.files.PlayerData;
+import one.oth3r.directionhud.fabric.utils.CUtl;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

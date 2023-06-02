@@ -1,10 +1,10 @@
-package one.oth3r.directionhud.files;
+package one.oth3r.directionhud.fabric.files;
 
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextContent;
-import one.oth3r.directionhud.DirectionHUDServer;
-import one.oth3r.directionhud.utils.CTxT;
+import one.oth3r.directionhud.fabric.DirectionHUDServer;
+import one.oth3r.directionhud.fabric.utils.CTxT;
 
 import java.io.InputStream;
 import java.util.Arrays;

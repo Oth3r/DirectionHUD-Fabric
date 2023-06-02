@@ -1,7 +1,7 @@
-package one.oth3r.directionhud.mixin;
+package one.oth3r.directionhud.fabric.mixin;
 
 import net.minecraft.client.MinecraftClient;
-import one.oth3r.directionhud.DirectionHUDClient;
+import one.oth3r.directionhud.fabric.DirectionHUDClient;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

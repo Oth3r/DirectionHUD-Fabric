@@ -1,17 +1,17 @@
-package one.oth3r.directionhud.commands;
+package one.oth3r.directionhud.common;
 
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
-import one.oth3r.directionhud.DirectionHUD;
-import one.oth3r.directionhud.files.PlayerData;
-import one.oth3r.directionhud.files.config;
-import one.oth3r.directionhud.utils.CTxT;
-import one.oth3r.directionhud.utils.CUtl;
-import one.oth3r.directionhud.utils.Loc;
-import one.oth3r.directionhud.utils.Utl;
+import one.oth3r.directionhud.fabric.DirectionHUD;
+import one.oth3r.directionhud.fabric.files.PlayerData;
+import one.oth3r.directionhud.fabric.files.config;
+import one.oth3r.directionhud.fabric.utils.CTxT;
+import one.oth3r.directionhud.fabric.utils.CUtl;
+import one.oth3r.directionhud.fabric.utils.Loc;
+import one.oth3r.directionhud.fabric.utils.Utl;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;

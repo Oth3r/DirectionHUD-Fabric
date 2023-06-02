@@ -1,4 +1,4 @@
-package one.oth3r.directionhud;
+package one.oth3r.directionhud.fabric;
 
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -12,11 +12,11 @@ import net.minecraft.server.PlayerManager;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.WorldSavePath;
-import one.oth3r.directionhud.commands.DestinationCommand;
-import one.oth3r.directionhud.commands.DirHUDCommand;
-import one.oth3r.directionhud.commands.HUDCommand;
-import one.oth3r.directionhud.files.PlayerData;
-import one.oth3r.directionhud.files.config;
+import one.oth3r.directionhud.fabric.commands.DestinationCommand;
+import one.oth3r.directionhud.fabric.commands.DirHUDCommand;
+import one.oth3r.directionhud.fabric.commands.HUDCommand;
+import one.oth3r.directionhud.fabric.files.PlayerData;
+import one.oth3r.directionhud.fabric.files.config;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

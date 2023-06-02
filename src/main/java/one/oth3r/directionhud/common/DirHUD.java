@@ -1,13 +1,13 @@
-package one.oth3r.directionhud.commands;
+package one.oth3r.directionhud.common;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.network.ServerPlayerEntity;
-import one.oth3r.directionhud.DirectionHUD;
-import one.oth3r.directionhud.files.LangReader;
-import one.oth3r.directionhud.files.PlayerData;
-import one.oth3r.directionhud.files.config;
-import one.oth3r.directionhud.utils.CTxT;
-import one.oth3r.directionhud.utils.CUtl;
+import one.oth3r.directionhud.fabric.DirectionHUD;
+import one.oth3r.directionhud.fabric.files.LangReader;
+import one.oth3r.directionhud.fabric.files.PlayerData;
+import one.oth3r.directionhud.fabric.files.config;
+import one.oth3r.directionhud.fabric.utils.CTxT;
+import one.oth3r.directionhud.fabric.utils.CUtl;
 
 public class DirHUD {
     public static void setDefaults(ServerPlayerEntity player) {

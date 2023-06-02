@@ -1,12 +1,12 @@
-package one.oth3r.directionhud.files;
+package one.oth3r.directionhud.fabric.files;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import one.oth3r.directionhud.DirectionHUD;
-import one.oth3r.directionhud.commands.HUD;
-import one.oth3r.directionhud.utils.CUtl;
-import one.oth3r.directionhud.utils.Utl;
+import one.oth3r.directionhud.fabric.DirectionHUD;
+import one.oth3r.directionhud.common.HUD;
+import one.oth3r.directionhud.fabric.utils.CUtl;
+import one.oth3r.directionhud.fabric.utils.Utl;
 
 import java.io.File;
 import java.io.FileInputStream;

@@ -1,4 +1,4 @@
-package one.oth3r.directionhud.commands;
+package one.oth3r.directionhud.fabric.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -8,11 +8,11 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import one.oth3r.directionhud.DirectionHUD;
-import one.oth3r.directionhud.files.PlayerData;
-import one.oth3r.directionhud.files.config;
-import one.oth3r.directionhud.utils.CUtl;
-import one.oth3r.directionhud.utils.Utl;
+import one.oth3r.directionhud.common.Destination;
+import one.oth3r.directionhud.fabric.files.PlayerData;
+import one.oth3r.directionhud.fabric.files.config;
+import one.oth3r.directionhud.fabric.utils.CUtl;
+import one.oth3r.directionhud.fabric.utils.Utl;
 
 import java.util.Arrays;
 import java.util.List;

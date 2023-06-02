@@ -1,16 +1,16 @@
-package one.oth3r.directionhud.utils;
+package one.oth3r.directionhud.fabric.utils;
 
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.Vec3d;
-import one.oth3r.directionhud.files.config;
+import one.oth3r.directionhud.fabric.files.config;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import static one.oth3r.directionhud.utils.Utl.isInt;
-import static one.oth3r.directionhud.utils.Utl.dim.conversionRatios;
+import static one.oth3r.directionhud.fabric.utils.Utl.isInt;
+import static one.oth3r.directionhud.fabric.utils.Utl.dim.conversionRatios;
 
 public class Loc {
     private Integer x = null;

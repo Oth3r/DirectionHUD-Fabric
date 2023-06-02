@@ -1,4 +1,4 @@
-package one.oth3r.directionhud.utils;
+package one.oth3r.directionhud.fabric.utils;
 
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -10,8 +10,8 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.Identifier;
-import one.oth3r.directionhud.DirectionHUD;
-import one.oth3r.directionhud.files.config;
+import one.oth3r.directionhud.fabric.DirectionHUD;
+import one.oth3r.directionhud.fabric.files.config;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;

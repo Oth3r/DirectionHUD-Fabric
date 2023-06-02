@@ -1,17 +1,17 @@
-package one.oth3r.directionhud;
+package one.oth3r.directionhud.fabric;
 
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Vec3d;
-import one.oth3r.directionhud.commands.Destination;
-import one.oth3r.directionhud.commands.HUD;
-import one.oth3r.directionhud.files.PlayerData;
-import one.oth3r.directionhud.files.config;
-import one.oth3r.directionhud.utils.CTxT;
-import one.oth3r.directionhud.utils.CUtl;
-import one.oth3r.directionhud.utils.Loc;
-import one.oth3r.directionhud.utils.Utl;
+import one.oth3r.directionhud.common.Destination;
+import one.oth3r.directionhud.common.HUD;
+import one.oth3r.directionhud.fabric.files.PlayerData;
+import one.oth3r.directionhud.fabric.files.config;
+import one.oth3r.directionhud.fabric.utils.CTxT;
+import one.oth3r.directionhud.fabric.utils.CUtl;
+import one.oth3r.directionhud.fabric.utils.Loc;
+import one.oth3r.directionhud.fabric.utils.Utl;
 import org.joml.Vector3f;
 
 public class LoopManager {
