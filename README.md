@@ -58,6 +58,7 @@ or use **[ModMenu](https://modrinth.com/mod/modmenu)** & **[YetAnotherConfigLib]
 
 ## Future Goals
 
-* Spigot port (Coming soon)
-* Client UI
-  * Straying away from the plugin feel for client users.
+* Spigot port (Coming soon...)
+* More UI options
+  * Custom client UI: Straying away from the plugin feel for client users.
+  * Server inventory UI: Chat scrolling too fast? Want that classic inventory UI feel? 
