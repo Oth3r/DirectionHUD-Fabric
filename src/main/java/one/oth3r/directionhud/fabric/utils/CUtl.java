@@ -1,11 +1,11 @@
-package one.oth3r.directionhud.utils;
+package one.oth3r.directionhud.fabric.utils;
 
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
-import one.oth3r.directionhud.DirectionHUD;
-import one.oth3r.directionhud.commands.Destination;
-import one.oth3r.directionhud.files.LangReader;
+import one.oth3r.directionhud.fabric.DirectionHUD;
+import one.oth3r.directionhud.common.Destination;
+import one.oth3r.directionhud.fabric.files.LangReader;
 
 public class CUtl {
     public static CTxT tag() {
@@ -87,6 +87,7 @@ public class CUtl {
         public static String dest = "#29a2ff";
         public static String hud = "#29ff69";
         public static String defaults = "#ff6629";
+        public static String reload = "#69ff29";
         public static String back = "#ff9500";
         public static String sec = "#ffee35";
         public static String pri = "#2993ff";
@@ -181,8 +182,8 @@ public class CUtl {
                         CTxT.of(cmdUsage.defaults()).color(c.defaults).append("\n").append(TBtn("dirhud.defaults.hover")));
             }
             public static CTxT reload() {
-                return TBtn("dirhud.reload").btn(true).color(c.defaults).cEvent(1,"/dirhud reload").hEvent(
-                        CTxT.of(cmdUsage.defaults()).color(c.defaults).append("\n").append(TBtn("dirhud.reload.hover")));
+                return TBtn("dirhud.reload").btn(true).color(c.reload).cEvent(1,"/dirhud reload").hEvent(
+                        CTxT.of(cmdUsage.reload()).color(c.reload).append("\n").append(TBtn("dirhud.reload.hover")));
             }
         }
     }
@@ -202,5 +203,6 @@ public class CUtl {
         public static String destTrack() {return "/dest track <IGN> | /dest track .clear";}
         public static String destTrackClear() {return "/dest track .clear";}
         public static String defaults() {return "/dirhud defaults";}
+        public static String reload() {return "/dirhud reload";}
     }
 }
