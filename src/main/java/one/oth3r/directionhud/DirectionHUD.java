@@ -1,4 +1,4 @@
-package one.oth3r.directionhud.fabric;
+package one.oth3r.directionhud;
 
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -10,75 +10,65 @@ import net.fabricmc.loader.api.Version;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.WorldSavePath;
-import one.oth3r.directionhud.fabric.commands.DestinationCommand;
-import one.oth3r.directionhud.fabric.commands.DirHUDCommand;
-import one.oth3r.directionhud.fabric.commands.HUDCommand;
-import one.oth3r.directionhud.fabric.files.PlayerData;
-import one.oth3r.directionhud.fabric.files.config;
+import one.oth3r.directionhud.commands.DestinationCommand;
+import one.oth3r.directionhud.commands.DirHUDCommand;
+import one.oth3r.directionhud.commands.HUDCommand;
+import one.oth3r.directionhud.common.Events;
+import one.oth3r.directionhud.common.LoopManager;
+import one.oth3r.directionhud.common.files.PlayerData;
+import one.oth3r.directionhud.files.config;
+import one.oth3r.directionhud.utils.Player;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
 public class DirectionHUD {
-	public static Map<ServerPlayerEntity, Boolean> players = new HashMap<>();
+	public static String PLAYERDATA_DIR = "";
+	public static final String CONFIG_DIR = FabricLoader.getInstance().getConfigDir().toFile()+"/";
 	public static final Logger LOGGER = LogManager.getLogger("DirectionHUD");
+	public static Map<Player, Boolean> players = new HashMap<>();
 	public static final String MOD_ID = "directionhud";
 	public static final Version VERSION = FabricLoader.getInstance().getModContainer(MOD_ID).orElseThrow().getMetadata().getVersion();
 	public static boolean isClient;
 	public static String playerData;
-	public static String configFile;
+	public static String configDir;
 	public static PlayerManager playerManager;
 	public static MinecraftServer server;
 	public static CommandManager commandManager;
 	public static void initializeCommon() {
 		//todo LATER save cmd color support and '/dest send <IGN>' support
-		configFile = FabricLoader.getInstance().getConfigDir().toFile()+"/";
+		configDir = FabricLoader.getInstance().getConfigDir().toFile()+"/";
 		config.load();
 		//START
 		ServerLifecycleEvents.SERVER_STARTED.register(s -> {
 			DirectionHUD.playerManager = s.getPlayerManager();
 			DirectionHUD.server = s;
 			DirectionHUD.commandManager = s.getCommandManager();
-			if (isClient) playerData = DirectionHUD.server.getSavePath(WorldSavePath.ROOT).normalize()+"/directionhud/playerdata/";
-			else playerData = FabricLoader.getInstance().getConfigDir().toFile()+"/directionhud/playerdata/";
-			config.load();
-			Path dirPath = Paths.get(DirectionHUD.playerData);
-			try {
-				Files.createDirectories(dirPath);
-			} catch (IOException e) {
-				System.out.println("Failed to create playerdata directory: " + e.getMessage());
-			}
+			if (isClient) PLAYERDATA_DIR = DirectionHUD.server.getSavePath(WorldSavePath.ROOT).normalize()+"/directionhud/playerdata/";
+			else PLAYERDATA_DIR = FabricLoader.getInstance().getConfigDir().toFile()+"/directionhud/playerdata/";
+			Events.serverStart();
 		});
 		//STOP
 		ServerLifecycleEvents.SERVER_STOPPING.register(s -> {
-			System.out.println("DirectionHUD: Shutting down...");
-			for (ServerPlayerEntity player:server.getPlayerManager().getPlayerList())
-				PlayerData.removePlayer(player);
+			Events.serverEnd();
 		});
 		//PLAYER
 		ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
 			PacketBuilder packet = new PacketBuilder("On DirectionHUD supported server!");
 			packet.sendToPlayer(PacketBuilder.INITIALIZATION_PACKET, handler.player);
-			PlayerData.addPlayer(handler.player);
-			DirectionHUD.players.put(handler.player,false);
+			Events.playerJoin(Player.of(handler.player));
 		});
 		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
-			PlayerData.removePlayer(handler.player);
-			DirectionHUD.players.remove(handler.player);
+			Events.playerLeave(Player.of(handler.player));
 		});
 		//PACKETS
 		ServerPlayNetworking.registerGlobalReceiver(PacketBuilder.INITIALIZATION_PACKET,
 				(server, player, handler, buf, responseSender) -> server.execute(() -> {
-					DirectionHUD.players.put(player,true);
-					PacketBuilder packet = new PacketBuilder(PlayerData.get.hud.state(player)+"");
+					DirectionHUD.players.put(Player.of(player),true);
+					PacketBuilder packet = new PacketBuilder(PlayerData.get.hud.state(Player.of(player))+"");
 					packet.sendToPlayer(PacketBuilder.HUD_STATE,player);
 				}));
 		//COMMANDS

@@ -1,27 +1,102 @@
 package one.oth3r.directionhud.common;
 
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.*;
-import one.oth3r.directionhud.fabric.DirectionHUD;
-import one.oth3r.directionhud.fabric.LoopManager;
-import one.oth3r.directionhud.fabric.PacketBuilder;
-import one.oth3r.directionhud.fabric.files.PlayerData;
-import one.oth3r.directionhud.fabric.files.config;
-import one.oth3r.directionhud.fabric.utils.CTxT;
-import one.oth3r.directionhud.fabric.utils.CUtl;
-import one.oth3r.directionhud.fabric.utils.Loc;
-import one.oth3r.directionhud.fabric.utils.Utl;
+import one.oth3r.directionhud.common.utils.Loc;
+import one.oth3r.directionhud.common.files.PlayerData;
+import one.oth3r.directionhud.files.config;
+import one.oth3r.directionhud.utils.CTxT;
+import one.oth3r.directionhud.utils.CUtl;
+import one.oth3r.directionhud.utils.Player;
+import one.oth3r.directionhud.utils.Utl;
 
 import java.util.*;
 
 public class HUD {
+    public static int minute;
+    public static int hour;
+    public static String weatherIcon;
+    public static class commandExecutor {
+        public static void logic(Player player, String[] args) {
+            if (!Utl.checkEnabled.hud(player)) return;
+            if (args.length == 0) {
+                UI(player,null);
+                return;
+            }
+            String type = args[0].toLowerCase();
+            String[] trimmedArgs = Utl.trimStart(args, 1);
+            switch (type) {
+                case "order" -> orderCMD(player, trimmedArgs);
+                case "color" -> colorCMD(player, trimmedArgs);
+                case "toggle" -> toggleCMD(player, trimmedArgs);
+                default -> player.sendMessage(CUtl.error(CUtl.lang("error.command")));
+            }
+        }
+        public static void orderCMD(Player player, String[] args) {
+            //UI
+            if (args.length == 0)
+                HUD.order.UI(player, null, null);
+            //RESET
+            if (args[0].equals("reset") && args.length == 1)
+                HUD.order.reset(player, true);
+            if (args.length != 3) return;
+            String type = args[0].toLowerCase();
+            switch (type) {
+                case "move" -> HUD.order.move(player, args[1], args[2], true);
+                case "state" -> HUD.order.toggle(player, args[1], Boolean.parseBoolean(args[2]), true);
+                case "setting" -> HUD.order.setting(player, args[1], args[2], true);
+            }
+        }
+        public static void colorCMD(Player player, String[] args) {
+            if (args.length == 0) {
+                HUD.color.UI(player, null);
+            }
+            //COLOR
+            if (args.length == 2 && args[0].equals("edt")) {
+                if (args[1].equals("pri")) HUD.color.changeUI(player, "pri", null);
+                if (args[1].equals("sec")) HUD.color.changeUI(player, "sec", null);
+            }
+            //RESET
+            if (args[0].equals("rset")) {
+                if (args.length == 1) HUD.color.reset(player, null, true);
+                if (args.length == 2) HUD.color.reset(player, args[1], true);
+            }
+            //CHANGE COLOR
+            if (args.length != 3) return;
+            String type = args[0].toLowerCase();
+            switch (type) {
+                case "set" -> HUD.color.setColor(player, args[1], args[2], true);
+                case "bold" -> HUD.color.setBold(player, args[1], Boolean.parseBoolean(args[2]), true);
+                case "italics" -> HUD.color.setItalics(player, args[1], Boolean.parseBoolean(args[2]), true);
+                case "rgb" -> HUD.color.setRGB(player, args[1], Boolean.parseBoolean(args[2]), true);
+            }
+        }
+        public static void toggleCMD(Player player, String[] args) {
+            if (args.length == 0) HUD.toggle(player, null, false);
+            if (args.length != 1) return;
+            HUD.toggle(player, Boolean.parseBoolean(args[0]), true);
+        }
+    }
+    public static class commandSuggester {
+        public static ArrayList<String> logic(Player player, int pos, String[] args) {
+            ArrayList<String> suggester = new ArrayList<>();
+            if (!Utl.checkEnabled.hud(player)) return suggester;
+            if (pos == 1) {
+                suggester.add("edit");
+                suggester.add("color");
+                suggester.add("toggle");
+            }
+            if (pos == 4 && args[2].equals("set")) {
+                suggester.add("ffffff");
+            }
+            return Utl.formatSuggestions(suggester,args);
+        }
+    }
     private static CTxT lang(String key) {
         return CUtl.lang("hud."+key);
     }
     private static CTxT lang(String key, Object... args) {
         return CUtl.lang("hud."+key, args);
     }
-    public static void build(ServerPlayerEntity player) {
+    public static void build(Player player) {
         ArrayList<String> coordinates = new ArrayList<>();
         coordinates.add("pXYZ: ");
         coordinates.add("s"+player.getBlockX()+" "+player.getBlockY()+" "+player.getBlockZ());
@@ -50,7 +125,7 @@ public class HUD {
             time.add("p"+HUD.getAMPM());
         }
         ArrayList<String> weather = new ArrayList<>();
-        weather.add("p"+LoopManager.weatherIcon);
+        weather.add("p"+weatherIcon);
         HashMap<String, ArrayList<String>> modules = new HashMap<>();
         modules.put("coordinates", coordinates);
         modules.put("distance", distance);
@@ -90,9 +165,9 @@ public class HUD {
         }
         if (msg.equals(CTxT.of(""))) return;
         msg.cEvent(3,"https://modrinth.com/mod/directionhud");
-        player.sendMessage(msg.b(), true);
+        player.buildHUD(msg);
     }
-    public static String getPlayerDirection(ServerPlayerEntity player) {
+    public static String getPlayerDirection(Player player) {
         double rotation = (player.getYaw() - 180) % 360;
         if (rotation < 0) {
             rotation += 360.0;
@@ -120,39 +195,39 @@ public class HUD {
         }
     }
     public static String getGameTime(boolean t12hr) {
-        int hour = LoopManager.hour;
-        String min = "0" + LoopManager.minute;
+        int hr = hour;
+        String min = "0" + minute;
         min = min.substring(min.length() - 2);
         int minute = Integer.parseInt(min);
 
         if (t12hr) {
             String time = "";
-            if(hour == 0) hour = 12;
-            else if(hour > 12) {hour -= 12;}
-            time += hour;
+            if(hr == 0) hr = 12;
+            else if(hr > 12) {hr -= 12;}
+            time += hr;
             time += ":";
             if(minute < 10) time += "0";
             time += minute;
             return time;
         }
-        return hour + ":" + min;
+        return hr + ":" + min;
     }
     public static String getAMPM() {
-        int hour = LoopManager.hour;
+        int hr = hour;
         String ampm = "AM";
-        if(hour > 12) {ampm = "PM";}
-        else if(hour == 12) ampm = "PM";
+        if(hr > 12) {ampm = "PM";}
+        else if(hr == 12) ampm = "PM";
 
         return ampm;
     }
-    public static String getTracking(ServerPlayerEntity player) {
+    public static String getTracking(Player player) {
         if (PlayerData.get.dest.getTracking(player) == null) return "";
-        ServerPlayerEntity pl = Destination.social.track.getTarget(player);
+        Player pl = Destination.social.track.getTarget(player);
         if (pl == null) return "???";
         Loc plLoc = new Loc(pl);
-        if (!Utl.player.dim(player).equals(Utl.player.dim(pl))) {
-            if (Utl.dim.canConvert(Utl.player.dim(player),Utl.player.dim(pl))) {
-                plLoc.convertTo(Utl.player.dim(player));
+        if (!player.getDimension().equals(pl.getDimension())) {
+            if (Utl.dim.canConvert(player.getDimension(),pl.getDimension())) {
+                plLoc.convertTo(player.getDimension());
             } else return "-?-";
         }
         int x = plLoc.getX()-player.getBlockX();
@@ -163,14 +238,14 @@ public class HUD {
         }
         double d = Math.toDegrees(Math.atan2(x, z));
         if (d < 0) d = d + 360;
-        if (Utl.inBetweenD(rotation, Utl.sub(d, 15, 360), (d+15)%360)) return "-▲-";
-        if (Utl.inBetweenD(rotation, d, (d+65)%360)) return "◀▲-";
-        if (Utl.inBetweenD(rotation, d, (d+115)%360)) return "◀--";
-        if (Utl.inBetweenD(rotation, d, (d+165)%360)) return "◀▼-";
-        if (Utl.inBetweenD(rotation, Utl.sub(d, 65, 360), d)) return "-▲▶";
-        if (Utl.inBetweenD(rotation, Utl.sub(d, 115, 360), d)) return "--▶";
-        if (Utl.inBetweenD(rotation, Utl.sub(d, 165, 360), d)) return "-▼▶";
-        return "-▼-";
+        if (Utl.inBetweenD(rotation, Utl.sub(d, 15, 360), (d+15)%360)) return "-"+CUtl.symbols.up()+"-";
+        if (Utl.inBetweenD(rotation, d, (d+65)%360)) return CUtl.symbols.left()+CUtl.symbols.up()+"-";
+        if (Utl.inBetweenD(rotation, d, (d+115)%360)) return CUtl.symbols.left()+"--";
+        if (Utl.inBetweenD(rotation, d, (d+165)%360)) return CUtl.symbols.left()+CUtl.symbols.down()+"-";
+        if (Utl.inBetweenD(rotation, Utl.sub(d, 65, 360), d)) return "-"+CUtl.symbols.up()+CUtl.symbols.right();
+        if (Utl.inBetweenD(rotation, Utl.sub(d, 115, 360), d)) return "--"+CUtl.symbols.right();
+        if (Utl.inBetweenD(rotation, Utl.sub(d, 165, 360), d)) return "-"+CUtl.symbols.down()+CUtl.symbols.right();
+        return "-"+CUtl.symbols.down()+"-";
     }
     public static class order {
         //has to be lowercase
@@ -184,15 +259,15 @@ public class HUD {
             if (s.equals("time")) return true;
             return s.equals("weather");
         }
-        public static void reset(ServerPlayerEntity player, boolean Return) {
+        public static void reset(Player player, boolean Return) {
             PlayerData.set.hud.order(player, config.HUDOrder);
             PlayerData.set.hud.setting.time24h(player, config.HUD24HR);
             PlayerData.set.hud.setModule(player, PlayerData.defaults.hudModule());
             CTxT msg = CUtl.tag().append(lang("module.reset", lang("module.reset_2").color('c')));
             if (Return) UI(player, msg, null);
-            else player.sendMessage(msg.b());
+            else player.sendMessage(msg);
         }
-        public static void move(ServerPlayerEntity player, String module, String direction, boolean Return) {
+        public static void move(Player player, String module, String direction, boolean Return) {
             ArrayList<String> order = getEnabled(player);
             int pos = order.indexOf(module.toLowerCase());
             if (!validCheck(module)) return;
@@ -211,29 +286,29 @@ public class HUD {
                 HUD.order.setOrderC(player, order);
             } else return;
             if (Return) UI(player, msg, module);
-            else player.sendMessage(msg.b());
+            else player.sendMessage(msg);
         }
-        public static void toggle(ServerPlayerEntity player, String module, boolean toggle, boolean Return) {
-            if (!HUD.order.validCheck(module)) return;
+        public static void toggle(Player player, String module, boolean toggle, boolean Return) {
+            if (!order.validCheck(module)) return;
             CTxT msg = CUtl.tag().append(lang("module.toggle",CUtl.TBtn(toggle ? "on" : "off"),CTxT.of(langName(module)).color(CUtl.sTC())));
             //OFF
-            if (!toggle && HUD.order.moduleState(player, module)) HUD.order.removeModule(player, module);
-            //ON
-            else if (toggle && !HUD.order.moduleState(player, module)) HUD.order.addModule(player, module);
+            if (!toggle && order.moduleState(player, module)) order.removeModule(player, module);
+                //ON
+            else if (toggle && !order.moduleState(player, module)) order.addModule(player, module);
             if (Return) UI(player, msg, module);
-            else player.sendMessage(msg.b());
+            else player.sendMessage(msg);
         }
-        public static void setting(ServerPlayerEntity player, String setting, String option, boolean Return) {
+        public static void setting(Player player, String setting, String option, boolean Return) {
             if (setting.equals("time")) {
                 if (!PlayerData.get.hud.module.time(player)) return;
                 if (!(option.equals("12hr") || option.equals("24hr"))) return;
                 PlayerData.set.hud.setting.time24h(player, option.equals("24hr"));
                 CTxT msg = CUtl.tag().append(lang("module.time.change",CUtl.lang("button.time."+option).color(CUtl.sTC())));
                 if (Return) UI(player, msg, "time");
-                else player.sendMessage(msg.b());
+                else player.sendMessage(msg);
             }
         }
-        public static boolean moduleState(ServerPlayerEntity player, String s) {
+        public static boolean moduleState(Player player, String s) {
             if (s.equalsIgnoreCase("coordinates")) {
                 return PlayerData.get.hud.module.coordinates(player);
             }
@@ -260,10 +335,10 @@ public class HUD {
         public static String allModules() {
             return "coordinates distance tracking destination direction time weather";
         }
-        public static String[] getOrderC(ServerPlayerEntity player) {
+        public static String[] getOrderC(Player player) {
             return PlayerData.get.hud.order(player).split(" ");
         }
-        public static void setOrderC(ServerPlayerEntity player, List<String> ls) {
+        public static void setOrderC(Player player, List<String> ls) {
             PlayerData.set.hud.order(player, String.join(" ", ls));
         }
         public static String fixOrder(String order) {
@@ -277,7 +352,7 @@ public class HUD {
             list.addAll(allModules);
             return String.join(" ", list);
         }
-        public static ArrayList<String> getEnabled(ServerPlayerEntity player) {
+        public static ArrayList<String> getEnabled(Player player) {
             String[] order = getOrderC(player);
             ArrayList<String> list = new ArrayList<>();
             for (String s: order) {
@@ -285,7 +360,7 @@ public class HUD {
             }
             return list;
         }
-        public static ArrayList<String> getDisabled(ServerPlayerEntity player) {
+        public static ArrayList<String> getDisabled(Player player) {
             String[] order = getOrderC(player);
             ArrayList<String> list = new ArrayList<>();
             for (String s: order) {
@@ -293,7 +368,7 @@ public class HUD {
             }
             return list;
         }
-        public static void removeModule(ServerPlayerEntity player, String s) {
+        public static void removeModule(Player player, String s) {
             if (!validCheck(s)) return;
             ArrayList<String> order = getEnabled(player);
             ArrayList<String> orderD = getDisabled(player);
@@ -304,7 +379,7 @@ public class HUD {
             order.addAll(orderD);
             setOrderC(player, order);
         }
-        public static void addModule(ServerPlayerEntity player, String s) {
+        public static void addModule(Player player, String s) {
             if (!validCheck(s)) return;
             ArrayList<String> order = getEnabled(player);
             ArrayList<String> orderD = getDisabled(player);
@@ -317,14 +392,14 @@ public class HUD {
         }
         public static CTxT arrow(boolean up, boolean gray, String name) {
             if (up) {
-                if (gray) return CTxT.of("▲").btn(true).color('7');
-                return CTxT.of("▲").btn(true).color(CUtl.pTC()).cEvent(1,"/hud edit move "+name+" up");
+                if (gray) return CTxT.of(CUtl.symbols.up()).btn(true).color('7');
+                return CTxT.of(CUtl.symbols.up()).btn(true).color(CUtl.pTC()).cEvent(1,"/hud edit move "+name+" up");
             }
-            if (gray) return CTxT.of("▼").btn(true).color('7');
-            return CTxT.of("▼").btn(true).color(CUtl.pTC()).cEvent(1,"/hud edit move "+name+" down");
+            if (gray) return CTxT.of(CUtl.symbols.down()).btn(true).color('7');
+            return CTxT.of(CUtl.symbols.down()).btn(true).color(CUtl.pTC()).cEvent(1,"/hud edit move "+name+" down");
         }
         public static CTxT xButton(String name) {
-            return CTxT.of("✕").btn(true).color('c').cEvent(1,"/hud edit state "+name+" false")
+            return CTxT.of(CUtl.symbols.x()).btn(true).color('c').cEvent(1,"/hud edit state "+name+" false")
                     .hEvent(CUtl.TBtn("module.disable.hover").color('c'));
         }
         public static String langName(String s) {
@@ -337,7 +412,7 @@ public class HUD {
             if (s.equalsIgnoreCase("weather")) return lang("module.weather").getString();
             return "";
         }
-        public static CTxT moduleName(ServerPlayerEntity player, String s, CTxT addStart) {
+        public static CTxT moduleName(Player player, String s, CTxT addStart) {
             CTxT hoverT = CTxT.of("");
             if (s.equalsIgnoreCase("coordinates")) {
                 hoverT.append(lang("module.coordinates.info")).append("\n")
@@ -362,7 +437,7 @@ public class HUD {
             if (s.equalsIgnoreCase("tracking")) {
                 hoverT.append(lang("module.tracking.info")).append("\n")
                         .append(color.addColor(player,"[",1,15,20).strikethrough(true))
-                        .append(color.addColor(player,"▲",2,35,20))
+                        .append(color.addColor(player,"-"+CUtl.symbols.up()+CUtl.symbols.right(),2,35,20))
                         .append(color.addColor(player,"]",1,55,20).strikethrough(true));
             }
             if (s.equalsIgnoreCase("time")) {
@@ -377,12 +452,12 @@ public class HUD {
             }
             if (s.equalsIgnoreCase("weather")) {
                 hoverT.append(lang("module.weather.info")).append("\n")
-                        .append(color.addColor(player,"☀",1,15,20));
+                        .append(color.addColor(player,CUtl.symbols.sun(),1,15,20));
             }
             if (addStart == null) return CTxT.of(langName(s)).hEvent(hoverT);
             return CTxT.of(langName(s)).hEvent(addStart.append("\n").append(hoverT));
         }
-        public static void UI(ServerPlayerEntity player, CTxT abovemsg, String highlight) {
+        public static void UI(Player player, CTxT abovemsg, String highlight) {
             if (highlight == null) highlight = "";
             //MODULES
             HashMap<String, CTxT> modules = new HashMap<>();
@@ -393,7 +468,6 @@ public class HUD {
             modules.put("direction", CTxT.of(" "));
             modules.put("time", CTxT.of(" "));
             modules.put("weather", CTxT.of(" "));
-
             //MAKE THE TEXT
             if (getEnabled(player).size() > 0) {
                 for (int i = 0; i < getEnabled(player).size(); i++) {
@@ -448,11 +522,11 @@ public class HUD {
             msg.append("          ").append(CUtl.TBtn("reset").btn(true).color('c').cEvent(1,"/hud edit reset")
                             .hEvent(CUtl.TBtn("reset.hover_edit").color('c')))
                     .append("  ").append(CUtl.CButton.back("/hud")).append(CTxT.of("\n                                               ").strikethrough(true));
-            player.sendMessage(msg.b());
+            player.sendMessage(msg);
         }
     }
     public static class color {
-        public static void reset(ServerPlayerEntity player, String type, boolean Return) {
+        public static void reset(Player player, String type, boolean Return) {
             String langType;
             if (type == null) {
                 PlayerData.set.hud.primary(player, defaultFormat(1));
@@ -467,9 +541,9 @@ public class HUD {
             } else return;
             CTxT msg = CUtl.tag().append(lang("color.reset",lang("color.reset_2").color('c'),lang("color."+langType)));
             if (Return) UI(player, msg);
-            else player.sendMessage(msg.b());
+            else player.sendMessage(msg);
         }
-        public static void setColor(ServerPlayerEntity player, String type, String color, boolean Return) {
+        public static void setColor(Player player, String type, String color, boolean Return) {
             if (type.equals("primary")) {
                 color = Utl.color.fix(color,true,config.defaults.HUDPrimaryColor);
                 if (getHUDColors(player)[0].equals(color)) return;
@@ -482,9 +556,9 @@ public class HUD {
             CTxT msg = CUtl.tag().append(lang("color.set",lang("color."+type),
                     addColor(player,Utl.color.formatPlayer(color,true),type.equals("primary")?1:2,15f,20f)));
             if (Return) changeUI(player, type.substring(0,3),msg);
-            else player.sendMessage(msg.b());
+            else player.sendMessage(msg);
         }
-        public static void setBold(ServerPlayerEntity player, String type, boolean state, boolean Return) {
+        public static void setBold(Player player, String type, boolean state, boolean Return) {
             if (type.equals("primary")) {
                 if (getHUDBold(player, 1)==state) return;
                 PlayerData.set.hud.primary(player, getHUDColors(player)[0]+"-"+state+"-"+getHUDItalics(player,1)+"-"+getHUDRGB(player,1));
@@ -495,9 +569,9 @@ public class HUD {
             CTxT msg = CUtl.tag().append(lang("color.set.bold",
                     CUtl.lang("button."+(state?"on":"off")).color(state?'a':'c'),lang("color."+type)));
             if (Return) changeUI(player, type.substring(0,3),msg);
-            else player.sendMessage(msg.b());
+            else player.sendMessage(msg);
         }
-        public static void setItalics(ServerPlayerEntity player, String type, boolean state, boolean Return) {
+        public static void setItalics(Player player, String type, boolean state, boolean Return) {
             if (type.equals("primary")) {
                 if (getHUDItalics(player, 1)==state) return;
                 PlayerData.set.hud.primary(player, getHUDColors(player)[0]+"-"+getHUDBold(player,1)+"-"+state+"-"+getHUDRGB(player,1));
@@ -506,11 +580,11 @@ public class HUD {
                 PlayerData.set.hud.secondary(player, getHUDColors(player)[1]+"-"+getHUDBold(player,2)+"-"+state+"-"+getHUDRGB(player,2));
             } else return;
             CTxT msg = CUtl.tag().append(lang("color.set.italics",
-                            CUtl.lang("button."+(state?"on":"off")).color(state?'a':'c'),lang("color."+type)));
+                    CUtl.lang("button."+(state?"on":"off")).color(state?'a':'c'),lang("color."+type)));
             if (Return) changeUI(player, type.substring(0,3),msg);
-            else player.sendMessage(msg.b());
+            else player.sendMessage(msg);
         }
-        public static void setRGB(ServerPlayerEntity player, String type, boolean state, boolean Return) {
+        public static void setRGB(Player player, String type, boolean state, boolean Return) {
             if (type.equals("primary")) {
                 if (getHUDRGB(player, 1)==state) return;
                 PlayerData.set.hud.primary(player, getHUDColors(player)[0]+"-"+getHUDBold(player,1)+"-"+getHUDItalics(player,1)+"-"+state);
@@ -521,7 +595,7 @@ public class HUD {
             CTxT msg = CUtl.tag().append(lang("color.set.rgb",
                     CUtl.lang("button."+(state?"on":"off")).color(state?'a':'c'),lang("color."+type)));
             if (Return) changeUI(player, type.substring(0,3),msg);
-            else player.sendMessage(msg.b());
+            else player.sendMessage(msg);
         }
         //"red", "dark_red", "gold", "yellow", "green", "dark_green", "aqua", "dark_aqua",
         // "blue", "dark_blue", "pink", "purple", "white", "gray", "dark_gray", "black"
@@ -529,39 +603,34 @@ public class HUD {
             if (i==1) return config.HUDPrimaryColor+"-"+config.HUDPrimaryBold+"-"+config.HUDPrimaryItalics+"-"+config.HUDPrimaryRainbow;
             return config.HUDSecondaryColor+"-"+config.HUDSecondaryBold+"-"+config.HUDSecondaryItalics+"-"+config.HUDSecondaryRainbow;
         }
-        public static String[] getHUDColors(ServerPlayerEntity player) {
+        public static String[] getHUDColors(Player player) {
             String[] p = PlayerData.get.hud.primary(player).split("-");
             String[] s = PlayerData.get.hud.secondary(player).split("-");
             return (p[0]+" "+s[0]).split(" ");
         }
-        public static Boolean getHUDBold(ServerPlayerEntity player, int i) {
+        public static Boolean getHUDBold(Player player, int i) {
             String[] p = PlayerData.get.hud.primary(player).split("-");
             String[] s = PlayerData.get.hud.secondary(player).split("-");
             if (i==1) return Boolean.parseBoolean(p[1]);
             return Boolean.parseBoolean(s[1]);
         }
-        public static Boolean getHUDItalics(ServerPlayerEntity player, int i) {
+        public static Boolean getHUDItalics(Player player, int i) {
             String[] p = PlayerData.get.hud.primary(player).split("-");
             String[] s = PlayerData.get.hud.secondary(player).split("-");
             if (i==1) return Boolean.parseBoolean(p[2]);
             return Boolean.parseBoolean(s[2]);
         }
-        public static Boolean getHUDRGB(ServerPlayerEntity player, int i) {
+        public static Boolean getHUDRGB(Player player, int i) {
             String[] p = PlayerData.get.hud.primary(player).split("-");
             String[] s = PlayerData.get.hud.secondary(player).split("-");
             if (i==1) return Boolean.parseBoolean(p[3]);
             return Boolean.parseBoolean(s[3]);
         }
-        public static TextColor getColorHUD(ServerPlayerEntity player, Integer i) {
-            String str = getHUDColors(player)[i-1];
-            if (str.charAt(0) == '#') return TextColor.parse(str);
-            return Utl.color.getTC(getHUDColors(player)[i-1]);
-        }
-        public static CTxT addColor(ServerPlayerEntity player, String txt, int i, float start, float step) {
+        public static CTxT addColor(Player player, String txt, int i, float start, float step) {
             if (getHUDRGB(player,i)) return CTxT.of(txt).rainbow(true,start,step).italic(getHUDItalics(player,i)).bold(getHUDBold(player,i));
-            return CTxT.of(txt).color(getColorHUD(player,i)).italic(getHUDItalics(player,i)).bold(getHUDBold(player,i));
+            return CTxT.of(txt).color(getHUDColors(player)[i-1]).italic(getHUDItalics(player,i)).bold(getHUDBold(player,i));
         }
-        public static void changeUI(ServerPlayerEntity player, String type, CTxT abovemsg) {
+        public static void changeUI(Player player, String type, CTxT abovemsg) {
             CTxT msg = CTxT.of("");
             if (abovemsg != null) msg.append(abovemsg).append("\n");
             ArrayList<String> allStr = new ArrayList<>(Arrays.asList(
@@ -636,9 +705,9 @@ public class HUD {
                     .append(boldButton).append(" ").append(italicsButton).append("\n\n ")
                     .append(reset).append(" ").append(back)
                     .append(CTxT.of("\n                           ").strikethrough(true));
-            player.sendMessage(msg.b());
+            player.sendMessage(msg);
         }
-        public static void UI(ServerPlayerEntity player, CTxT abovemsg) {
+        public static void UI(Player player, CTxT abovemsg) {
             CTxT msg = CTxT.of("");
             if (abovemsg != null) msg.append(abovemsg).append("\n");
             msg.append(" ").append(Utl.color.rainbow(lang("ui.color").getString(),15f,45f))
@@ -651,29 +720,20 @@ public class HUD {
                     .hEvent(CUtl.TBtn("color.edit.hover",addColor(player,CUtl.TBtn("color.secondary").getString(),2,15,20)))).append("\n\n      ");
             //RESET
             msg.append(CUtl.TBtn("reset").btn(true).color('c').cEvent(1,"/hud color rset")
-                    .hEvent(CUtl.TBtn("reset.hover_color",CUtl.TBtn("all").color('c'))))
+                            .hEvent(CUtl.TBtn("reset.hover_color",CUtl.TBtn("all").color('c'))))
                     .append("  ").append(CUtl.CButton.back("/hud"))
                     .append(CTxT.of("\n                                ").strikethrough(true));
-            player.sendMessage(msg.b());
+            player.sendMessage(msg);
         }
     }
-    public static void toggle(ServerPlayerEntity player, Boolean state, boolean Return) {
-        if (state == null) {
-            if (PlayerData.get.hud.state(player)) player.sendMessage(Text.of(""), true);
-            PlayerData.set.hud.state(player, !PlayerData.get.hud.state(player));
-        } else {
-            if (!state) player.sendMessage(Text.of(""),true);
-            PlayerData.set.hud.state(player, state);
-        }
-        if (DirectionHUD.players.get(player)) {
-            PacketBuilder packet = new PacketBuilder(PlayerData.get.hud.state(player)+"");
-            packet.sendToPlayer(PacketBuilder.HUD_STATE, player);
-        }
+    public static void toggle(Player player, Boolean state, boolean Return) {
+        PlayerData.set.hud.state(player, Objects.requireNonNullElseGet(state, () -> !PlayerData.get.hud.state(player)));
+        player.updateHUD();
         CTxT msg = CUtl.tag().append(lang("toggle",CUtl.TBtn((PlayerData.get.hud.state(player)?"on":"off")).color(PlayerData.get.hud.state(player)?'a':'c')));
         if (Return) UI(player, msg);
-        else player.sendMessage(msg.b());
+        else player.sendMessage(msg);
     }
-    public static void UI(ServerPlayerEntity player, CTxT abovemsg) {
+    public static void UI(Player player, CTxT abovemsg) {
         CTxT msg = CTxT.of("");
         if (abovemsg != null) msg.append(abovemsg).append("\n");
         msg.append(" ").append(lang("ui").color(CUtl.pTC())).append(CTxT.of("\n                                 \n").strikethrough(true)).append(" ");
@@ -689,7 +749,6 @@ public class HUD {
         //BACK
         msg.append(CUtl.CButton.back("/directionhud"));
         msg.append(CTxT.of("\n                                 ").strikethrough(true));
-        player.sendMessage(msg.b());
+        player.sendMessage(msg);
     }
-    //782
 }

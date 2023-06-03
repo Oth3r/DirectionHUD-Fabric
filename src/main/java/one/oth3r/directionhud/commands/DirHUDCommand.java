@@ -1,4 +1,4 @@
-package one.oth3r.directionhud.fabric.commands;
+package one.oth3r.directionhud.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -8,20 +8,18 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import one.oth3r.directionhud.common.Destination;
-import one.oth3r.directionhud.fabric.files.PlayerData;
-import one.oth3r.directionhud.fabric.files.config;
-import one.oth3r.directionhud.fabric.utils.CUtl;
-import one.oth3r.directionhud.fabric.utils.Utl;
+import one.oth3r.directionhud.common.DirHUD;
+import one.oth3r.directionhud.DirectionHUD;
+import one.oth3r.directionhud.utils.Player;
+import one.oth3r.directionhud.utils.Utl;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-
-public class DestinationCommand {
+public class DirHUDCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(CommandManager.literal("dest")
+        dispatcher.register(CommandManager.literal("dirhud")
                 .requires((commandSource) -> commandSource.hasPermissionLevel(0))
                 .executes((context2) -> command(context2.getSource(), context2.getInput()))
                 .then(CommandManager.argument("args", StringArgumentType.string())
@@ -49,57 +47,23 @@ public class DestinationCommand {
                                                                                 .suggests((context, builder) -> getSuggestions(context,builder,8))
                                                                                 .executes((context2) -> command(context2.getSource(), context2.getInput()))
                                                                                 .executes((context2) -> command(context2.getSource(), context2.getInput())))))))))));
-        dispatcher.register(CommandManager.literal("destination").redirect(dispatcher.getRoot().getChild("dest"))
+        dispatcher.register(CommandManager.literal("directionhud").redirect(dispatcher.getRoot().getChild("dirhud"))
                 .executes((context2) -> command(context2.getSource(), context2.getInput())));
     }
     public static CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder, int pos) {
         ServerPlayerEntity player = context.getSource().getPlayer();
         assert player != null;
-        String[] args = context.getInput().split(" ");
         if (pos == 1) {
-            if (config.deathsaving && PlayerData.get.dest.setting.lastdeath(player)) builder.suggest("lastdeath");
-            if (config.DESTSaving) {
-                builder.suggest("add");
-                builder.suggest("saved");
-            }
-            builder.suggest("set");
-            builder.suggest("clear");
-            builder.suggest("settings");
-            if (Destination.showSend(player)) builder.suggest("send");
-            if (Destination.showTracking(player)) builder.suggest("track");
-            return builder.buildFuture();
-        }
-        if (pos > args.length) {
-            return builder.buildFuture();
-        }
-        //SAVED
-        if (args[1].equalsIgnoreCase("saved")) {
-            return Destination.commandSuggester.savedCMD(player,builder,pos-2,Utl.trimStart(args,2));
-        }
-        //ADD
-        if (args[1].equalsIgnoreCase("add")) {
-            return Destination.commandSuggester.addCMD(player,builder,pos-2,Utl.trimStart(args,2));
-        }
-        if (args[1].equalsIgnoreCase("settings")) {
-            return Destination.commandSuggester.settingsCMD(builder,pos-2,Utl.trimStart(args,2));
-        }
-        if (args[1].equalsIgnoreCase("set")) {
-            return Destination.commandSuggester.setCMD(player,builder,pos-2,Utl.trimStart(args,2));
-        }
-        if (args[1].equalsIgnoreCase("send")) {
-            return Destination.commandSuggester.sendCMD(player,builder,pos-2,Utl.trimStart(args,2));
-        }
-        if (args[1].equalsIgnoreCase("track")) {
-            return Destination.commandSuggester.trackCMD(player,builder,pos-2);
+            if (!DirectionHUD.server.isRemote()) return builder.suggest("defaults").buildFuture();
+            else if (player.hasPermissionLevel(2)) return builder.suggest("reload").buildFuture();
         }
         return builder.buildFuture();
     }
     private static int command(ServerCommandSource source, String arg) {
-        ServerPlayerEntity player = source.getPlayer();
-        if (player == null) return 1;
+        ServerPlayerEntity spe = source.getPlayer();
         String[] args;
         //trim all the arguments before the command
-        List<String> keywords = Arrays.asList("dest", "destination");
+        List<String> keywords = Arrays.asList("dirhud", "directionhud");
         int index = Integer.MAX_VALUE;
         //finds the index for the words
         for (String keyword : keywords) {
@@ -109,51 +73,35 @@ public class DestinationCommand {
         //trims the words before the text
         if (index != Integer.MAX_VALUE) arg = arg.substring(index).trim();
         args = arg.split(" ");
-        if (args[0].equals("dest") || args[0].equals("destination"))
-            args = arg.replaceFirst("(?i)dest(ination)?\\s+", "").split(" ");
-
-        if (args[0].equalsIgnoreCase("dest") || args[0].equalsIgnoreCase("destination")) {
-            Destination.UI(player);
+        if (args[0].equals("dirhud") || args[0].equals("directionhud"))
+            args = arg.replaceFirst("(?i)dir(ection)?hud ", "").split(" ");
+        if (spe == null) {
+            if (args[0].equalsIgnoreCase("reload") && DirectionHUD.server.isRemote())
+                DirHUD.reload(null);
             return 1;
         }
-        //SET
-        if (args[0].equalsIgnoreCase("set")) {
-            return Destination.commandExecutor.setCMD(player, Utl.trimStart(args,1));
-        }
-        //CLEAR
-        if (args[0].equalsIgnoreCase("clear")) {
-            Destination.clear(player, null);
+        Player player = Player.of(spe);
+        if (args[0].equalsIgnoreCase("dirhud") || args[0].equalsIgnoreCase("directionhud")) {
+            DirHUD.UI(player);
             return 1;
         }
-        //SAVED
-        if (args[0].equalsIgnoreCase("saved")) {
-            return Destination.commandExecutor.savedCMD(player,Utl.trimStart(args,1));
+        if (args[0].equalsIgnoreCase("defaults") && !DirectionHUD.server.isRemote()) {
+            if (args.length == 1) {
+                DirHUD.defaults(player);
+            }
+            if (args.length != 2) {
+                return 1;
+            }
+            if (args[1].equalsIgnoreCase("set")) {
+                DirHUD.setDefaults(player);
+            }
+            if (args[1].equalsIgnoreCase("reset")) {
+                DirHUD.resetDefaults(player);
+            }
         }
-        //ADD
-        if (args[0].equalsIgnoreCase("add")) {
-            return Destination.commandExecutor.addCMD(player,Utl.trimStart(args,1));
+        if (args[0].equalsIgnoreCase("reload") && Utl.checkEnabled.reload(player)) {
+            DirHUD.reload(player);
         }
-        //REMOVE (HIDDEN)
-        if (args[0].equalsIgnoreCase("remove")) {
-            return Destination.commandExecutor.removeCMD(player,Utl.trimStart(args,1));
-        }
-        //LASTDEATH
-        if (args[0].equalsIgnoreCase("lastdeath")) {
-            return Destination.commandExecutor.lastdeathCMD(player,Utl.trimStart(args,1));
-        }
-        //SETTINGS
-        if (args[0].equalsIgnoreCase("settings")) {
-            return Destination.commandExecutor.settingsCMD(player,Utl.trimStart(args,1));
-        }
-        //SEND
-        if (args[0].equalsIgnoreCase("send")) {
-            return Destination.commandExecutor.sendCMD(player,Utl.trimStart(args,1));
-        }
-        //TRACK
-        if (args[0].equalsIgnoreCase("track")) {
-            return Destination.commandExecutor.trackCMD(player,Utl.trimStart(args,1));
-        }
-        player.sendMessage(CUtl.error(CUtl.lang("error.command")));
         return 1;
     }
 }

@@ -1,16 +1,15 @@
-package one.oth3r.directionhud.fabric.utils;
+package one.oth3r.directionhud.common.utils;
 
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.Vec3d;
-import one.oth3r.directionhud.fabric.files.config;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
+import one.oth3r.directionhud.files.config;
+import one.oth3r.directionhud.utils.CTxT;
+import one.oth3r.directionhud.utils.Player;
+import one.oth3r.directionhud.utils.Utl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import static one.oth3r.directionhud.fabric.utils.Utl.isInt;
-import static one.oth3r.directionhud.fabric.utils.Utl.dim.conversionRatios;
+import static one.oth3r.directionhud.utils.Utl.dim.conversionRatios;
+import static one.oth3r.directionhud.utils.Utl.isInt;
 
 public class Loc {
     private Integer x = null;
@@ -84,13 +83,13 @@ public class Loc {
         this.y = yBounds(Integer.parseInt(sp.get(1)));
         this.z = xzBounds(Integer.parseInt(sp.get(2)));
     }
-    public Loc(ServerPlayerEntity player) {
+    public Loc(Player player) {
         this.x = xzBounds(player.getBlockX());
         this.y = yBounds(player.getBlockY());
         this.z = xzBounds(player.getBlockZ());
-        this.dimension = Utl.player.dim(player);
+        this.dimension = player.getDimension();
     }
-    public Loc(ServerPlayerEntity player, String dimension) {
+    public Loc(Player player, String dimension) {
         this.x = xzBounds(player.getBlockX());
         this.y = yBounds(player.getBlockY());
         this.z = xzBounds(player.getBlockZ());
@@ -100,11 +99,11 @@ public class Loc {
         String fromDimension = this.getDIM();
         if (fromDimension.equalsIgnoreCase(toDimension)) return;
         if (!Utl.dim.checkValid(toDimension)) return;
-        Pair<String, String> dimensionPair = new ImmutablePair<>(fromDimension, toDimension);
+        Utl.Pair<String, String> dimensionPair = new Utl.Pair<>(fromDimension, toDimension);
         Double ratio;
         if (conversionRatios.containsKey(dimensionPair)) ratio = conversionRatios.get(dimensionPair);
         else {
-            dimensionPair = new ImmutablePair<>(toDimension,fromDimension);
+            dimensionPair = new Utl.Pair<>(toDimension,fromDimension);
             if (conversionRatios.containsKey(dimensionPair)) ratio = 1/conversionRatios.get(dimensionPair);
             else return;
         }
@@ -125,11 +124,16 @@ public class Loc {
         if (this.dimension == null) return Arrays.toString(new String[]{this.x+"",this.y+"",this.z+""});
         return Arrays.toString(new String[]{this.x+"",this.y+"",this.z+"",this.dimension});
     }
-    public Vec3d getVec3d(ServerPlayerEntity player) {
+    public ArrayList<Double> getVec(Player player) {
+        ArrayList<Double> vector = new ArrayList<>();
         Integer i = this.y;
         if (i == null) i = player.getBlockY();
-        if (this.x != null && this.z != null) return new Vec3d(this.x,i,this.z);
-        return new Vec3d(0,0,0);
+        if (this.x != null && this.z != null) {
+            vector.add((double)this.x);
+            vector.add((double)i);
+            vector.add((double)this.z);
+        }
+        return vector;
     }
     public CTxT getBadge() {
         CTxT msg = CTxT.of("");
@@ -168,5 +172,8 @@ public class Loc {
     }
     public void setDIM(String setDIM) {
         if (Utl.dim.checkValid(setDIM)) this.dimension = setDIM;
+    }
+    public String toString() {
+        return this.x+" "+this.y+" "+this.z+" "+this.dimension;
     }
 }

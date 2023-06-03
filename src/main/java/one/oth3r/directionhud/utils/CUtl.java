@@ -1,11 +1,10 @@
-package one.oth3r.directionhud.fabric.utils;
+package one.oth3r.directionhud.utils;
 
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
-import one.oth3r.directionhud.fabric.DirectionHUD;
+import one.oth3r.directionhud.DirectionHUD;
 import one.oth3r.directionhud.common.Destination;
-import one.oth3r.directionhud.fabric.files.LangReader;
+import one.oth3r.directionhud.files.LangReader;
 
 public class CUtl {
     public static CTxT tag() {
@@ -32,11 +31,11 @@ public class CUtl {
     public static HoverEvent hEvent(CTxT text) {
         return new HoverEvent(HoverEvent.Action.SHOW_TEXT, text.b());
     }
-    public static Text error(CTxT s) {
-        return tag().append(lang("error").color("#FF4646")).append(" ").append(s).b();
+    public static CTxT error(CTxT s) {
+        return tag().append(lang("error").color("#FF4646")).append(" ").append(s);
     }
-    public static Text usage(String s) {
-        return tag().append(lang("usage").color("#FF4646")).append(" ").append(s).b();
+    public static CTxT usage(String s) {
+        return tag().append(lang("usage").color("#FF4646")).append(" ").append(s);
     }
     public static TextColor HEX(String s) {
         if (s.contains("#")) return TextColor.parse(s);
@@ -128,7 +127,7 @@ public class CUtl {
                 return TBtn("dest.set").btn(true).color(c.set).cEvent(2,"/dest set ").hEvent(
                         CTxT.of(cmdUsage.destSet()).color(c.set).append("\n").append(TBtn("dest.set.hover_info")));
             }
-            public static CTxT clear(ServerPlayerEntity player) {
+            public static CTxT clear(Player player) {
                 boolean o = Destination.get(player).hasXYZ();
                 return CTxT.of("✕").btn(true).color(o?'c':'7').cEvent(o?1:0,"/dest clear").hEvent(
                         CTxT.of(cmdUsage.destClear()).color(o?'c':'7').append("\n").append(TBtn("dest.clear.hover")));
@@ -204,5 +203,40 @@ public class CUtl {
         public static String destTrackClear() {return "/dest track .clear";}
         public static String defaults() {return "/dirhud defaults";}
         public static String reload() {return "/dirhud reload";}
+    }
+    public static class symbols {
+        public static String up() {
+            return "\u25b2";
+        }
+        public static String down() {
+            return "\u25bc";
+        }
+        public static String left() {
+            return "\u25c0";
+        }
+        public static String right() {
+            return "\u25b6";
+        }
+        public static String x() {
+            return "\u2715";
+        }
+        public static String pencil() {
+            return "\u270e";
+        }
+        public static String sun() {
+            return "\u2600";
+        }
+        public static String moon() {
+            return "\u263d";
+        }
+        public static String rain() {
+            return "\ud83c\udf27";
+        }
+        public static String thunder() {
+            return "\u26c8";
+        }
+        public static String link() {
+            return "\u29c9";
+        }
     }
 }

@@ -1,4 +1,4 @@
-package one.oth3r.directionhud.fabric;
+package one.oth3r.directionhud;
 
 import dev.isxander.yacl.api.*;
 import dev.isxander.yacl.gui.controllers.ColorController;
@@ -6,13 +6,13 @@ import dev.isxander.yacl.gui.controllers.TickBoxController;
 import dev.isxander.yacl.gui.controllers.slider.IntegerSliderController;
 import dev.isxander.yacl.gui.controllers.string.StringController;
 import dev.isxander.yacl.gui.controllers.string.number.IntegerFieldController;
-import one.oth3r.directionhud.fabric.files.config;
+import one.oth3r.directionhud.files.config;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
 
 import net.minecraft.text.Text;
-import one.oth3r.directionhud.fabric.utils.CUtl;
-import one.oth3r.directionhud.fabric.utils.Utl;
+import one.oth3r.directionhud.utils.CUtl;
+import one.oth3r.directionhud.utils.Utl;
 
 import java.awt.*;
 import java.util.List;

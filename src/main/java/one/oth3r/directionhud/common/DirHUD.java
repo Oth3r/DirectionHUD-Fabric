@@ -1,16 +1,17 @@
 package one.oth3r.directionhud.common;
 
-import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.server.network.ServerPlayerEntity;
-import one.oth3r.directionhud.fabric.DirectionHUD;
-import one.oth3r.directionhud.fabric.files.LangReader;
-import one.oth3r.directionhud.fabric.files.PlayerData;
-import one.oth3r.directionhud.fabric.files.config;
-import one.oth3r.directionhud.fabric.utils.CTxT;
-import one.oth3r.directionhud.fabric.utils.CUtl;
+import one.oth3r.directionhud.DirectionHUD;
+import one.oth3r.directionhud.files.LangReader;
+import one.oth3r.directionhud.common.files.PlayerData;
+import one.oth3r.directionhud.files.config;
+import one.oth3r.directionhud.utils.CTxT;
+import one.oth3r.directionhud.utils.CUtl;
+import one.oth3r.directionhud.utils.Player;
+import one.oth3r.directionhud.utils.Utl;
 
 public class DirHUD {
-    public static void setDefaults(ServerPlayerEntity player) {
+    public static void setDefaults(Player player) {
+        //todo move this to config file
         config.DESTAutoClear = PlayerData.get.dest.setting.autoclear(player);
         config.DESTAutoClearRad = PlayerData.get.dest.setting.autoclearrad(player);
         config.DESTAutoConvert = PlayerData.get.dest.setting.autoconvert(player);
@@ -44,13 +45,13 @@ public class DirHUD {
         config.HUDSecondaryBold = HUD.color.getHUDBold(player, 2);
         config.HUDSecondaryItalics = HUD.color.getHUDItalics(player, 2);
         config.save();
-        player.sendMessage(CUtl.tag().append(CUtl.lang("dirhud.defaults.set")).b());
+        player.sendMessage(CUtl.tag().append(CUtl.lang("dirhud.defaults.set")));
     }
-    public static void resetDefaults(ServerPlayerEntity player) {
+    public static void resetDefaults(Player player) {
         config.resetDefaults();
-        player.sendMessage(CUtl.tag().append(CUtl.lang("dirhud.defaults.reset")).b());
+        player.sendMessage(CUtl.tag().append(CUtl.lang("dirhud.defaults.reset")));
     }
-    public static void defaults(ServerPlayerEntity player) {
+    public static void defaults(Player player) {
         CTxT msg = CTxT.of("");
         msg.append(CUtl.lang("dirhud.ui.defaults").color(CUtl.pTC()))
                 .append(CTxT.of("\n                                 \n").strikethrough(true))
@@ -63,36 +64,34 @@ public class DirHUD {
                 .append("  ")
                 .append(CUtl.CButton.back("/dirhud"))
                 .append(CTxT.of("\n                                 ").strikethrough(true));
-        player.sendMessage(msg.b());
+        player.sendMessage(msg);
     }
-    public static void reload(ServerPlayerEntity player) {
-        if (player != null && !player.hasPermissionLevel(2)) return;
-        if (DirectionHUD.configFile == null) DirectionHUD.configFile = FabricLoader.getInstance().getConfigDir().toFile()+"/";
+    public static void reload(Player player) {
+        //todo add back reloading config file location & maybe playerdata location
         LangReader.loadLanguageFile();
         config.load();
-        for (ServerPlayerEntity pl:DirectionHUD.server.getPlayerManager().getPlayerList()) {
+        for (Player pl: Utl.getPlayers()) {
             PlayerData.removePlayer(pl);
             PlayerData.addPlayer(pl);
         }
         if (player == null) DirectionHUD.LOGGER.info(CUtl.lang("dirhud.reload", CUtl.lang("dirhud.reload_2")).getString());
-        else player.sendMessage(CUtl.tag().append(CUtl.lang("dirhud.reload",CUtl.lang("dirhud.reload_2").color('a'))).b());
+        else player.sendMessage(CUtl.tag().append(CUtl.lang("dirhud.reload",CUtl.lang("dirhud.reload_2").color('a'))));
     }
-    public static void UI(ServerPlayerEntity player) {
+    public static void UI(Player player) {
         CTxT msg = CTxT.of("")
                 .append(CTxT.of(" DirectionHUD ").color(CUtl.pTC()))
-                .append(CTxT.of(DirectionHUD.VERSION+"⧉").color(CUtl.sTC()).cEvent(3,"https://modrinth.com/mod/directionhud/changelog")
+                .append(CTxT.of("v"+DirectionHUD.VERSION+CUtl.symbols.link()).color(CUtl.sTC()).cEvent(3,"https://modrinth.com/mod/directionhud/changelog")
                         .hEvent(CUtl.TBtn("version.hover").color(CUtl.sTC())))
                 .append(CTxT.of("\n                                 \n").strikethrough(true)).append(" ");
         //hud
-        if (config.HUDEditing) msg.append(CUtl.CButton.dirHUD.hud()).append("  ");
+        if (Utl.checkEnabled.hud(player)) msg.append(CUtl.CButton.dirHUD.hud()).append("  ");
         //dest
-        msg.append(CUtl.CButton.dirHUD.dest());
-        if (!DirectionHUD.server.isRemote()) {
-            msg.append("\n\n ").append(CUtl.CButton.dirHUD.defaults());
-        } else if (player.hasPermissionLevel(2)) {
+        if (Utl.checkEnabled.destination(player)) msg.append(CUtl.CButton.dirHUD.dest());
+        if (Utl.checkEnabled.reload(player)) {
             msg.append("\n\n ").append(CUtl.CButton.dirHUD.reload());
-        }
+            if (Utl.checkEnabled.defaults(player)) msg.append("  ").append(CUtl.CButton.dirHUD.defaults());
+        } else if (Utl.checkEnabled.defaults(player)) msg.append("\n\n ").append(CUtl.CButton.dirHUD.defaults());
         msg.append(CTxT.of("\n                                 ").strikethrough(true));
-        player.sendMessage(msg.b());
+        player.sendMessage(msg);
     }
 }

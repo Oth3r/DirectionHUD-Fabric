@@ -1,4 +1,4 @@
-package one.oth3r.directionhud.fabric.commands;
+package one.oth3r.directionhud.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -8,16 +8,18 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import one.oth3r.directionhud.common.DirHUD;
-import one.oth3r.directionhud.fabric.DirectionHUD;
+import one.oth3r.directionhud.common.Destination;
+import one.oth3r.directionhud.utils.Player;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
-public class DirHUDCommand {
+
+public class DestinationCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(CommandManager.literal("dirhud")
+        dispatcher.register(CommandManager.literal("dest")
                 .requires((commandSource) -> commandSource.hasPermissionLevel(0))
                 .executes((context2) -> command(context2.getSource(), context2.getInput()))
                 .then(CommandManager.argument("args", StringArgumentType.string())
@@ -45,24 +47,23 @@ public class DirHUDCommand {
                                                                                 .suggests((context, builder) -> getSuggestions(context,builder,8))
                                                                                 .executes((context2) -> command(context2.getSource(), context2.getInput()))
                                                                                 .executes((context2) -> command(context2.getSource(), context2.getInput())))))))))));
-        dispatcher.register(CommandManager.literal("directionhud").redirect(dispatcher.getRoot().getChild("dirhud"))
+        dispatcher.register(CommandManager.literal("destination").redirect(dispatcher.getRoot().getChild("dest"))
                 .executes((context2) -> command(context2.getSource(), context2.getInput())));
     }
     public static CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder, int pos) {
-        ServerPlayerEntity player = context.getSource().getPlayer();
-        assert player != null;
-        if (pos == 1) {
-            if (!DirectionHUD.server.isRemote()) return builder.suggest("defaults").buildFuture();
-            else if (player.hasPermissionLevel(2)) return builder.suggest("reload").buildFuture();
-        }
+        Player player = Player.of(Objects.requireNonNull(context.getSource().getPlayer()));
+        String[] args = context.getInput().split(" ");
+        if (pos > args.length) return builder.buildFuture();
+        for (String s : Destination.commandSuggester.logic(player,pos,args)) builder.suggest(s);
         return builder.buildFuture();
     }
     private static int command(ServerCommandSource source, String arg) {
-        ServerPlayerEntity player = source.getPlayer();
+        ServerPlayerEntity spe = source.getPlayer();
+        if (spe == null) return 1;
+        Player player = Player.of(spe);
         String[] args;
-
         //trim all the arguments before the command
-        List<String> keywords = Arrays.asList("dirhud", "directionhud");
+        List<String> keywords = Arrays.asList("dest", "destination");
         int index = Integer.MAX_VALUE;
         //finds the index for the words
         for (String keyword : keywords) {
@@ -72,37 +73,13 @@ public class DirHUDCommand {
         //trims the words before the text
         if (index != Integer.MAX_VALUE) arg = arg.substring(index).trim();
         args = arg.split(" ");
-        if (args[0].equals("dirhud") || args[0].equals("directionhud"))
-            args = arg.replaceFirst("(?i)dir(ection)?hud ", "").split(" ");
+        if (args[0].equals("dest") || args[0].equals("destination"))
+            args = arg.replaceFirst("(?i)dest(ination)?\\s+", "").split(" ");
 
-        if (player == null) {
-            if (args[0].equalsIgnoreCase("reload") && DirectionHUD.server.isRemote()) {
-                DirHUD.reload(null);
-            }
-            return 1;
+        if (args[0].equalsIgnoreCase("dest") || args[0].equalsIgnoreCase("destination")) {
+            args = new String[0];
         }
-
-        if (args[0].equalsIgnoreCase("dirhud") || args[0].equalsIgnoreCase("directionhud")) {
-            DirHUD.UI(player);
-            return 1;
-        }
-        if (args[0].equalsIgnoreCase("defaults") && !DirectionHUD.server.isRemote()) {
-            if (args.length == 1) {
-                DirHUD.defaults(player);
-            }
-            if (args.length != 2) {
-                return 1;
-            }
-            if (args[1].equalsIgnoreCase("set")) {
-                DirHUD.setDefaults(player);
-            }
-            if (args[1].equalsIgnoreCase("reset")) {
-                DirHUD.resetDefaults(player);
-            }
-        }
-        if (args[0].equalsIgnoreCase("reload") && DirectionHUD.server.isRemote() && player.hasPermissionLevel(2)) {
-            DirHUD.reload(player);
-        }
+        Destination.commandExecutor.logic(player,args);
         return 1;
     }
 }

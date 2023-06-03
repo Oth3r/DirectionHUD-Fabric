@@ -1,7 +1,7 @@
-package one.oth3r.directionhud.fabric;
+package one.oth3r.directionhud;
 
 import net.fabricmc.api.DedicatedServerModInitializer;
-import one.oth3r.directionhud.fabric.files.LangReader;
+import one.oth3r.directionhud.files.LangReader;
 
 public class DirectionHUDServer implements DedicatedServerModInitializer {
     @Override

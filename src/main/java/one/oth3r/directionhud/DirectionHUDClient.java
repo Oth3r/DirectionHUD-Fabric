@@ -1,4 +1,4 @@
-package one.oth3r.directionhud.fabric;
+package one.oth3r.directionhud;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;

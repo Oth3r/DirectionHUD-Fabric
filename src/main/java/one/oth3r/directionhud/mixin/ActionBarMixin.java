@@ -1,17 +1,20 @@
-package one.oth3r.directionhud.fabric.mixin;
+package one.oth3r.directionhud.mixin;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.Text;
-import one.oth3r.directionhud.fabric.DirectionHUD;
-import one.oth3r.directionhud.fabric.DirectionHUDClient;
-import one.oth3r.directionhud.fabric.files.PlayerData;
-import one.oth3r.directionhud.fabric.utils.CUtl;
+import one.oth3r.directionhud.DirectionHUD;
+import one.oth3r.directionhud.DirectionHUDClient;
+import one.oth3r.directionhud.common.files.PlayerData;
+import one.oth3r.directionhud.utils.CUtl;
+import one.oth3r.directionhud.utils.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.Objects;
 
 @Mixin(InGameHud.class)
 public class ActionBarMixin {
@@ -22,7 +25,8 @@ public class ActionBarMixin {
         if (click == null || !click.getValue().equals("https://modrinth.com/mod/directionhud")) {
             if (message.getString().equals("")) return;
             if (client.player != null) {
-                if (client.isInSingleplayer() && PlayerData.get.hud.state(DirectionHUD.server.getPlayerManager().getPlayer(client.player.getUuid()))) {
+                if (client.isInSingleplayer() && PlayerData.get.hud.state(
+                        Player.of(Objects.requireNonNull(DirectionHUD.server.getPlayerManager().getPlayer(client.player.getUuid()))))) {
                     client.player.sendMessage(CUtl.tag().append(message).b());
                 } else if (DirectionHUDClient.onSupportedServer && DirectionHUDClient.hudState) {
                     client.player.sendMessage(CUtl.tag().append(message).b());

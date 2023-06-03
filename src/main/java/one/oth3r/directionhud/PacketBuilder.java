@@ -1,4 +1,4 @@
-package one.oth3r.directionhud.fabric;
+package one.oth3r.directionhud;
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;

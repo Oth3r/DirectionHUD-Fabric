@@ -1,26 +1,52 @@
-package one.oth3r.directionhud.fabric.utils;
+package one.oth3r.directionhud.utils;
 
-import com.mojang.brigadier.ParseResults;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.Identifier;
-import one.oth3r.directionhud.fabric.DirectionHUD;
-import one.oth3r.directionhud.fabric.files.config;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
+import one.oth3r.directionhud.DirectionHUD;
+import one.oth3r.directionhud.common.HUD;
+import one.oth3r.directionhud.common.files.PlayerData;
+import one.oth3r.directionhud.files.config;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
+import org.joml.Vector3f;
 
 import java.awt.*;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 public class Utl {
+    public static class Pair<A, B> {
+        private final A first;
+        private final B second;
+        public Pair(A first, B second) {
+            this.first = first;
+            this.second = second;
+        }
+        public String toString() {
+            return "("+this.first+", "+this.second+")";
+        }
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null || getClass() != obj.getClass()) {
+                return false;
+            }
+            Pair<?, ?> otherPair = (Pair<?, ?>) obj;
+            return Objects.equals(first, otherPair.first) && Objects.equals(second, otherPair.second);
+        }
+        @Override
+        public int hashCode() {
+            return Objects.hash(first, second);
+        }
+    }
     public static boolean isInt(String string) {
         try {
             Integer.parseInt(string);
@@ -62,50 +88,121 @@ public class Utl {
         System.arraycopy(arr, numToRemove, result, 0, result.length);
         return result;
     }
-    public static SuggestionsBuilder xyzSuggester(ServerPlayerEntity player, SuggestionsBuilder builder, String type) {
+    public static void setTime() {
+        World world = DirectionHUD.server.getOverworld();
+        long timeTicks = world.getTime();
+        HUD.hour = (int) ((timeTicks / 1000 + 6) % 24);
+        HUD.minute = (int) ((timeTicks % 1000) * 60 / 1000);
+        if (world.isRaining()) {
+            String str;
+            if (world.isNight()) str = CUtl.symbols.moon();
+            else str = CUtl.symbols.sun();
+            if (world.isThundering()) HUD.weatherIcon = str + CUtl.symbols.thunder();
+            else HUD.weatherIcon = str + CUtl.symbols.rain();
+        } else if (world.isNight()) HUD.weatherIcon = CUtl.symbols.moon();
+        else HUD.weatherIcon = CUtl.symbols.sun();
+    }
+    public static ArrayList<String> xyzSuggester(Player player, String type) {
+        ArrayList<String> arr = new ArrayList<>();
         if (type.equalsIgnoreCase("x")) {
-            builder.suggest(player.getBlockX());
-            builder.suggest(player.getBlockX()+" "+player.getBlockZ());
-            builder.suggest(player.getBlockX()+" "+player.getBlockY()+" "+player.getBlockZ());
-            return builder;
+            arr.add(player.getBlockX()+"");
+            arr.add(player.getBlockX()+" "+player.getBlockZ());
+            arr.add(player.getBlockX()+" "+player.getBlockY()+" "+player.getBlockZ());
         }
         if (type.equalsIgnoreCase("y")) {
-            builder.suggest(player.getBlockY());
-            builder.suggest(player.getBlockY()+" "+player.getBlockZ());
-            return builder;
+            arr.add(player.getBlockY()+"");
+            arr.add(player.getBlockY()+" "+player.getBlockZ());
         }
-        if (type.equalsIgnoreCase("z")) return builder.suggest(player.getBlockZ());
-        return builder;
+        if (type.equalsIgnoreCase("z")) arr.add(player.getBlockZ()+"");
+        return arr;
     }
-    public static class player {
-        public static List<String> getList() {
-            ArrayList<String> array = new ArrayList<>(List.of());
-            for (ServerPlayerEntity p : DirectionHUD.server.getPlayerManager().getPlayerList()) {
-                array.add(p.getName().getString());
+    public static ArrayList<String> formatSuggestions(ArrayList<String> suggester, String[] args) {
+        ArrayList<String> filteredCompletions = new ArrayList<>();
+        String currentInput = args[args.length - 1].toLowerCase();
+        for (String completion : suggester) {
+            if (completion.toLowerCase().startsWith(currentInput)) {
+                filteredCompletions.add(completion);
             }
-            return array;
         }
-        public static ServerPlayerEntity getFromIdentifier(String s) {
-            if (s.contains("-")) return DirectionHUD.server.getPlayerManager().getPlayer(UUID.fromString(s));
-            return DirectionHUD.server.getPlayerManager().getPlayer(s);
+        return filteredCompletions;
+    }
+    public static List<Player> getPlayers() {
+        ArrayList<Player> array = new ArrayList<>(List.of());
+        for (ServerPlayerEntity p : DirectionHUD.server.getPlayerManager().getPlayerList())
+            array.add(Player.of(p));
+        return array;
+    }
+    public static class vec {
+        public static double distance(ArrayList<Double> from, ArrayList<Double> to)  {
+            return convertTo(from).distanceTo(convertTo(to));
         }
-        public static String uuid(ServerPlayerEntity player) {
-            return player.getUuid().toString();
+        public static Vec3d convertTo(ArrayList<Double> vec) {
+            if (vec.size() == 3) return new Vec3d(vec.get(0),vec.get(1),vec.get(2));
+            else return new Vec3d(0,0,0);
         }
-        public static String name(ServerPlayerEntity player) {
-            return player.getName().getString();
+    }
+    public static class checkEnabled {
+        public static boolean destination(Player player) {
+            return true;
         }
-        public static String dim(ServerPlayerEntity player) {
-            return dim.format(player.getWorld().getRegistryKey().getValue());
+        public static boolean hud(Player player) {
+            return config.HUDEditing;
         }
-        public static void sendAs(String command, ServerPlayerEntity player) {
-            try {
-                ParseResults<ServerCommandSource> parse =
-                        DirectionHUD.commandManager.getDispatcher().parse(command, player.getCommandSource());
-                DirectionHUD.commandManager.getDispatcher().execute(parse);
-            } catch (CommandSyntaxException e) {
-                e.printStackTrace();
+        @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+        public static boolean dirhud(Player player) {
+            return true;
+        }
+        public static boolean reload(Player player) {
+            return DirectionHUD.server.isRemote() && player.getPlayer().hasPermissionLevel(2);
+        }
+        public static boolean defaults(Player player) {
+            return !DirectionHUD.server.isRemote() && player.getPlayer().hasPermissionLevel(2);
+        }
+        public static boolean saving(Player player) {
+            return config.DESTSaving;
+        }
+        public static boolean lastdeath(Player player) {
+            return PlayerData.get.dest.setting.lastdeath(player) && config.deathsaving;
+        }
+        public static boolean send(Player player) {
+            return PlayerData.get.dest.setting.send(player) && config.social && DirectionHUD.server.isRemote();
+        }
+        public static boolean track(Player player) {
+            return PlayerData.get.dest.setting.track(player) && config.social && DirectionHUD.server.isRemote();
+        }
+    }
+    public static class particle {
+        public static final String LINE = "LINE";
+        public static final String DEST = "DEST";
+        public static final String TRACKING = "TRACKING";
+        public static void spawnLine(Player player, ArrayList<Double> start, ArrayList<Double> end, String particleType) {
+            Vec3d startV = vec.convertTo(start);
+            Vec3d endV = vec.convertTo(end);
+            Vec3d playerV = vec.convertTo(player.getVec());
+            double distance = startV.distanceTo(endV);
+            Vec3d particlePos = startV.subtract(0, 0.2, 0);
+            double spacing = 1;
+            Vec3d segment = endV.subtract(startV).normalize().multiply(spacing);
+            double distCovered = 0;
+            for (; distCovered <= distance; particlePos = particlePos.add(segment)) {
+                distCovered += spacing;
+                if (distCovered >= 50) break;
+                if (!(playerV.distanceTo(particlePos) > 0.5 && playerV.distanceTo(particlePos) < 50)) continue;
+                player.getPlayer().getWorld().spawnParticles(player.getPlayer(),Utl.particle.getParticle(particleType,player),
+                        true,particlePos.getX(),particlePos.getY(),particlePos.getZ(),1,0,0,0,1);
             }
+        }
+        public static DustParticleEffect getParticle(String particleType, Player player) {
+            if (particleType.equals(LINE))
+                return new DustParticleEffect(new Vector3f(Vec3d.unpackRgb(
+                        Utl.color.getCodeRGB(PlayerData.get.dest.setting.particle.linecolor(player))).toVector3f()),1);
+            if (particleType.equals(DEST))
+                return new DustParticleEffect(new Vector3f(Vec3d.unpackRgb(
+                        Utl.color.getCodeRGB(PlayerData.get.dest.setting.particle.destcolor(player))).toVector3f()),3);
+            if (particleType.equals(TRACKING))
+                return new DustParticleEffect(new Vector3f(Vec3d.unpackRgb(
+                        Utl.color.getCodeRGB(PlayerData.get.dest.setting.particle.trackingcolor(player))).toVector3f()),0.5f);
+            return new DustParticleEffect(new Vector3f(Vec3d.unpackRgb(Utl.color.getCodeRGB("black")).toVector3f()),1);
         }
     }
     public static class dim {
@@ -123,8 +220,8 @@ public class Utl {
         public static boolean canConvert(String DIM1, String DIM2) {
             // both in same dim, cant convert
             if (DIM1.equalsIgnoreCase(DIM2)) return false;
-            Pair<String, String> key = new ImmutablePair<>(DIM1, DIM2);
-            Pair<String, String> flippedKey = new ImmutablePair<>(DIM2, DIM1);
+            Pair<String, String> key = new Pair<>(DIM1, DIM2);
+            Pair<String, String> flippedKey = new Pair<>(DIM2, DIM1);
             // if the ratio exists, show the button
             return conversionRatios.containsKey(key) || conversionRatios.containsKey(flippedKey);
         }
@@ -153,7 +250,7 @@ public class Utl {
                 String[] split = s.split("\\|");
                 if (split.length != 2) continue;
                 double ratio = Double.parseDouble(split[0].split("=")[1])/Double.parseDouble(split[1].split("=")[1]);
-                configRatios.put(new ImmutablePair<>(split[0].split("=")[0], split[1].split("=")[0]), ratio);
+                configRatios.put(new Pair<>(split[0].split("=")[0], split[1].split("=")[0]), ratio);
             }
             conversionRatios = configRatios;
             //CONFIG TO MAP

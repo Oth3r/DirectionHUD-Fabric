@@ -20,13 +20,13 @@
   "environment": "*",
   "entrypoints": {
     "client": [
-      "one.oth3r.directionhud.fabric.DirectionHUDClient"
+      "one.oth3r.directionhud.DirectionHUDClient"
     ],
     "server": [
-      "one.oth3r.directionhud.fabric.DirectionHUDServer"
+      "one.oth3r.directionhud.DirectionHUDServer"
     ],
     "modmenu": [
-      "one.oth3r.directionhud.fabric.ModMenu"
+      "one.oth3r.directionhud.ModMenu"
     ]
   },
   "mixins": [
