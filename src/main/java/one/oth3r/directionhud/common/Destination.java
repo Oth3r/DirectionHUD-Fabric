@@ -282,20 +282,22 @@ public class Destination {
             ArrayList<String> suggester = new ArrayList<>();
             if (!Utl.checkEnabled.destination(player)) return suggester;
             if (pos == 1) suggester.addAll(commandSuggester.base(player));
-            if (args.length >= 1) {
+            if (pos > 1) {
                 String command = args[0].toLowerCase();
                 String[] trimmedArgs = Utl.trimStart(args, 1);
-                pos -= 2;
+                int fixedPos = pos - 2;
                 switch (command) {
-                    case "saved" -> suggester.addAll(commandSuggester.savedCMD(player,pos,trimmedArgs));
-                    case "add" -> suggester.addAll(commandSuggester.addCMD(player,pos,trimmedArgs));
-                    case "settings" -> suggester.addAll(commandSuggester.settingsCMD(pos,trimmedArgs));
-                    case "set" -> suggester.addAll(commandSuggester.setCMD(player,pos,trimmedArgs));
-                    case "send" -> suggester.addAll(commandSuggester.sendCMD(player,pos,trimmedArgs));
-                    case "track" -> suggester.addAll(commandSuggester.trackCMD(player,pos));
+                    case "saved" -> suggester.addAll(commandSuggester.savedCMD(player,fixedPos,trimmedArgs));
+                    case "add" -> suggester.addAll(commandSuggester.addCMD(player,fixedPos,trimmedArgs));
+                    case "settings" -> suggester.addAll(commandSuggester.settingsCMD(fixedPos,trimmedArgs));
+                    case "set" -> suggester.addAll(commandSuggester.setCMD(player,fixedPos,trimmedArgs));
+                    case "send" -> suggester.addAll(commandSuggester.sendCMD(player,fixedPos,trimmedArgs));
+                    case "track" -> suggester.addAll(commandSuggester.trackCMD(player,fixedPos));
                 }
             }
-            return Utl.formatSuggestions(suggester,args);
+            System.out.println(Arrays.asList(args)+" "+pos);
+            if (pos == args.length) return Utl.formatSuggestions(suggester,args);
+            return suggester;
         }
         public static ArrayList<String> base(Player player) {
             ArrayList<String> suggester = new ArrayList<>();

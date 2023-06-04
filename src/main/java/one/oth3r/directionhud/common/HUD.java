@@ -24,7 +24,7 @@ public class HUD {
             String type = args[0].toLowerCase();
             String[] trimmedArgs = Utl.trimStart(args, 1);
             switch (type) {
-                case "order" -> orderCMD(player, trimmedArgs);
+                case "edit" -> orderCMD(player, trimmedArgs);
                 case "color" -> colorCMD(player, trimmedArgs);
                 case "toggle" -> toggleCMD(player, trimmedArgs);
                 default -> player.sendMessage(CUtl.error(CUtl.lang("error.command")));
@@ -35,7 +35,7 @@ public class HUD {
             if (args.length == 0)
                 HUD.order.UI(player, null, null);
             //RESET
-            if (args[0].equals("reset") && args.length == 1)
+            if (args.length == 1 && args[0].equals("reset"))
                 HUD.order.reset(player, true);
             if (args.length != 3) return;
             String type = args[0].toLowerCase();
@@ -48,6 +48,7 @@ public class HUD {
         public static void colorCMD(Player player, String[] args) {
             if (args.length == 0) {
                 HUD.color.UI(player, null);
+                return;
             }
             //COLOR
             if (args.length == 2 && args[0].equals("edt")) {
@@ -87,7 +88,8 @@ public class HUD {
             if (pos == 4 && args[2].equals("set")) {
                 suggester.add("ffffff");
             }
-            return Utl.formatSuggestions(suggester,args);
+            if (pos == args.length) return Utl.formatSuggestions(suggester,args);
+            return suggester;
         }
     }
     private static CTxT lang(String key) {
