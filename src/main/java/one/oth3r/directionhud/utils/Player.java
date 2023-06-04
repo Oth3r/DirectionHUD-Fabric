@@ -35,7 +35,7 @@ public class Player {
     }
     @Override
     public String toString() {
-        return "DirectionHUD Player: "+player.getName();
+        return "DirectionHUD Player: "+this.getName();
     }
     public Player() {}
     public static Player of(@NotNull ServerPlayerEntity player) {
@@ -68,9 +68,9 @@ public class Player {
     }
     // Call after toggling the hud.
     public void updateHUD() {
-        if (!PlayerData.get.hud.state(Player.of(player))) Player.of(player).sendActionBar(CTxT.of(""));
-        if (DirectionHUD.players.get(Player.of(player))) {
-            PacketBuilder packet = new PacketBuilder(PlayerData.get.hud.state(Player.of(player))+"");
+        if (!PlayerData.get.hud.state(this)) this.sendActionBar(CTxT.of(""));
+        if (DirectionHUD.players.get(this)) {
+            PacketBuilder packet = new PacketBuilder(PlayerData.get.hud.state(this)+"");
             packet.sendToPlayer(PacketBuilder.HUD_STATE, player);
         }
     }
@@ -95,13 +95,13 @@ public class Player {
     public ArrayList<Double> getVec() {
         ArrayList<Double> vec = new ArrayList<>();
         vec.add(player.getX());
-        vec.add(player.getY());
+        vec.add(player.getY()+1);
         vec.add(player.getZ());
         return vec;
     }
     public Loc getLoc() {
         if (player == null) return new Loc();
-        else return new Loc(Player.of(player));
+        else return new Loc(this);
     }
     public int getBlockX() {
         return player.getBlockX();
@@ -111,6 +111,10 @@ public class Player {
     }
     public int getBlockZ() {
         return player.getBlockZ();
+    }
+    public void spawnParticle(String particleType, Vec3d vec) {
+        player.getWorld().spawnParticles(player,Utl.particle.getParticle(particleType,this),
+                true,vec.getX(),vec.getY(),vec.getZ(),1,0,0,0,1);
     }
     public void spawnParticleLine(ArrayList<Double> end, String particleType) {
         Vec3d endVec = Utl.vec.convertTo(end);
@@ -125,8 +129,7 @@ public class Player {
             distCovered += spacing;
             if (pVec.distanceTo(endVec) < 2) continue;
             if (distCovered >= 50) break;
-            player.getWorld().spawnParticles(player,Utl.particle.getParticle(particleType,Player.of(player)),
-                    true,particlePos.getX(),particlePos.getY(),particlePos.getZ(),1,0,0,0,1);
-            }
+            this.spawnParticle(particleType,particlePos);
+        }
     }
 }

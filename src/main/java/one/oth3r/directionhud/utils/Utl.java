@@ -188,8 +188,7 @@ public class Utl {
                 distCovered += spacing;
                 if (distCovered >= 50) break;
                 if (!(playerV.distanceTo(particlePos) > 0.5 && playerV.distanceTo(particlePos) < 50)) continue;
-                player.getPlayer().getWorld().spawnParticles(player.getPlayer(),Utl.particle.getParticle(particleType,player),
-                        true,particlePos.getX(),particlePos.getY(),particlePos.getZ(),1,0,0,0,1);
+                player.spawnParticle(particleType,particlePos);
             }
         }
         public static DustParticleEffect getParticle(String particleType, Player player) {
