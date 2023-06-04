@@ -295,7 +295,6 @@ public class Destination {
                     case "track" -> suggester.addAll(commandSuggester.trackCMD(player,fixedPos));
                 }
             }
-            System.out.println(Arrays.asList(args)+" "+pos);
             if (pos == args.length) return Utl.formatSuggestions(suggester,args);
             return suggester;
         }

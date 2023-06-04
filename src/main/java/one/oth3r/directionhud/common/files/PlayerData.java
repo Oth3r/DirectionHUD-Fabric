@@ -154,7 +154,6 @@ public class PlayerData {
                 Loc loc = new Loc(Utl.tryInt(coordS[0]),Utl.tryInt(coordS[1]),Utl.tryInt(coordS[2]),split[2]);
                 savedN.add(saved.indexOf(s), Arrays.asList(split[0],loc.getLocC(),split[3]));
             }
-            System.out.println(savedN);
             dest.put("saved",savedN);
             //LASTDEATH FIX
             ArrayList<String> lastdeath = (ArrayList<String>) dest.get("lastdeath");
