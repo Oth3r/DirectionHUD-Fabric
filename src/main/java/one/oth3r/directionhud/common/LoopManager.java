@@ -134,7 +134,7 @@ public class LoopManager {
                 PlayerData.set.dest.setTrackNull(player);
             } else if (PlayerData.get.dest.track.expire(player) > 0) { //TICK DOWN
                 PlayerData.set.dest.track.expire(player, PlayerData.get.dest.track.expire(player) - 1);
-                if (trackingP == null) { //TARGET PLAYER LEFT
+                if (Player.of(PlayerData.get.dest.track.target(player)) == null) { //TARGET PLAYER LEFT
                     player.sendMessage(CUtl.tag().append(CUtl.lang("dest.track.expired")));
                     PlayerData.set.dest.setTrackNull(player);
                 }
