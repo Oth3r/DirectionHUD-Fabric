@@ -242,7 +242,7 @@ public class PlayerData {
         destination.put("tracking", null);
         destination.put("track", null);
         //base
-        map.put("version", 1.0);
+        map.put("version", 1.4);
         map.put("name", player.getName());
         map.put("hud", hud);
         map.put("destination", destination);
