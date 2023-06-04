@@ -129,9 +129,9 @@ public class Loc {
         Integer i = this.y;
         if (i == null) i = player.getBlockY();
         if (this.x != null && this.z != null) {
-            vector.add((double)this.x);
-            vector.add((double)i);
-            vector.add((double)this.z);
+            vector.add((double)this.x+0.5);
+            vector.add((double)i+0.5);
+            vector.add((double)this.z+0.5);
         }
         return vector;
     }
