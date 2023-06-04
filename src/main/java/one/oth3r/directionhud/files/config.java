@@ -5,7 +5,9 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import one.oth3r.directionhud.DirectionHUD;
 import one.oth3r.directionhud.common.HUD;
+import one.oth3r.directionhud.common.files.PlayerData;
 import one.oth3r.directionhud.utils.CUtl;
+import one.oth3r.directionhud.utils.Player;
 import one.oth3r.directionhud.utils.Utl;
 
 import java.io.File;
@@ -59,6 +61,18 @@ public class config {
     public static List<String> dimensions = defaults.dimensions;
     public static List<String> dimensionRatios = defaults.dimensionRatios;
     public static void resetDefaults() {
+        //CONFIG SETTINGS
+        DESTSaving = defaults.DESTSaving;
+        MAXSaved = defaults.MAXSaved;
+        MAXy = defaults.MAXy;
+        MAXxz = defaults.MAXxz;
+        deathsaving = defaults.deathsaving;
+        social = defaults.social;
+        HUDEditing = defaults.HUDEditing;
+        HUDRefresh = defaults.HUDRefresh;
+        dimensions = defaults.dimensions;
+        dimensionRatios = defaults.dimensionRatios;
+        //HUD SETTINGS
         HUDEnabled = defaults.HUDEnabled;
         HUDOrder = defaults.HUDOrder;
         HUDCoordinates = defaults.HUDCoordinates;
@@ -69,23 +83,70 @@ public class config {
         HUDTime = defaults.HUDTime;
         HUDWeather = defaults.HUDWeather;
         HUD24HR = defaults.HUD24HR;
+        //HUD COLORS
         HUDPrimaryColor = defaults.HUDPrimaryColor;
         HUDPrimaryBold = defaults.HUDPrimaryBold;
         HUDPrimaryItalics = defaults.HUDPrimaryItalics;
+        HUDPrimaryRainbow = defaults.HUDPrimaryRainbow;
+        //SEC
         HUDSecondaryColor = defaults.HUDSecondaryColor;
         HUDSecondaryBold = defaults.HUDSecondaryBold;
         HUDSecondaryItalics = defaults.HUDSecondaryItalics;
+        HUDSecondaryRainbow = defaults.HUDSecondaryRainbow;
+        //DEST SETTINGS
         DESTAutoClear = defaults.DESTAutoClear;
         DESTAutoClearRad = defaults.DESTAutoClearRad;
+        DESTAutoConvert = defaults.DESTAutoConvert;
         DESTYLevel = defaults.DESTYLevel;
+        DESTSend = defaults.DESTSend;
+        DESTTrack = defaults.DESTTrack;
+        DESTLastdeath = defaults.DESTLastdeath;
+        //DEST PARTICLES
         DESTLineParticles = defaults.DESTLineParticles;
         DESTLineParticleColor = defaults.DESTLineParticleColor;
         DESTDestParticles = defaults.DESTDestParticles;
         DESTDestParticleColor = defaults.DESTDestParticleColor;
-        DESTSend = defaults.DESTSend;
-        DESTTrack = defaults.DESTTrack;
-        dimensions = defaults.dimensions;
-        dimensionRatios = defaults.dimensionRatios;
+        DESTTrackingParticles = defaults.DESTTrackingParticles;
+        DESTTrackingParticleColor = defaults.DESTTrackingParticleColor;
+        save();
+    }
+    public static void setToPlayer(Player player) {
+        //HUD SETTINGS
+        HUDEnabled = PlayerData.get.hud.state(player);
+        HUDOrder = PlayerData.get.hud.order(player);
+        HUDCoordinates = PlayerData.get.hud.module.coordinates(player);
+        HUDDistance = PlayerData.get.hud.module.distance(player);
+        HUDTracking = PlayerData.get.hud.module.tracking(player);
+        HUDDestination = PlayerData.get.hud.module.destination(player);
+        HUDDirection = PlayerData.get.hud.module.direction(player);
+        HUDTime = PlayerData.get.hud.module.time(player);
+        HUDWeather = PlayerData.get.hud.module.weather(player);
+        HUD24HR = PlayerData.get.hud.setting.time24h(player);
+        //HUD COLORS
+        HUDPrimaryColor = HUD.color.getHUDColors(player)[0];
+        HUDPrimaryBold = HUD.color.getHUDBold(player,1);
+        HUDPrimaryItalics = HUD.color.getHUDItalics(player, 1);
+        HUDPrimaryRainbow = HUD.color.getHUDRGB(player,1);
+        //SEC
+        HUDSecondaryColor = HUD.color.getHUDColors(player)[1];
+        HUDSecondaryBold = HUD.color.getHUDBold(player,2);
+        HUDSecondaryItalics = HUD.color.getHUDItalics(player, 2);
+        HUDSecondaryRainbow = HUD.color.getHUDRGB(player,2);
+        //DEST SETTINGS
+        DESTAutoClear = PlayerData.get.dest.setting.autoclear(player);
+        DESTAutoClearRad = PlayerData.get.dest.setting.autoclearrad(player);
+        DESTAutoConvert = PlayerData.get.dest.setting.autoconvert(player);
+        DESTYLevel = PlayerData.get.dest.setting.ylevel(player);
+        DESTSend = PlayerData.get.dest.setting.send(player);
+        DESTTrack = PlayerData.get.dest.setting.track(player);
+        DESTLastdeath = PlayerData.get.dest.setting.lastdeath(player);
+        //DEST PARTICLES
+        DESTLineParticles = PlayerData.get.dest.setting.particle.line(player);
+        DESTLineParticleColor = PlayerData.get.dest.setting.particle.linecolor(player);
+        DESTDestParticles = PlayerData.get.dest.setting.particle.dest(player);
+        DESTDestParticleColor = PlayerData.get.dest.setting.particle.destcolor(player);
+        DESTTrackingParticles = PlayerData.get.dest.setting.particle.tracking(player);
+        DESTTrackingParticleColor = PlayerData.get.dest.setting.particle.trackingcolor(player);
         save();
     }
     public static File configFile() {
