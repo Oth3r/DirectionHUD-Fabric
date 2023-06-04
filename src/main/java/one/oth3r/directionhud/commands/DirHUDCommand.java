@@ -8,13 +8,14 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import one.oth3r.directionhud.common.DirHUD;
 import one.oth3r.directionhud.DirectionHUD;
+import one.oth3r.directionhud.common.DirHUD;
 import one.oth3r.directionhud.utils.Player;
 import one.oth3r.directionhud.utils.Utl;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 public class DirHUDCommand {
@@ -51,12 +52,11 @@ public class DirHUDCommand {
                 .executes((context2) -> command(context2.getSource(), context2.getInput())));
     }
     public static CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder, int pos) {
-        ServerPlayerEntity player = context.getSource().getPlayer();
-        assert player != null;
-        if (pos == 1) {
-            if (!DirectionHUD.server.isRemote()) return builder.suggest("defaults").buildFuture();
-            else if (player.hasPermissionLevel(2)) return builder.suggest("reload").buildFuture();
-        }
+        Player player = Player.of(Objects.requireNonNull(context.getSource().getPlayer()));
+        String[] args = context.getInput().split(" ");
+        if (pos > args.length) return builder.buildFuture();
+        args = Utl.trimStart(args,1);
+        for (String s : DirHUD.commandSuggester.logic(player,pos, args)) builder.suggest(s);
         return builder.buildFuture();
     }
     private static int command(ServerCommandSource source, String arg) {
@@ -82,26 +82,9 @@ public class DirHUDCommand {
         }
         Player player = Player.of(spe);
         if (args[0].equalsIgnoreCase("dirhud") || args[0].equalsIgnoreCase("directionhud")) {
-            DirHUD.UI(player);
-            return 1;
+            args = new String[0];
         }
-        if (args[0].equalsIgnoreCase("defaults") && !DirectionHUD.server.isRemote()) {
-            if (args.length == 1) {
-                DirHUD.defaults(player);
-            }
-            if (args.length != 2) {
-                return 1;
-            }
-            if (args[1].equalsIgnoreCase("set")) {
-                DirHUD.setDefaults(player);
-            }
-            if (args[1].equalsIgnoreCase("reset")) {
-                DirHUD.resetDefaults(player);
-            }
-        }
-        if (args[0].equalsIgnoreCase("reload") && Utl.checkEnabled.reload(player)) {
-            DirHUD.reload(player);
-        }
+        DirHUD.commandExecutor.logic(player,args);
         return 1;
     }
 }
