@@ -57,9 +57,9 @@ or use **[ModMenu](https://modrinth.com/mod/modmenu)** & **[YetAnotherConfigLib]
 ![config](https://raw.githubusercontent.com/Oth3r/DirectionHUD-Fabric/master/media/config.png)
 
 ## Future Goals
-
-* Spigot port (Coming soon...)
-* Back porting
+*currently on vacation, progress will resume when im back*
+* Spigot port (95% done)
+* Back porting (1.19.2 - 80% done, 1.18.2 - starting soon)
 * More UI options
   * Custom client UI: Straying away from the plugin feel for client users.
   * Server inventory UI: Chat scrolling too fast? Want that classic inventory UI feel? 
