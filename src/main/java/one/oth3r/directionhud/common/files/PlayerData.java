@@ -291,6 +291,7 @@ public class PlayerData {
     @SuppressWarnings("unchecked")
     public static class get {
         public static Map<String,Object> fromMap(Player player) {
+            if (playerMap.get(player) == null) addPlayer(player);
             return playerMap.get(player);
         }
         public static class hud {
