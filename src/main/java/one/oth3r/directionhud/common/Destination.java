@@ -1345,11 +1345,11 @@ public class Destination {
                 msg.append(lang("setting.features").color(CUtl.pTC())).append(":\n  ");
                 if (config.social) msg
                         //SEND
-                        .append(lang("setting.send").hEvent(lang("setting.send.info"))).append(": ")
+                        .append(lang("setting.send").hEvent(lang("setting.send.info").append("\n").append(lang("setting.send.info_2").italic(true).color('7')))).append(": ")
                         .append(toggleB(PlayerData.get.dest.setting.send(player)).cEvent(1,"/dest settings send "+!PlayerData.get.dest.setting.send(player)))
                         .append("\n  ")
                         //TRACK
-                        .append(lang("setting.track").hEvent(lang("setting.track.info"))).append(": ")
+                        .append(lang("setting.track").hEvent(lang("setting.track.info").append("\n").append(lang("setting.track.info_2").italic(true).color('7')))).append(": ")
                         .append(toggleB(PlayerData.get.dest.setting.track(player)).cEvent(1,"/dest settings track "+!PlayerData.get.dest.setting.track(player)))
                         .append("\n  ");
                 if (config.deathsaving) msg
