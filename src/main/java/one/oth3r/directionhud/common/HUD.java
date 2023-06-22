@@ -13,7 +13,7 @@ import java.util.*;
 public class HUD {
     public static int minute;
     public static int hour;
-    public static String weatherIcon;
+    public static String weatherIcon = "?";
     public static class commandExecutor {
         public static void logic(Player player, String[] args) {
             if (!Utl.checkEnabled.hud(player)) return;
@@ -201,7 +201,6 @@ public class HUD {
         String min = "0" + minute;
         min = min.substring(min.length() - 2);
         int minute = Integer.parseInt(min);
-
         if (t12hr) {
             String time = "";
             if(hr == 0) hr = 12;
@@ -219,7 +218,6 @@ public class HUD {
         String ampm = "AM";
         if(hr > 12) {ampm = "PM";}
         else if(hr == 12) ampm = "PM";
-
         return ampm;
     }
     public static String getTracking(Player player) {
@@ -311,27 +309,20 @@ public class HUD {
             }
         }
         public static boolean moduleState(Player player, String s) {
-            if (s.equalsIgnoreCase("coordinates")) {
+            if (s.equalsIgnoreCase("coordinates"))
                 return PlayerData.get.hud.module.coordinates(player);
-            }
-            if (s.equalsIgnoreCase("distance")) {
+            if (s.equalsIgnoreCase("distance"))
                 return PlayerData.get.hud.module.distance(player);
-            }
-            if (s.equalsIgnoreCase("destination")) {
+            if (s.equalsIgnoreCase("destination"))
                 return PlayerData.get.hud.module.destination(player);
-            }
-            if (s.equalsIgnoreCase("direction")) {
+            if (s.equalsIgnoreCase("direction"))
                 return PlayerData.get.hud.module.direction(player);
-            }
-            if (s.equalsIgnoreCase("tracking")) {
+            if (s.equalsIgnoreCase("tracking"))
                 return PlayerData.get.hud.module.tracking(player);
-            }
-            if (s.equalsIgnoreCase("time")) {
+            if (s.equalsIgnoreCase("time"))
                 return PlayerData.get.hud.module.time(player);
-            }
-            if (s.equalsIgnoreCase("weather")) {
+            if (s.equalsIgnoreCase("weather"))
                 return PlayerData.get.hud.module.weather(player);
-            }
             return false;
         }
         public static String allModules() {
