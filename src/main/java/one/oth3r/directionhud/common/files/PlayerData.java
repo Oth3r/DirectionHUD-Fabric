@@ -6,7 +6,6 @@ import com.google.gson.ToNumberPolicy;
 import com.google.gson.reflect.TypeToken;
 import one.oth3r.directionhud.DirectionHUD;
 import one.oth3r.directionhud.common.HUD;
-import one.oth3r.directionhud.files.config;
 import one.oth3r.directionhud.utils.Player;
 import one.oth3r.directionhud.common.utils.Loc;
 import one.oth3r.directionhud.utils.Utl;

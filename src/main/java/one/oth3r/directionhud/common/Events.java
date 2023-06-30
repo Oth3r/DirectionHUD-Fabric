@@ -4,7 +4,7 @@ import one.oth3r.directionhud.DirectionHUD;
 import one.oth3r.directionhud.common.files.PlayerData;
 import one.oth3r.directionhud.common.utils.Loc;
 import one.oth3r.directionhud.common.files.LangReader;
-import one.oth3r.directionhud.files.config;
+import one.oth3r.directionhud.common.files.config;
 import one.oth3r.directionhud.utils.CTxT;
 import one.oth3r.directionhud.utils.CUtl;
 import one.oth3r.directionhud.utils.Player;
