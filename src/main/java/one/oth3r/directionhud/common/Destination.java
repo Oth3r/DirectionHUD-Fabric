@@ -7,6 +7,7 @@ import one.oth3r.directionhud.utils.CTxT;
 import one.oth3r.directionhud.utils.CUtl;
 import one.oth3r.directionhud.utils.Player;
 import one.oth3r.directionhud.utils.Utl;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -588,7 +589,7 @@ public class Destination {
         CTxT btn = CUtl.TBtn(ac?"off":"on").btn(true).color(ac?'c':'a').cEvent(1,"/dest settings autoclear "+!ac+" n").hEvent(
                 CTxT.of(CUtl.cmdUsage.destSettings()).color(ac?'c':'a').append("\n").append(CUtl.TBtn("state.hover",
                         CUtl.TBtn(ac?"off":"on").color(ac?'c':'a'))));
-        return CTxT.of(" ").append(lang("set.autoclear_"+(ac?"on":"off"),btn).color('7').italic(true));
+        return CTxT.of(" ").append(lang("set.autoclear",lang(ac?"on":"off"),btn).color('7').italic(true));
     }
     public static void silentSet(Player player, Loc loc) {
         if (!checkDist(player, loc)) PlayerData.set.dest.setDest(player, loc);
@@ -638,6 +639,9 @@ public class Destination {
         player.sendMessage(setMSG(player));
     }
     public static class saved {
+        public static int getIndexFromName(Player player, String name) {
+            return getNames(player).indexOf(name);
+        }
         public static List<List<String>> getList(Player player) {
             return PlayerData.get.dest.getSaved(player);
         }
@@ -721,11 +725,14 @@ public class Destination {
                 if (send) player.sendMessage(error("dest.invalid"));
                 return;
             }
+            int index = getIndexFromName(player,name);
+            Loc loc = getLocs(player).get(index);
+            String color = getColors(player).get(index);
             int pg = getPGOf(player, name);
             all.remove(names.indexOf(name));
             setList(player, all);
             if (send) {
-                player.sendMessage(CUtl.tag().append(lang("saved.delete",CTxT.of(name).color(CUtl.sTC()))));
+                player.sendMessage(CUtl.tag().append(lang("saved.delete",loc.getBadge(name,color))));
                 player.performCommand("dest saved "+pg);
             }
         }
@@ -754,7 +761,7 @@ public class Destination {
             all.set(i,current);
             setList(player, all);
             if (send) {
-                player.sendMessage(CUtl.tag().append(lang("saved.name",CTxT.of(name).color(CUtl.sTC()),CTxT.of(newName).color(CUtl.sTC()))));
+                player.sendMessage(CUtl.tag().append(lang("saved.set",CTxT.of(name).color(CUtl.sTC()),lang("saved.name"),CTxT.of(newName).color(CUtl.sTC()))));
                 player.performCommand("dest saved edit "+newName);
             }
         }
@@ -782,7 +789,7 @@ public class Destination {
             }
             setList(player, all);
             if (send) {
-                player.sendMessage(CUtl.tag().append(lang("saved.order",CTxT.of(name).color(CUtl.sTC()),CTxT.of(""+(getList(player).indexOf(move)+1)).color(CUtl.sTC()))));
+                player.sendMessage(CUtl.tag().append(lang("saved.set",CTxT.of(name).color(CUtl.sTC()),lang("saved.order"),CTxT.of(""+(getList(player).indexOf(move)+1)).color(CUtl.sTC()))));
                 player.performCommand("dest saved edit "+name);
             }
         }
@@ -808,18 +815,16 @@ public class Destination {
             all.set(i,current);
             setList(player, all);
             if (send) {
-                player.sendMessage(CUtl.tag().append(lang("saved.edit",
-                        CTxT.of(name).color(CUtl.sTC()),CTxT.of(loc.getXYZ()).color(CUtl.sTC()))));
+                player.sendMessage(CUtl.tag().append(lang("saved.set",CTxT.of(name).color(CUtl.sTC()),lang("saved.location"),CTxT.of(loc.getXYZ()).color(CUtl.sTC()))));
                 player.performCommand("dest saved edit "+name);
             }
         }
         public static void editDimension(boolean send, Player player, String name, String dimension) {
-            List<String> names = getNames(player);
-            if (!names.contains(name)) {
+            if (!getNames(player).contains(name)) {
                 if (send) player.sendMessage(error("dest.invalid"));
                 return;
             }
-            int i = names.indexOf(name);
+            int i = getIndexFromName(player,name);
             if (!Utl.dim.checkValid(dimension)) {
                 if (send) player.sendMessage(error("dimension"));
                 return;
@@ -836,7 +841,7 @@ public class Destination {
             all.set(i,current);
             setList(player, all);
             if (send) {
-                player.sendMessage(CUtl.tag().append(lang("saved.dimension",CTxT.of(name).color(CUtl.sTC()),CTxT.of(Utl.dim.getName(dimension).toUpperCase()).color(CUtl.sTC()))));
+                player.sendMessage(CUtl.tag().append(lang("saved.set",CTxT.of(name).color(CUtl.sTC()),lang("saved.dimension"),CTxT.of(Utl.dim.getName(dimension).toUpperCase()).color(Utl.dim.getHEX(dimension)))));
                 player.performCommand("dest saved edit "+name);
             }
         }
@@ -859,50 +864,55 @@ public class Destination {
             all.set(i,current);
             setList(player, all);
             if (send) {
-                player.sendMessage(CUtl.tag().append(lang("saved.color",CTxT.of(name).color(CUtl.sTC()),CTxT.of(Utl.color.formatPlayer(color,true)).color(color))));
+                player.sendMessage(CUtl.tag().append(lang("saved.set",CTxT.of(name).color(CUtl.sTC()),lang("saved.color"),CTxT.of(Utl.color.formatPlayer(color,true)).color(color))));
                 player.performCommand("dest saved edit "+name);
             }
         }
         public static void viewDestinationUI(boolean send, Player player, String name) {
-            List<String> names = getNames(player);
-            if (!names.contains(name)) {
+            int i = getIndexFromName(player,name);
+            if (!getNames(player).contains(name)) {
                 if (send) player.sendMessage(error("dest.invalid"));
                 return;
             }
+            String dName = StringUtils.capitalize(lang("saved.name").getString());
+            String dColor = StringUtils.capitalize(lang("saved.color").getString());
+            String dOrder = StringUtils.capitalize(lang("saved.order").getString());
+            String dDimension = StringUtils.capitalize(lang("saved.dimension").getString());
+            String dLocation = StringUtils.capitalize(lang("saved.location").getString());
+            Loc loc = getLocs(player).get(i);
             CTxT msg = CTxT.of(" ");
             msg.append(lang("ui.saved.edit").color(CUtl.c.saved)).append(CTxT.of("\n                                               \n").strikethrough(true));
-            int i = names.indexOf(name);
             msg.append(" ")
                     //NAME
-                    .append(CUtl.CButton.dest.edit(2,"/dest saved edit name " + names.get(i) + " ")).append(" ")
-                    .append(lang("saved.edit.name").color(CUtl.pTC())).append(" "+names.get(i)).append("\n ")
+                    .append(CUtl.CButton.dest.edit(2,"/dest saved edit name "+name+ " ")).append(" ")
+                    .append(CTxT.of(dName).color(CUtl.pTC())).append(" "+name).append("\n ")
                     //COLOR
-                    .append(CUtl.CButton.dest.edit(2,"/dest saved edit color " + names.get(i) + " ")).append(" ")
-                    .append(lang("saved.edit.color").color(CUtl.pTC())).append(" ")
+                    .append(CUtl.CButton.dest.edit(2,"/dest saved edit color " +name+ " ")).append(" ")
+                    .append(CTxT.of(dColor).color(CUtl.pTC())).append(" ")
                     .append(CTxT.of(Utl.color.formatPlayer(getColors(player).get(i),true)).color(getColors(player).get(i))).append("\n ")
                     //ORDER
-                    .append(CUtl.CButton.dest.edit(2,"/dest saved edit order " + names.get(i) + " ")).append(" ")
-                    .append(lang("saved.edit.order").color(CUtl.pTC())).append(" "+(i + 1)).append("\n ")
+                    .append(CUtl.CButton.dest.edit(2,"/dest saved edit order " +name+ " ")).append(" ")
+                    .append(CTxT.of(dOrder).color(CUtl.pTC())).append(" "+(i + 1)).append("\n ")
                     //DIMENSION
-                    .append(CUtl.CButton.dest.edit(2,"/dest saved edit dim " + names.get(i) + " ")).append(" ")
-                    .append(lang("saved.edit.dimension").color(CUtl.pTC())).append(" "+Utl.dim.getName(getLocs(player).get(i).getDIM())).append("\n ")
+                    .append(CUtl.CButton.dest.edit(2,"/dest saved edit dim " +name+ " ")).append(" ")
+                    .append(CTxT.of(dDimension).color(CUtl.pTC())).append(" ").append(CTxT.of(Utl.dim.getName(loc.getDIM())).color(Utl.dim.getHEX(loc.getDIM()))).append("\n ")
                     //LOCATION
-                    .append(CUtl.CButton.dest.edit(2,"/dest saved edit loc " + names.get(i) + " ")).append(" ")
-                    .append(lang("saved.edit.location").color(CUtl.pTC())).append(" "+getLocs(player).get(i).getXYZ()).append("\n       ");
+                    .append(CUtl.CButton.dest.edit(2,"/dest saved edit loc " +name+ " ")).append(" ")
+                    .append(CTxT.of(dLocation).color(CUtl.pTC())).append(" "+loc.getXYZ()).append("\n       ");
             //SEND BUTTON
             if (PlayerData.get.dest.setting.send(player)) {
-                msg.append(CUtl.TBtn("dest.send").btn(true).color(CUtl.c.send).cEvent(2,"/dest saved send "+names.get(i)+" ")
-                        .hEvent(CTxT.of("/dest saved send "+names.get(i)+" <player>").color(CUtl.c.send)
+                msg.append(CUtl.TBtn("dest.send").btn(true).color(CUtl.c.send).cEvent(2,"/dest saved send "+name+" ")
+                        .hEvent(CTxT.of("/dest saved send "+name+" <player>").color(CUtl.c.send)
                                 .append("\n").append(CUtl.TBtn("dest.send.hover_saved")))).append(" ");
             }
             //SET BUTTON
-            msg.append(CUtl.CButton.dest.set("/dest set saved " + names.get(i))).append(" ");
+            msg.append(CUtl.CButton.dest.set("/dest set saved " +name)).append(" ");
             //CONVERT
             if (Utl.dim.canConvert(player.getDimension(),getLocs(player).get(i).getDIM()))
-                msg.append(CUtl.CButton.dest.convert("/dest set saved " + names.get(i) + " convert"));
+                msg.append(CUtl.CButton.dest.convert("/dest set saved " +name+ " convert"));
             //DELETE
             msg.append("\n\n ")
-                    .append(CUtl.TBtn("delete").btn(true).color('c').cEvent(2,"/dest remove "+names.get(i))
+                    .append(CUtl.TBtn("delete").btn(true).color('c').cEvent(2,"/dest remove "+name)
                             .hEvent(CUtl.TBtn("delete.hover_dest").color('c'))).append(" ")
                     //BACK
                     .append(CUtl.CButton.back("/dest saved " + getPGOf(player, name)))
