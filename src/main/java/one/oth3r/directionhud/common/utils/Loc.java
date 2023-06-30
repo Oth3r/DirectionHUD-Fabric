@@ -1,6 +1,6 @@
 package one.oth3r.directionhud.common.utils;
 
-import one.oth3r.directionhud.files.config;
+import one.oth3r.directionhud.common.files.config;
 import one.oth3r.directionhud.utils.CTxT;
 import one.oth3r.directionhud.utils.Player;
 import one.oth3r.directionhud.utils.Utl;

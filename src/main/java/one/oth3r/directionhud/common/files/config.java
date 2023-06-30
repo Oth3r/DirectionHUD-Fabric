@@ -1,11 +1,10 @@
-package one.oth3r.directionhud.files;
+package one.oth3r.directionhud.common.files;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import one.oth3r.directionhud.DirectionHUD;
 import one.oth3r.directionhud.common.HUD;
-import one.oth3r.directionhud.common.files.PlayerData;
 import one.oth3r.directionhud.utils.CUtl;
 import one.oth3r.directionhud.utils.Player;
 import one.oth3r.directionhud.utils.Utl;
@@ -14,7 +13,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 public class config {
     public static String lang = defaults.lang;
