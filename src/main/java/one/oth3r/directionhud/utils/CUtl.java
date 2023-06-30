@@ -105,7 +105,7 @@ public class CUtl {
                         CTxT.of(cmd).color(c.set).append("\n").append(TBtn("dest.set.hover")));
             }
             public static CTxT edit(int t, String cmd) {
-                return CTxT.of("✎").btn(true).color(c.edit).cEvent(t,cmd).hEvent(TBtn("dest.edit.hover").color(c.edit)).color(c.edit);
+                return CTxT.of(symbols.pencil()).btn(true).color(c.edit).cEvent(t,cmd).hEvent(TBtn("dest.edit.hover").color(c.edit)).color(c.edit);
             }
             public static CTxT settings() {
                 return TBtn("dest.settings").btn(true).color(c.setting).cEvent(1,"/dest settings")
