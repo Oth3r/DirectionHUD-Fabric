@@ -4,7 +4,7 @@ import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import one.oth3r.directionhud.DirectionHUD;
 import one.oth3r.directionhud.common.Destination;
-import one.oth3r.directionhud.files.LangReader;
+import one.oth3r.directionhud.common.files.LangReader;
 
 public class CUtl {
     public static CTxT tag() {
