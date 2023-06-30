@@ -88,6 +88,13 @@ public class Utl {
         System.arraycopy(arr, numToRemove, result, 0, result.length);
         return result;
     }
+    public static CTxT getTxTFromObj(Object obj) {
+        CTxT txt = CTxT.of("");
+        if (obj instanceof CTxT) txt.append(((CTxT) obj).b());
+        else if (obj instanceof Text) txt.append((Text) obj);
+        else txt.append(String.valueOf(obj));
+        return txt;
+    }
     public static void setTime() {
         World world = DirectionHUD.server.getOverworld();
         long timeTicks = world.getTime();
