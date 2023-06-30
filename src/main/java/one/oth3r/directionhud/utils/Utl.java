@@ -8,13 +8,13 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3f;
 import net.minecraft.world.World;
 import one.oth3r.directionhud.DirectionHUD;
 import one.oth3r.directionhud.common.HUD;
 import one.oth3r.directionhud.common.files.PlayerData;
 import one.oth3r.directionhud.files.config;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.joml.Vector3f;
 
 import java.awt.*;
 import java.util.List;
@@ -193,15 +193,15 @@ public class Utl {
         }
         public static DustParticleEffect getParticle(String particleType, Player player) {
             if (particleType.equals(LINE))
-                return new DustParticleEffect(new Vector3f(Vec3d.unpackRgb(
-                        Utl.color.getCodeRGB(PlayerData.get.dest.setting.particle.linecolor(player))).toVector3f()),1);
+                return new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(
+                        Utl.color.getCodeRGB(PlayerData.get.dest.setting.particle.linecolor(player)))),1);
             if (particleType.equals(DEST))
-                return new DustParticleEffect(new Vector3f(Vec3d.unpackRgb(
-                        Utl.color.getCodeRGB(PlayerData.get.dest.setting.particle.destcolor(player))).toVector3f()),3);
+                return new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(
+                        Utl.color.getCodeRGB(PlayerData.get.dest.setting.particle.destcolor(player)))),3);
             if (particleType.equals(TRACKING))
-                return new DustParticleEffect(new Vector3f(Vec3d.unpackRgb(
-                        Utl.color.getCodeRGB(PlayerData.get.dest.setting.particle.trackingcolor(player))).toVector3f()),0.5f);
-            return new DustParticleEffect(new Vector3f(Vec3d.unpackRgb(Utl.color.getCodeRGB("black")).toVector3f()),1);
+                return new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(
+                        Utl.color.getCodeRGB(PlayerData.get.dest.setting.particle.trackingcolor(player)))),0.5f);
+            return new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(Utl.color.getCodeRGB("black"))),1);
         }
     }
     public static class dim {
