@@ -1,16 +1,14 @@
-package one.oth3r.directionhud.files;
+package one.oth3r.directionhud.common.files;
 
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.text.TextContent;
-import one.oth3r.directionhud.DirectionHUDServer;
+import one.oth3r.directionhud.DirectionHUD;
+import one.oth3r.directionhud.files.config;
 import one.oth3r.directionhud.utils.CTxT;
+import one.oth3r.directionhud.utils.Utl;
 
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class LangReader {
     private static final Map<String, String> languageMap = new HashMap<>();
@@ -27,37 +25,41 @@ public class LangReader {
         if (placeholders != null && placeholders.length > 0) {
             //removed all double \\ and replaces with \
             translated = translated.replaceAll("\\\\\\\\", "\\\\");
-            //SPLITS the text at each %(dfs) and removes the %(dfs)
-            String[] parts = translated.split("%[dfs]");
-            // calculates the total amount of %(dfs) in the translated object
-            int max = (translated.length() - String.join("", parts).length())/2;
-            // If the last element of the array ends with %(dfs), remove it and add an empty string to the end of the array
-            if (translated.matches(".*%[dfs]$")) {
+            String regex = "%\\d*\\$?[dfs]";
+            Matcher anyMatch = Pattern.compile(regex).matcher(translated);
+            Matcher endMatch = Pattern.compile(regex+"$").matcher(translated);
+            //Arraylist with all the %(#$)[dfs]
+            ArrayList<String> matches = new ArrayList<>();
+            while (anyMatch.find()) {
+                String match = anyMatch.group();
+                matches.add(match);
+            }
+            //SPLITS the text at each regex and remove the regex
+            String[] parts = translated.split(regex);
+            //if the last element of the array ends with regex, remove it and add an empty string to the end of the array
+            if (endMatch.find()) {
                 String[] newParts = Arrays.copyOf(parts, parts.length + 1);
                 newParts[parts.length] = "";
                 parts = newParts;
             }
             //if there are placeholders specified, and the split is more than 1, it will replace %(dfs) with the placeholder objects
             if (parts.length > 1) {
-                MutableText mutableText = MutableText.of(TextContent.EMPTY);
+                CTxT txt = CTxT.of("");
                 int i = 0;
-                for (Object placeholder : placeholders) {
-                    // if it keeps looping after the max, stop the loop
-                    if (i == max) break;
-                    if (parts.length != i) mutableText.append(parts[i]);
-                    //if the placeholder object is a text, it will append the text
-                    //otherwise it will try to turn the object into a string and append that
-                    if (placeholder instanceof CTxT) {
-                        mutableText.append(((CTxT) placeholder).b());
-                    } else if (placeholder instanceof Text) {
-                        mutableText.append((Text) placeholder);
-                    } else {
-                        mutableText.append(String.valueOf(placeholder));
+                for (String match : matches) {
+                    int get = i;
+                    //if the match is numbered, change GET to the number it wants
+                    if (match.contains("$")) {
+                        match = match.substring(1,match.indexOf('$'));
+                        get = Integer.parseInt(match)-1;
                     }
+                    if (parts.length != i) txt.append(parts[i]);
+                    //convert the obj into txt
+                    txt.append(Utl.getTxTFromObj(placeholders[get]));
                     i++;
                 }
-                if (parts.length != i) mutableText.append(parts[i]);
-                return CTxT.of(mutableText);
+                if (parts.length != i) txt.append(parts[i]);
+                return CTxT.of(txt);
             }
         }
         return CTxT.of(translated);
@@ -69,8 +71,8 @@ public class LangReader {
 
     public static void loadLanguageFile() {
         try {
-            ClassLoader classLoader = DirectionHUDServer.class.getClassLoader();
-            InputStream inputStream = classLoader.getResourceAsStream("assets/directionhud/lang/"+config.lang+".json");
+            ClassLoader classLoader = DirectionHUD.class.getClassLoader();
+            InputStream inputStream = classLoader.getResourceAsStream("assets/directionhud/lang/"+ config.lang+".json");
             if (inputStream == null) {
                 inputStream = classLoader.getResourceAsStream("assets/directionhud/lang/"+config.defaults.lang+".json");
                 config.lang = config.defaults.lang;
