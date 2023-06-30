@@ -9,6 +9,7 @@ import one.oth3r.directionhud.DirectionHUD;
 import one.oth3r.directionhud.DirectionHUDClient;
 import one.oth3r.directionhud.common.files.PlayerData;
 import one.oth3r.directionhud.utils.CTxT;
+import one.oth3r.directionhud.utils.CUtl;
 import one.oth3r.directionhud.utils.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -21,9 +22,9 @@ import java.util.Objects;
 public class ActionBarMixin {
     @Inject(at = @At("HEAD"), method = "setOverlayMessage(Lnet/minecraft/text/Text;Z)V")
     private void sendMessage(Text message, boolean tinted, CallbackInfo info) {
-        CTxT msg = CTxT.of((MutableText) message).hEvent(CTxT.of("Message from the actionbar sent by DirectionHUD."));
         MinecraftClient client = MinecraftClient.getInstance();
         ClickEvent click = message.getStyle().getClickEvent();
+        CTxT msg = CTxT.of(CUtl.lang("info.actionbar").append(" ").append(CTxT.of((MutableText) message).italic(true))).hEvent(CUtl.lang("info.actionbar_hover"));
         if (click == null || !click.getValue().equals("https://modrinth.com/mod/directionhud")) {
             if (message.getString().equals("")) return;
             if (client.player != null) {
