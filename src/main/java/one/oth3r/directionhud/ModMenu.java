@@ -7,7 +7,7 @@ import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import one.oth3r.directionhud.files.config;
+import one.oth3r.directionhud.common.files.config;
 import one.oth3r.directionhud.utils.CUtl;
 import one.oth3r.directionhud.utils.Utl;
 

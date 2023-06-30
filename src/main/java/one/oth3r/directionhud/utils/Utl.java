@@ -13,7 +13,7 @@ import net.minecraft.world.World;
 import one.oth3r.directionhud.DirectionHUD;
 import one.oth3r.directionhud.common.HUD;
 import one.oth3r.directionhud.common.files.PlayerData;
-import one.oth3r.directionhud.files.config;
+import one.oth3r.directionhud.common.files.config;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import java.awt.*;

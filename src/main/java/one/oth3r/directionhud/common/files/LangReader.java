@@ -1,7 +1,6 @@
 package one.oth3r.directionhud.common.files;
 
 import one.oth3r.directionhud.DirectionHUD;
-import one.oth3r.directionhud.files.config;
 import one.oth3r.directionhud.utils.CTxT;
 import one.oth3r.directionhud.utils.Utl;
 
