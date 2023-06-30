@@ -14,12 +14,10 @@ public class LangReader {
     private static final Map<String, String> languageMap = new HashMap<>();
     private final String translationKey;
     private final Object[] placeholders;
-
     public LangReader(String translationKey, Object... placeholders) {
         this.translationKey = translationKey;
         this.placeholders = placeholders;
     }
-
     public CTxT getTxT() {
         String translated = getLanguageValue(translationKey);
         if (placeholders != null && placeholders.length > 0) {
@@ -64,11 +62,9 @@ public class LangReader {
         }
         return CTxT.of(translated);
     }
-
     public static LangReader of(String translationKey, Object... placeholders) {
         return new LangReader(translationKey, placeholders);
     }
-
     public static void loadLanguageFile() {
         try {
             ClassLoader classLoader = DirectionHUD.class.getClassLoader();
@@ -95,7 +91,6 @@ public class LangReader {
             e.printStackTrace();
         }
     }
-
     public static String getLanguageValue(String key) {
         return languageMap.getOrDefault(key, key);
     }
