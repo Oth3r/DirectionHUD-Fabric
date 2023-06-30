@@ -104,7 +104,13 @@ public class CTxT {
         MutableText output = Text.literal("");
         if (this.button) output.append("[").setStyle(CUtl.C('f'));
         if (this.rainbow) output.append(Utl.color.rainbow(this.name.getString(),this.start,this.step));
-        else output.append(this.name.styled(style -> style.withColor(this.color)));
+        else output.append(this.name.styled(style -> style.withColor(this.color)
+                .withClickEvent(this.clickEvent)
+                .withHoverEvent(this.hoverEvent)
+                .withItalic(this.italic)
+                .withBold(this.bold)
+                .withStrikethrough(this.strikethrough)
+                .withUnderline(this.underline)));
         if (this.button) output.append("]").setStyle(CUtl.C('f'));
         output.styled(style -> style
                 .withClickEvent(this.clickEvent)
