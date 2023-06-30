@@ -7,6 +7,7 @@ import one.oth3r.directionhud.utils.CTxT;
 import one.oth3r.directionhud.utils.CUtl;
 import one.oth3r.directionhud.utils.Player;
 import one.oth3r.directionhud.utils.Utl;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 
@@ -656,14 +657,14 @@ public class HUD {
             int typ;
             if (type.equalsIgnoreCase("pri")) {
                 typ = 1;
-                msg.append(" ").append(addColor(player,lang("ui.color.primary").getString(),typ,15,20))
+                msg.append(" ").append(addColor(player,StringUtils.capitalize(lang("color.primary").getString()),typ,15,20))
                         .append(CTxT.of("\n                           \n").strikethrough(true));
                 reset.cEvent(1, "/hud color rset pri").hEvent(CUtl.lang("button.reset.hover_color",addColor(player,lang("color.primary").getString(),typ,15,20)));
                 for (int i = 0; i < allObj.size(); i++)
                     allObj.set(i, allObj.get(i).cEvent(1,"/hud color set primary "+allStr.get(i)));
             } else if (type.equalsIgnoreCase("sec")) {
                 typ = 2;
-                msg.append(" ").append(addColor(player,lang("ui.color.secondary").getString(),typ,15,20))
+                msg.append(" ").append(addColor(player,StringUtils.capitalize(lang("color.secondary").getString()),typ,15,20))
                         .append(CTxT.of("\n                           \n").strikethrough(true));
                 reset.cEvent(1,"/hud color rset sec").hEvent(CUtl.lang("button.reset.hover_color",addColor(player,lang("color.secondary").getString(),typ,15,20)));
                 for (int i = 0; i < allObj.size(); i++)

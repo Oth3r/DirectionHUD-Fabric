@@ -143,23 +143,23 @@ public class Destination {
                 if (args.length == 1) return;
                 if (args.length == 2) saved.viewDestinationUI(true, player, args[1]);
                 if (args[1].equalsIgnoreCase("name")) {
-                    if (args.length == 3) player.sendMessage(error("dest.edit.name"));
+                    if (args.length == 3) player.sendMessage(error("dest.saved.set",lang("saved.name")));
                     if (args.length == 4) saved.editName(true, player, args[2], args[3]);
                 }
                 if (args[1].equalsIgnoreCase("color")) {
-                    if (args.length == 3) player.sendMessage(error("dest.edit.color"));
+                    if (args.length == 3) player.sendMessage(error("dest.saved.set",lang("saved.color")));
                     if (args.length == 4) saved.editColor(true, player, args[2], args[3]);
                 }
                 if (args[1].equalsIgnoreCase("order")) {
-                    if (args.length == 3) player.sendMessage(error("dest.edit.order"));
+                    if (args.length == 3) player.sendMessage(error("dest.saved.set",lang("saved.order")));
                     if (args.length == 4) saved.editOrder(true, player, args[2], args[3]);
                 }
                 if (args[1].equalsIgnoreCase("dim")) {
-                    if (args.length == 3) player.sendMessage(error("dest.edit.dimension"));
+                    if (args.length == 3) player.sendMessage(error("dest.saved.set",lang("saved.dimension")));
                     if (args.length == 4) saved.editDimension(true, player, args[2], args[3]);
                 }
                 if (args[1].equalsIgnoreCase("loc")) {
-                    if (args.length == 3) player.sendMessage(error("dest.edit.location"));
+                    if (args.length == 3) player.sendMessage(error("dest.saved.set",lang("saved.location")));
                     if (args.length == 5) saved.editLocation(true,player,args[2],new Loc(Utl.tryInt(args[3]),Utl.tryInt(args[4])));
                     if (args.length == 6) saved.editLocation(true,player,args[2],new Loc(Utl.tryInt(args[3]),Utl.tryInt(args[4]),Utl.tryInt(args[5])));
                 }
@@ -681,14 +681,13 @@ public class Destination {
             return (int) Math.round(i) + 1;
         }
         public static void add(boolean send, Player player, String name, Loc loc, String color) {
-            List<String> names = getNames(player);
             List<List<String>> all = getList(player);
             if (getList(player).size() >= config.MAXSaved) {
                 if (send) player.sendMessage(error("dest.saved.max"));
                 return;
             }
-            if (names.contains(name)) {
-                if (send) player.sendMessage(error("dest.saved.duplicate"));
+            if (getNames(player).contains(name)) {
+                if (send) player.sendMessage(error("dest.saved.duplicate",lang("saved.name"),name));
                 return;
             }
             if (name.equalsIgnoreCase("saved")) {
@@ -743,7 +742,7 @@ public class Destination {
                 return;
             }
             if (names.contains(newName)) {
-                if (send) player.sendMessage(error("dest.saved.duplicat"));
+                if (send) player.sendMessage(error("dest.saved.duplicate",lang("saved.name"),CTxT.of(newName).color(CUtl.sTC())));
                 return;
             }
             if (newName.equalsIgnoreCase("saved")) {
@@ -776,6 +775,10 @@ public class Destination {
                 return;
             }
             int newOrderNum = Integer.parseInt(orderNumber);
+            if (getIndexFromName(player, name)+1==newOrderNum) {
+                if (send) player.sendMessage(error("dest.saved.duplicate",lang("saved.order"),CTxT.of(orderNumber).color(CUtl.sTC())));
+                return;
+            }
             if (newOrderNum == 0) newOrderNum = 1;
             List<List<String>> all = getList(player);
             List<String> move = all.get(names.indexOf(name));
@@ -805,7 +808,7 @@ public class Destination {
             }
             int i = names.indexOf(name);
             if (getLocs(player).get(i).getXYZ().equals(loc.getXYZ())) {
-                if (send) player.sendMessage(error("dest.saved.duplicate.coordinates", loc.getXYZ()));
+                if (send) player.sendMessage(error("dest.saved.duplicate",lang("saved.location"),CTxT.of(loc.getXYZ()).color(CUtl.sTC())));
                 return;
             }
             loc.setDIM(getLocs(player).get(i).getDIM());
@@ -830,7 +833,7 @@ public class Destination {
                 return;
             }
             if (getLocs(player).get(i).getDIM().equalsIgnoreCase(dimension)) {
-                if (send) player.sendMessage(error("dest.saved.duplicate.dimension", Utl.dim.getName(dimension).toUpperCase()));
+                if (send) player.sendMessage(error("dest.saved.duplicate",lang("saved.dimension"),CTxT.of(Utl.dim.getName(dimension).toUpperCase()).color(Utl.dim.getHEX(dimension))));
                 return;
             }
             Loc loc = getLocs(player).get(i);
@@ -854,8 +857,7 @@ public class Destination {
             int i = names.indexOf(name);
             color = Utl.color.fix(color,false,"white");
             if (getColors(player).get(i).equals(color.toLowerCase())) {
-                if (send) player.sendMessage(error("dest.saved.duplicate.color",
-                        CTxT.of(getColors(player).get(i)).color(getColors(player).get(i))));
+                if (send) player.sendMessage(error("dest.saved.duplicate",lang("saved.color"),CTxT.of(Utl.color.formatPlayer(color,true)).color(color)));
                 return;
             }
             List<List<String>> all = getList(player);
