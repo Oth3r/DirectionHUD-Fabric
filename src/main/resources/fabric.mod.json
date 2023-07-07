@@ -40,7 +40,7 @@
     "java": ">=17"
   },
   "suggests": {
-    "modmenu": ">=4.0.0",
-    "yet-another-config-lib": ">=7.1.0"
+    "modmenu": ">=4.0.6",
+    "yet-another-config-lib": ">=8.0.75"
   }
 }
