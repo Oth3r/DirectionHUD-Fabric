@@ -31,9 +31,7 @@ public class DirectionHUDClient implements ClientModInitializer {
             while (keyBinding.wasPressed()) {
                 assert client.player != null;
                 if (client.isInSingleplayer() || onSupportedServer) {
-                    PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer()); // Create a new PacketByteBuf
-                    buf.writeString("/your_command_here"); // Write the command string to the buffer
-                    client.player.networkHandler.sendPacket(new ChatMessageC2SPacket(buf));
+                    client.player.sendCommand("hud toggle");
                 }
             }
         });
