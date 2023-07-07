@@ -589,7 +589,7 @@ public class Destination {
         CTxT btn = CUtl.TBtn(ac?"off":"on").btn(true).color(ac?'c':'a').cEvent(1,"/dest settings autoclear "+!ac+" n").hEvent(
                 CTxT.of(CUtl.cmdUsage.destSettings()).color(ac?'c':'a').append("\n").append(CUtl.TBtn("state.hover",
                         CUtl.TBtn(ac?"off":"on").color(ac?'c':'a'))));
-        return CTxT.of(" ").append(lang("set.autoclear",lang(ac?"on":"off"),btn).color('7').italic(true));
+        return CTxT.of(" ").append(lang("set.autoclear",CUtl.lang(ac?"on":"off").italic(true),btn).color('7').italic(true));
     }
     public static void silentSet(Player player, Loc loc) {
         if (!checkDist(player, loc)) PlayerData.set.dest.setDest(player, loc);
