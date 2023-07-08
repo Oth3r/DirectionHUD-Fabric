@@ -271,7 +271,7 @@ public class HUD {
             ArrayList<String> order = getEnabled(player);
             int pos = order.indexOf(module.toLowerCase());
             if (!validCheck(module)) return;
-            CTxT msg = CUtl.tag().append(lang("module.move",CTxT.of(langName(module)).color(CUtl.sTC()),lang("module.move_"+direction)));
+            CTxT msg = CUtl.tag().append(lang("module.move",CTxT.of(langName(module)).color(CUtl.s()),lang("module.move_"+direction)));
             if (direction.equals("down")) {
                 if (pos == order.size() - 1) return;
                 order.remove(pos);
@@ -290,7 +290,7 @@ public class HUD {
         }
         public static void toggle(Player player, String module, boolean toggle, boolean Return) {
             if (!order.validCheck(module)) return;
-            CTxT msg = CUtl.tag().append(lang("module.toggle",CUtl.TBtn(toggle ? "on" : "off"),CTxT.of(langName(module)).color(CUtl.sTC())));
+            CTxT msg = CUtl.tag().append(lang("module.toggle",CUtl.TBtn(toggle ? "on" : "off"),CTxT.of(langName(module)).color(CUtl.s())));
             //OFF
             if (!toggle && order.moduleState(player, module)) order.removeModule(player, module);
                 //ON
@@ -303,7 +303,7 @@ public class HUD {
                 if (!PlayerData.get.hud.module.time(player)) return;
                 if (!(option.equals("12hr") || option.equals("24hr"))) return;
                 PlayerData.set.hud.setting.time24h(player, option.equals("24hr"));
-                CTxT msg = CUtl.tag().append(lang("module.time.change",CUtl.lang("button.time."+option).color(CUtl.sTC())));
+                CTxT msg = CUtl.tag().append(lang("module.time.change",CUtl.lang("button.time."+option).color(CUtl.s())));
                 if (Return) UI(player, msg, "time");
                 else player.sendMessage(msg);
             }
@@ -386,10 +386,10 @@ public class HUD {
         public static CTxT arrow(boolean up, boolean gray, String name) {
             if (up) {
                 if (gray) return CTxT.of(CUtl.symbols.up()).btn(true).color('7');
-                return CTxT.of(CUtl.symbols.up()).btn(true).color(CUtl.pTC()).cEvent(1,"/hud edit move "+name+" up");
+                return CTxT.of(CUtl.symbols.up()).btn(true).color(CUtl.p()).cEvent(1,"/hud edit move "+name+" up");
             }
             if (gray) return CTxT.of(CUtl.symbols.down()).btn(true).color('7');
-            return CTxT.of(CUtl.symbols.down()).btn(true).color(CUtl.pTC()).cEvent(1,"/hud edit move "+name+" down");
+            return CTxT.of(CUtl.symbols.down()).btn(true).color(CUtl.p()).cEvent(1,"/hud edit move "+name+" down");
         }
         public static CTxT xButton(String name) {
             return CTxT.of(CUtl.symbols.x()).btn(true).color('c').cEvent(1,"/hud edit state "+name+" false")
@@ -466,7 +466,7 @@ public class HUD {
                 for (int i = 0; i < getEnabled(player).size(); i++) {
                     String moduleName = getEnabled(player).get(i);
                     CTxT moduleNameText = moduleName(player, moduleName, null);
-                    if (highlight.equals(moduleName)) moduleNameText.color(CUtl.sTC());
+                    if (highlight.equals(moduleName)) moduleNameText.color(CUtl.s());
                     if (i == 0) {
                         modules.put(moduleName, modules.get(moduleName).append(arrow(true, true, moduleName)).append(" "));
                         modules.put(moduleName, modules.get(moduleName).append(xButton(moduleName)).append(" "));
@@ -485,9 +485,9 @@ public class HUD {
                     if (moduleName.equals("time")) {
                         boolean hr = PlayerData.get.hud.setting.time24h(player);
                         modules.put(moduleName, modules.get(moduleName)
-                                .append(CUtl.TBtn("time."+(hr?"24hr":"12hr")).btn(true).color(CUtl.sTC())
+                                .append(CUtl.TBtn("time."+(hr?"24hr":"12hr")).btn(true).color(CUtl.s())
                                         .cEvent(1,"/hud edit setting time "+(hr?"12hr":"24hr"))
-                                        .hEvent(CUtl.TBtn("time.hover",CUtl.TBtn("time."+(hr?"12hr":"24hr")).color(CUtl.sTC())))));
+                                        .hEvent(CUtl.TBtn("time.hover",CUtl.TBtn("time."+(hr?"12hr":"24hr")).color(CUtl.s())))));
                     }
                 }
             }
@@ -736,7 +736,7 @@ public class HUD {
     public static void UI(Player player, CTxT abovemsg) {
         CTxT msg = CTxT.of("");
         if (abovemsg != null) msg.append(abovemsg).append("\n");
-        msg.append(" ").append(lang("ui").color(CUtl.pTC())).append(CTxT.of("\n                                 \n").strikethrough(true)).append(" ");
+        msg.append(" ").append(lang("ui").color(CUtl.p())).append(CTxT.of("\n                                 \n").strikethrough(true)).append(" ");
         //COLOR
         msg.append(CUtl.CButton.hud.color()).append(" ");
         //EDIT

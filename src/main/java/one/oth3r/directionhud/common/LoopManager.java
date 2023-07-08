@@ -92,7 +92,7 @@ public class LoopManager {
                     PlayerData.setOneTime(player, "tracking.converted", null);
                     player.sendMessage(CUtl.tag().append(CUtl.lang("dest.track.dimension").append("\n ")
                             .append(CUtl.lang("dest.track.dimension_2",
-                                    CTxT.of(trackingP.getName()).color(CUtl.sTC())).color('7').italic(true))));
+                                    CTxT.of(trackingP.getName()).color(CUtl.s())).color('7').italic(true))));
                     PlayerData.setOneTime(player, "tracking.dimension", "1");
                 }
             } else if (PlayerData.getOneTime(player, "tracking.converted") != null) {
