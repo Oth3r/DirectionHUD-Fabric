@@ -1,45 +1,26 @@
 package one.oth3r.directionhud.utils;
 
-import net.minecraft.text.*;
-import net.minecraft.util.Formatting;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import one.oth3r.directionhud.DirectionHUD;
 import one.oth3r.directionhud.common.Destination;
 import one.oth3r.directionhud.common.files.LangReader;
 
 public class CUtl {
     public static CTxT tag() {
-        return CTxT.of("").append(CTxT.of("DirectionHUD").btn(true).color(pTC())).append(" ");
+        return CTxT.of("").append(CTxT.of("DirectionHUD").btn(true).color(p())).append(" ");
     }
-    public static TextColor pTC() {
-        return HEX(c.pri);
+    public static String p() {
+        return c.pri;
     }
-    public static TextColor sTC() {
-        return HEX(c.sec);
-    }
-    public static Style C(Character code) {
-        return Style.EMPTY.withColor(Formatting.byCode(code));
-    }
-    public static TextColor TC(Character code) {
-        return TextColor.fromFormatting(Formatting.byCode(code));
-    }
-    public static ClickEvent cEvent(int typ, String arg) {
-        if (typ == 1) return new ClickEvent(ClickEvent.Action.RUN_COMMAND,arg);
-        if (typ == 2) return new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND,arg);
-        if (typ == 3) return new ClickEvent(ClickEvent.Action.OPEN_URL,arg);
-        return null;
-    }
-    public static HoverEvent hEvent(CTxT text) {
-        return new HoverEvent(HoverEvent.Action.SHOW_TEXT, text.b());
+    public static String s() {
+        return c.sec;
     }
     public static CTxT error(CTxT s) {
         return tag().append(lang("error").color("#FF4646")).append(" ").append(s);
     }
     public static CTxT usage(String s) {
         return tag().append(lang("usage").color("#FF4646")).append(" ").append(s);
-    }
-    public static TextColor HEX(String s) {
-        if (s.contains("#")) return TextColor.parse(s);
-        return TextColor.parse("#"+s);
     }
     public static CTxT lang(String key) {
         if (DirectionHUD.isClient) {

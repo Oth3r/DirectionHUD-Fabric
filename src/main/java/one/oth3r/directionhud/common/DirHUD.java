@@ -71,7 +71,7 @@ public class DirHUD {
         }
         public static void UI(Player player) {
             CTxT msg = CTxT.of("");
-            msg.append(CUtl.lang("dirhud.ui.defaults").color(CUtl.pTC()))
+            msg.append(CUtl.lang("dirhud.ui.defaults").color(CUtl.p()))
                     .append(CTxT.of("\n                                 \n").strikethrough(true))
                     .append(" ")
                     .append(CUtl.TBtn("dirhud.defaults.set").btn(true).color(CUtl.c.set).cEvent(1,"/dirhud defaults set")
@@ -99,9 +99,9 @@ public class DirHUD {
     }
     public static void UI(Player player) {
         CTxT msg = CTxT.of("")
-                .append(CTxT.of(" DirectionHUD ").color(CUtl.pTC()))
-                .append(CTxT.of(DirectionHUD.VERSION+CUtl.symbols.link()).color(CUtl.sTC()).cEvent(3,"https://modrinth.com/mod/directionhud/changelog")
-                        .hEvent(CUtl.TBtn("version.hover").color(CUtl.sTC())))
+                .append(CTxT.of(" DirectionHUD ").color(CUtl.p()))
+                .append(CTxT.of(DirectionHUD.VERSION+CUtl.symbols.link()).color(CUtl.s()).cEvent(3,"https://modrinth.com/mod/directionhud/changelog")
+                        .hEvent(CUtl.TBtn("version.hover").color(CUtl.s())))
                 .append(CTxT.of("\n                                 \n").strikethrough(true)).append(" ");
         //hud
         if (Utl.checkEnabled.hud(player)) msg.append(CUtl.CButton.dirHUD.hud()).append("  ");

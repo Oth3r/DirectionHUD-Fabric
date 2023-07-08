@@ -19,6 +19,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class Utl {
     public static class Pair<A, B> {
@@ -88,6 +89,9 @@ public class Utl {
         System.arraycopy(arr, numToRemove, result, 0, result.length);
         return result;
     }
+    public static String capitalizeFirst(String string) {
+        return string.toUpperCase().charAt(0)+string.substring(1);
+    }
     public static CTxT getTxTFromObj(Object obj) {
         CTxT txt = CTxT.of("");
         if (obj instanceof CTxT) txt.append(((CTxT) obj).b());
@@ -97,7 +101,7 @@ public class Utl {
     }
     public static void setTime() {
         World world = DirectionHUD.server.getOverworld();
-        long timeTicks = world.getTime();
+        long timeTicks = world.getTimeOfDay();
         HUD.hour = (int) ((timeTicks / 1000 + 6) % 24);
         HUD.minute = (int) ((timeTicks % 1000) * 60 / 1000);
         if (world.isRaining()) {
@@ -201,14 +205,14 @@ public class Utl {
         public static DustParticleEffect getParticle(String particleType, Player player) {
             if (particleType.equals(LINE))
                 return new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(
-                        Utl.color.getCodeRGB(PlayerData.get.dest.setting.particle.linecolor(player)))),1);
+                        Utl.color.hexToRGB(Utl.color.getFromTextString(PlayerData.get.dest.setting.particle.linecolor(player))))),1);
             if (particleType.equals(DEST))
                 return new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(
-                        Utl.color.getCodeRGB(PlayerData.get.dest.setting.particle.destcolor(player)))),3);
+                        Utl.color.hexToRGB(Utl.color.getFromTextString(PlayerData.get.dest.setting.particle.destcolor(player))))),3);
             if (particleType.equals(TRACKING))
                 return new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(
-                        Utl.color.getCodeRGB(PlayerData.get.dest.setting.particle.trackingcolor(player)))),0.5f);
-            return new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(Utl.color.getCodeRGB("black"))),1);
+                        Utl.color.hexToRGB(Utl.color.getFromTextString(PlayerData.get.dest.setting.particle.trackingcolor(player))))),0.5f);
+            return new DustParticleEffect(new Vec3f(Vec3d.unpackRgb(Utl.color.hexToRGB("#000000"))),1);
         }
     }
     public static class dim {
@@ -309,46 +313,26 @@ public class Utl {
                     "blue", "dark_blue", "pink", "purple", "white", "gray", "dark_gray", "black","ffffff"));
         }
         //todo maybe change this
-        public static TextColor getTC(String color) {
-            if (color.equals("red")) return CUtl.TC('c');
-            if (color.equals("dark_red")) return CUtl.TC('4');
-            if (color.equals("gold")) return CUtl.TC('6');
-            if (color.equals("yellow")) return CUtl.TC('e');
-            if (color.equals("green")) return CUtl.TC('a');
-            if (color.equals("dark_green")) return CUtl.TC('2');
-            if (color.equals("aqua")) return CUtl.TC('b');
-            if (color.equals("dark_aqua")) return CUtl.TC('3');
-            if (color.equals("blue")) return CUtl.TC('9');
-            if (color.equals("dark_blue")) return CUtl.TC('1');
-            if (color.equals("pink")) return CUtl.TC('d');
-            if (color.equals("purple")) return CUtl.TC('5');
-            if (color.equals("white")) return CUtl.TC('f');
-            if (color.equals("gray")) return CUtl.TC('7');
-            if (color.equals("dark_gray")) return CUtl.TC('8');
-            if (color.equals("black")) return CUtl.TC('0');
-            if (color.charAt(0)=='#') return CUtl.HEX(color);
-            return CUtl.TC('f');
-        }
-        public static int getCodeRGB(String color) {
-            if (color.equals("red")) return 16733525;
-            if (color.equals("dark_red")) return 11141120;
-            if (color.equals("gold")) return 16755200;
-            if (color.equals("yellow")) return 16777045;
-            if (color.equals("green")) return 5635925;
-            if (color.equals("dark_green")) return 43520;
-            if (color.equals("aqua")) return 5636095;
-            if (color.equals("dark_aqua")) return 43690;
-            if (color.equals("blue")) return 5592575;
-            if (color.equals("dark_blue")) return 170;
-            if (color.equals("pink")) return 16733695;
-            if (color.equals("purple")) return 11141290;
-            if (color.equals("white")) return 16777215;
-            if (color.equals("gray")) return 11184810;
-            if (color.equals("dark_gray")) return 5592405;
-            if (color.equals("black")) return 0;
-            if (color.equals("rainbow")) return 16777215;
-            if (color.charAt(0)=='#') return hexToRGB(color);
-            return 16777215;
+        public static String getFromTextString(String color) {
+            if (color.equals("red")) return "#FF5555";
+            if (color.equals("dark_red")) return "#AA0000";
+            if (color.equals("gold")) return "#FFAA00";
+            if (color.equals("yellow")) return "#FFFF55";
+            if (color.equals("green")) return "#55FF55";
+            if (color.equals("dark_green")) return "#00AA00";
+            if (color.equals("aqua")) return "#55FFFF";
+            if (color.equals("dark_aqua")) return "#00AAAA";
+            if (color.equals("blue")) return "#5555FF";
+            if (color.equals("dark_blue")) return "#0000AA";
+            if (color.equals("pink")) return "#FF55FF";
+            if (color.equals("purple")) return "#AA00AA";
+            if (color.equals("white")) return "#FFFFFF";
+            if (color.equals("gray")) return "#AAAAAA";
+            if (color.equals("dark_gray")) return "#555555";
+            if (color.equals("black")) return "#000000";
+            if (color.charAt(0)=='#') return color;
+            if (color.length()==6) return "#"+color;
+            return "ffffff";
         }
         public static int hexToRGB(String hexColor) {
             // Remove the # symbol if it exists
@@ -376,7 +360,13 @@ public class Utl {
             if (s.equals("rainbow") && enableRainbow) return s;
             if (s.equalsIgnoreCase("light_purple")) return "pink";
             if (s.equalsIgnoreCase("dark_purple")) return "purple";
-            if (s.length() == 6) return "#"+s;
+            if (s.length() == 6) s = "#"+s;
+            if (s.length() == 7) {
+                String regex = "^#([A-Fa-f0-9]{6})$";
+                Pattern pattern = Pattern.compile(regex);
+                java.util.regex.Matcher matcher = pattern.matcher(s);
+                if (matcher.matches()) return s;
+            }
             return Default;
         }
         public static String formatPlayer(String s, boolean caps) {
@@ -400,7 +390,7 @@ public class Utl {
                 int green = color.getGreen();
                 int blue = color.getBlue();
                 String hexColor = String.format("#%02x%02x%02x", red, green, blue);
-                text.append(Text.literal(Character.toString(string.codePointAt(i))).styled(style -> style.withColor(CUtl.HEX(hexColor))));
+                text.append(Text.literal(Character.toString(string.codePointAt(i))).styled(style -> style.withColor(TextColor.parse(hexColor))));
                 hue = ((hue % 360f)+step)%360f;
             }
             return text;

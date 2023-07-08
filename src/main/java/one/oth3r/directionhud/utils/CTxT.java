@@ -1,6 +1,7 @@
 package one.oth3r.directionhud.utils;
 
 import net.minecraft.text.*;
+import net.minecraft.util.Formatting;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,15 @@ public class CTxT {
     private Boolean rainbow = false;
     private Float start = null;
     private Float step = null;
+    private static ClickEvent click(int typ, String arg) {
+        if (typ == 1) return new ClickEvent(ClickEvent.Action.RUN_COMMAND,arg);
+        if (typ == 2) return new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND,arg);
+        if (typ == 3) return new ClickEvent(ClickEvent.Action.OPEN_URL,arg);
+        return null;
+    }
+    private static HoverEvent hover(CTxT text) {
+        return new HoverEvent(HoverEvent.Action.SHOW_TEXT, text.b());
+    }
     private CTxT() {}
     public static CTxT of(String of) {
         CTxT instance = new CTxT();
@@ -40,11 +50,11 @@ public class CTxT {
         return this;
     }
     public CTxT color(String color) {
-        this.color = Utl.color.getTC(color);
+        this.color = TextColor.parse(Utl.color.getFromTextString(color));
         return this;
     }
     public CTxT color(Character color) {
-        this.color = CUtl.TC(color);
+        this.color = TextColor.fromFormatting(Formatting.byCode(color));
         return this;
     }
     public CTxT color(TextColor color) {
@@ -52,11 +62,11 @@ public class CTxT {
         return this;
     }
     public CTxT cEvent(int typ, String arg) {
-        this.clickEvent = CUtl.cEvent(typ, arg);
+        this.clickEvent = click(typ, arg);
         return this;
     }
     public CTxT hEvent(CTxT hEvent) {
-        this.hoverEvent = CUtl.hEvent(hEvent);
+        this.hoverEvent = hover(hEvent);
         return this;
     }
     public CTxT bold(Boolean bold) {
@@ -102,7 +112,7 @@ public class CTxT {
     }
     public MutableText b() {
         MutableText output = Text.literal("");
-        if (this.button) output.append("[").setStyle(CUtl.C('f'));
+        if (this.button) output.append("[").setStyle(Style.EMPTY.withColor(Formatting.byCode('f')));
         if (this.rainbow) output.append(Utl.color.rainbow(this.name.getString(),this.start,this.step));
         else output.append(this.name.styled(style -> style.withColor(this.color)
                 .withClickEvent(this.clickEvent)
@@ -111,7 +121,7 @@ public class CTxT {
                 .withBold(this.bold)
                 .withStrikethrough(this.strikethrough)
                 .withUnderline(this.underline)));
-        if (this.button) output.append("]").setStyle(CUtl.C('f'));
+        if (this.button) output.append("]").setStyle(Style.EMPTY.withColor(Formatting.byCode('f')));
         output.styled(style -> style
                 .withClickEvent(this.clickEvent)
                 .withHoverEvent(this.hoverEvent)
