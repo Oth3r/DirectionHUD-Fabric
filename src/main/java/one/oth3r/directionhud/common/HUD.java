@@ -7,7 +7,6 @@ import one.oth3r.directionhud.utils.CTxT;
 import one.oth3r.directionhud.utils.CUtl;
 import one.oth3r.directionhud.utils.Player;
 import one.oth3r.directionhud.utils.Utl;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 
@@ -538,13 +537,20 @@ public class HUD {
             else player.sendMessage(msg);
         }
         public static void setColor(Player player, String type, String color, boolean Return) {
+            String ogColor = "#"+color;
             if (type.equals("primary")) {
-                color = Utl.color.fix(color,true,config.defaults.HUDPrimaryColor);
-                if (getHUDColors(player)[0].equals(color)) return;
+                color = Utl.color.fix(color,true,HUD.color.getHUDColors(player)[0]);
+                if (!color.equals(ogColor)) {
+                    player.sendMessage(CUtl.error(CUtl.lang("error.color",CTxT.of(ogColor).color(CUtl.s()))));
+                    return;
+                }
                 PlayerData.set.hud.primary(player, color+"-"+getHUDBold(player,1)+"-"+getHUDItalics(player,1)+"-"+getHUDRGB(player,1));
             } else if (type.equals("secondary")) {
-                color = Utl.color.fix(color,true,config.defaults.HUDSecondaryColor);
-                if (getHUDColors(player)[1].equals(color)) return;
+                color = Utl.color.fix(color,true,HUD.color.getHUDColors(player)[1]);
+                if (!color.equals(ogColor)) {
+                    player.sendMessage(CUtl.error(CUtl.lang("error.color",CTxT.of(ogColor).color(CUtl.s()))));
+                    return;
+                }
                 PlayerData.set.hud.secondary(player, color+"-"+getHUDBold(player,2)+"-"+getHUDItalics(player,2)+"-"+getHUDRGB(player,2));
             } else return;
             CTxT msg = CUtl.tag().append(lang("color.set",lang("color."+type),
@@ -657,14 +663,14 @@ public class HUD {
             int typ;
             if (type.equalsIgnoreCase("pri")) {
                 typ = 1;
-                msg.append(" ").append(addColor(player,StringUtils.capitalize(lang("color.primary").getString()),typ,15,20))
+                msg.append(" ").append(addColor(player,Utl.capitalizeFirst(lang("color.primary").getString()),typ,15,20))
                         .append(CTxT.of("\n                           \n").strikethrough(true));
                 reset.cEvent(1, "/hud color rset pri").hEvent(CUtl.lang("button.reset.hover_color",addColor(player,lang("color.primary").getString(),typ,15,20)));
                 for (int i = 0; i < allObj.size(); i++)
                     allObj.set(i, allObj.get(i).cEvent(1,"/hud color set primary "+allStr.get(i)));
             } else if (type.equalsIgnoreCase("sec")) {
                 typ = 2;
-                msg.append(" ").append(addColor(player,StringUtils.capitalize(lang("color.secondary").getString()),typ,15,20))
+                msg.append(" ").append(addColor(player,Utl.capitalizeFirst(lang("color.secondary").getString()),typ,15,20))
                         .append(CTxT.of("\n                           \n").strikethrough(true));
                 reset.cEvent(1,"/hud color rset sec").hEvent(CUtl.lang("button.reset.hover_color",addColor(player,lang("color.secondary").getString(),typ,15,20)));
                 for (int i = 0; i < allObj.size(); i++)

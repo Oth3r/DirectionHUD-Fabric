@@ -19,6 +19,7 @@ import org.joml.Vector3f;
 import java.awt.*;
 import java.util.List;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class Utl {
     public static class Pair<A, B> {
@@ -87,6 +88,9 @@ public class Utl {
         String[] result = new String[arr.length - numToRemove];
         System.arraycopy(arr, numToRemove, result, 0, result.length);
         return result;
+    }
+    public static String capitalizeFirst(String string) {
+        return string.toUpperCase().charAt(0)+string.substring(1);
     }
     public static CTxT getTxTFromObj(Object obj) {
         CTxT txt = CTxT.of("");
@@ -356,7 +360,13 @@ public class Utl {
             if (s.equals("rainbow") && enableRainbow) return s;
             if (s.equalsIgnoreCase("light_purple")) return "pink";
             if (s.equalsIgnoreCase("dark_purple")) return "purple";
-            if (s.length() == 6) return "#"+s;
+            if (s.length() == 6) s = "#"+s;
+            if (s.length() == 7) {
+                String regex = "^#([A-Fa-f0-9]{6})$";
+                Pattern pattern = Pattern.compile(regex);
+                java.util.regex.Matcher matcher = pattern.matcher(s);
+                if (matcher.matches()) return s;
+            }
             return Default;
         }
         public static String formatPlayer(String s, boolean caps) {
