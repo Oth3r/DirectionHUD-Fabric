@@ -7,7 +7,6 @@ import one.oth3r.directionhud.utils.CTxT;
 import one.oth3r.directionhud.utils.CUtl;
 import one.oth3r.directionhud.utils.Player;
 import one.oth3r.directionhud.utils.Utl;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -876,11 +875,11 @@ public class Destination {
                 if (send) player.sendMessage(error("dest.invalid"));
                 return;
             }
-            String dName = StringUtils.capitalize(lang("saved.name").getString());
-            String dColor = StringUtils.capitalize(lang("saved.color").getString());
-            String dOrder = StringUtils.capitalize(lang("saved.order").getString());
-            String dDimension = StringUtils.capitalize(lang("saved.dimension").getString());
-            String dLocation = StringUtils.capitalize(lang("saved.location").getString());
+            String dName = Utl.capitalizeFirst(lang("saved.name").getString());
+            String dColor = Utl.capitalizeFirst(lang("saved.color").getString());
+            String dOrder = Utl.capitalizeFirst(lang("saved.order").getString());
+            String dDimension = Utl.capitalizeFirst(lang("saved.dimension").getString());
+            String dLocation = Utl.capitalizeFirst(lang("saved.location").getString());
             Loc loc = getLocs(player).get(i);
             CTxT msg = CTxT.of(" ");
             msg.append(lang("ui.saved.edit").color(CUtl.c.saved)).append(CTxT.of("\n                                               \n").strikethrough(true));
@@ -1118,7 +1117,7 @@ public class Destination {
                 pl.sendMessage(CUtl.tag()
                         .append(lang("track.accept", CTxT.of(player.getName()).color(CUtl.sTC())))
                         .append(" ")
-                        .append(CUtl.TBtn("off").btn(true).color('c').cEvent(1,"/dest settings track false n").hEvent(
+                        .append(CUtl.TBtn("dest.settings").btn(true).color(CUtl.c.setting).cEvent(1,"/dest settings ").hEvent(
                                 CTxT.of(CUtl.cmdUsage.destSettings()).color('c').append("\n").append(
                                         CUtl.TBtn("state.hover",CUtl.TBtn("off").color('c'))))));
             }
@@ -1245,19 +1244,34 @@ public class Destination {
                 msg.append(lang("setting.autoclear_rad.set",CTxT.of(i+"").color(PlayerData.get.dest.setting.autoclear(player)?'a':'c')));
             }
             if (type.equals("particlesdestc")) {
-                setting = Utl.color.fix(setting,false, config.defaults.DESTDestParticleColor);
-                PlayerData.set.dest.setting.particles.destcolor(player, setting);
-                msg.append(lang("setting.particle.dest_color.set",CTxT.of(Utl.color.formatPlayer(setting,true)).color(setting)));
+                String Nsetting = Utl.color.fix(setting,false, PlayerData.get.dest.setting.particle.destcolor(player));
+                if (("#"+setting).equals(Nsetting)) {
+                    PlayerData.set.dest.setting.particles.destcolor(player, setting);
+                    msg.append(lang("setting.particle.dest_color.set",CTxT.of(Utl.color.formatPlayer(setting,true)).color(setting)));
+                } else {
+                    Return = false;
+                    msg = error("color", CTxT.of("#" + setting).color(CUtl.s()));
+                }
             }
             if (type.equals("particleslinec")) {
-                setting = Utl.color.fix(setting,false, config.defaults.DESTLineParticleColor);
-                PlayerData.set.dest.setting.particles.linecolor(player, setting);
-                msg.append(lang("setting.particle.line_color.set",CTxT.of(Utl.color.formatPlayer(setting,true)).color(setting)));
+                String Nsetting = Utl.color.fix(setting,false, PlayerData.get.dest.setting.particle.linecolor(player));
+                if (("#"+setting).equals(Nsetting)) {
+                    PlayerData.set.dest.setting.particles.linecolor(player, setting);
+                    msg.append(lang("setting.particle.line_color.set", CTxT.of(Utl.color.formatPlayer(setting, true)).color(setting)));
+                } else {
+                    Return = false;
+                    msg = error("color", CTxT.of("#" + setting).color(CUtl.s()));
+                }
             }
             if (type.equals("particlestrackingc")) {
-                setting = Utl.color.fix(setting,false, config.defaults.DESTLineParticleColor);
-                PlayerData.set.dest.setting.particles.trackingcolor(player, setting);
-                msg.append(lang("setting.particle.tracking_color.set",CTxT.of(Utl.color.formatPlayer(setting,true)).color(setting)));
+                String Nsetting = Utl.color.fix(setting,false, PlayerData.get.dest.setting.particle.trackingcolor(player));
+                if (("#"+setting).equals(Nsetting)) {
+                    PlayerData.set.dest.setting.particles.trackingcolor(player, setting);
+                    msg.append(lang("setting.particle.tracking_color.set", CTxT.of(Utl.color.formatPlayer(setting, true)).color(setting)));
+                } else {
+                    Return = false;
+                    msg = error("color", CTxT.of("#" + setting).color(CUtl.s()));
+                }
             }
             boolean state = setting.equals("true");
             CTxT onoff = CTxT.of("ON").color('a');
