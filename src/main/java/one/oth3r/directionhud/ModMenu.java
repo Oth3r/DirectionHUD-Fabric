@@ -70,8 +70,8 @@ public class ModMenu implements ModMenuApi {
                     .setSaveConsumer(option -> config.online = option)
                     .build());
             configCategory.addEntry(entryBuilder.startStrList(CUtl.tLang("config.dimensions"), config.dimensions)
-                    .setTooltip(CUtl.tLang("config.dimensions.info").append("\n")
-                            .append(CUtl.tLang("config.dimensions.info_2").setStyle(CUtl.C('c'))))
+                    .setTooltip(CUtl.lang("config.dimensions.info").append("\n")
+                            .append(CUtl.lang("config.dimensions.info_2").color('c')).b())
                     .setDefaultValue(config.defaults.dimensions)
                     .setSaveConsumer(option -> config.dimensions = option)
                     .build());
