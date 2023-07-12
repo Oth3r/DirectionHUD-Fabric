@@ -18,14 +18,14 @@ public class Events {
     public static void serverStart() {
         DirectionHUD.configDir = DirectionHUD.CONFIG_DIR;
         DirectionHUD.playerData = DirectionHUD.PLAYERDATA_DIR;
-        config.load();
-        LangReader.loadLanguageFile();
         Path dirPath = Paths.get(DirectionHUD.playerData);
         try {
             Files.createDirectories(dirPath);
         } catch (Exception e) {
             DirectionHUD.LOGGER.info("Failed to create playerdata directory:\n" + e.getMessage());
         }
+        config.load();
+        LangReader.loadLanguageFile();
     }
     public static void serverEnd() {
         for (Player player: Utl.getPlayers()) PlayerData.removePlayer(player);
@@ -63,7 +63,7 @@ public class Events {
         CTxT msg = CUtl.tag().append(CUtl.lang("dest.lastdeath.save"))
                 .append(" ").append(death.getBadge())
                 .append(" ").append(CUtl.CButton.dest.set("/dest set "+death.getXYZ()+" "+death.getDIM()));
-        if (Utl.dim.canConvert(Utl.dim.format(player.getPlayer().getSpawnPointDimension().getValue()),death.getDIM()))
+        if (Utl.dim.canConvert(player.getSpawnDimension(),death.getDIM()))
             msg.append(" ").append(CUtl.CButton.dest.convert("/dest set "+death.getXYZ()+" "+death.getDIM()+" convert"));
         player.sendMessage(msg);
     }
