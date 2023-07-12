@@ -101,7 +101,7 @@ public class Utl {
     }
     public static void setTime() {
         World world = DirectionHUD.server.getOverworld();
-        long timeTicks = world.getTime();
+        long timeTicks = world.getTimeOfDay();
         HUD.hour = (int) ((timeTicks / 1000 + 6) % 24);
         HUD.minute = (int) ((timeTicks % 1000) * 60 / 1000);
         if (world.isRaining()) {
