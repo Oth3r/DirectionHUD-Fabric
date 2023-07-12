@@ -89,6 +89,9 @@ public class Player {
     public String getDimension() {
         return Utl.dim.format(player.getWorld().getRegistryKey().getValue());
     }
+    public String getSpawnDimension() {
+        return Utl.dim.format(player.getSpawnPointDimension().getValue());
+    }
     public float getYaw() {
         return player.getYaw();
     }
