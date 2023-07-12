@@ -156,6 +156,7 @@ public class config {
     public static void load() {
         if (!configFile().exists() || !configFile().canRead()) {
             save();
+            load();
             return;
         }
         try (FileInputStream fileStream = new FileInputStream(configFile())) {
